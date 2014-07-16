@@ -75,7 +75,6 @@ function init() {
   }
 
   function onCustomerOrder() {
-
     $log('onCustomerOrder');
     $api.wait.elementRender('.pump-title-panel:visible', function(){
 
@@ -108,6 +107,30 @@ function init() {
 
   }
 
+  function onEditCustomerOrder() {
+    $log('onEditCustomerOrder');
+    $api.wait.elementRender('div.totals-panel:visible', function(){
+      //$log($('td.quantity').size());
+      var tds = $('td.available-col.numeric'),
+          i = 0,
+          l = tds.size(),
+          td;
+      for(i = 1; i < l; i += 1) {
+        td = $('<div>').css({position: 'relative'}).prependTo(tds[i]);;
+        $('<div>')
+          .addClass('plan-quantity')
+          .css( {
+            position: 'absolute',
+            width: 40,
+            left: 0,
+            height: $(tds[i]).height(),
+            border: '1px solid red'
+          })
+          .appendTo(td);
+      }
+    });
+  }
+
   function waitForKnockout(count, callback){
     if(count > -1) {
       if(typeof(ko) !== 'object') {
@@ -119,6 +142,20 @@ function init() {
         callback();
       }
     }
+  }
+
+  function onChangeHash() {
+    var hash = location.hash;
+    console.log('onHashChange', hash);
+
+    if(/#customerorder$/.test(hash)){
+      return onCustomerOrder();
+    }
+
+    if(/#customerorder\/edit/.test(hash)){
+      return onEditCustomerOrder();
+    }
+
   }
 
   function onStart() {
@@ -161,7 +198,8 @@ function init() {
 
       ko.applyBindings($vm);
 
-      $api.hash.when(/^#customerorder/, onCustomerOrder);
+      $api.hash.onChange(onChangeHash);
+      onChangeHash(location.hash);
     });
   }
 
