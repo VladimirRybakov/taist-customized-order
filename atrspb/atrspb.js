@@ -4,12 +4,37 @@ function init() {
     , $client
     , $vm = {}
     , $div
-    , script = document.createElement('script');
+    , script;
 
   window.$vm = $vm;
 
+  script = document.createElement('script');
   script.src = "https://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js";
   document.head.appendChild(script);
+
+  function waitForObject(count, parent, objectName, callback){
+    if(count > -1) {
+      if(typeof(parent[objectName]) !== 'object') {
+        setTimeout(function(){
+          waitForObject(count - 1, parent, objectName, callback);
+        }, 50)
+      }
+      else {
+        callback();
+      }
+    }
+  }
+
+  function waitForKnockout(count, callback){
+    waitForObject(count, window, 'ko', function(){
+      script = document.createElement('script');
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js";
+      document.head.appendChild(script);
+      waitForObject(20, ko, 'mapping', function(){
+        callback();
+      });
+    });
+  }
 
   function parseProcessingPlans(plans) {
     var i
@@ -84,7 +109,7 @@ function init() {
           originalButton;
 
       if(td.length === 0) {
-        tr = $('<tr>');
+        tr = $('<tr id="onCustomerOrder">');
         td = $('<td>')
           .addClass('taist_container')
           .attr('colspan', 3)
@@ -107,41 +132,97 @@ function init() {
 
   }
 
-  function onEditCustomerOrder() {
-    $log('onEditCustomerOrder');
-    $api.wait.elementRender('div.totals-panel:visible', function(){
-      //$log($('td.quantity').size());
-      var tds = $('td.available-col.numeric'),
-          i = 0,
-          l = tds.size(),
-          td;
-      for(i = 1; i < l; i += 1) {
-        td = $('<div>').css({position: 'relative'}).prependTo(tds[i]);;
-        $('<div>')
-          .addClass('plan-quantity')
-          .css( {
-            position: 'absolute',
-            width: 40,
-            left: 0,
-            height: $(tds[i]).height(),
-            border: '1px solid red'
-          })
-          .appendTo(td);
+  function createSumObject(options) {
+    return ko.mapping.fromJS(
+      options.data,
+      {
+        copy: ['TYPE_NAME']
       }
-    });
+    );
   }
 
-  function waitForKnockout(count, callback){
-    if(count > -1) {
-      if(typeof(ko) !== 'object') {
-        setTimeout(function(){
-          waitForKnockout(count - 1, callback);
-        }, 50)
-      }
-      else {
-        callback();
-      }
+  function createCustomerOrderPosition(options) {
+    var koData = ko.mapping.fromJS(options.data, {
+      basePrice: createSumObject,
+      price: createSumObject,
+      copy: [
+        'TYPE_NAME',
+        'accountId',
+        'accountUuid',
+        '//basePrice{}',
+        'changeMode',
+        'consignmentUuid',
+        '//discount',
+        '//goodUuid',
+        '//price{}',
+        '//quantity',
+        'readMode',
+        '//reserve',
+        'uuid',
+        '//vat',
+      ]
+    }),
+    goodUuid = koData.goodUuid();
+
+    if(!$vm.goods[goodUuid]) {
+      $vm.goods[goodUuid] = {
+        name: ko.observable(goodUuid)
+      };
+      $client.load('Good', goodUuid, function(dummy, good){
+        $vm.goods[good.uuid].name(good.name);
+      });
     }
+
+    koData._name = $vm.goods[goodUuid].name;
+
+    koData._price = ko.computed(function(){
+      return (this.price.sum()/100).toFixed(2);
+    }, koData);
+
+    return koData;
+  }
+
+  function onEditCustomerOrder() {
+    var uuid = location.hash.match(/id=(.+)/)[1];
+    $log('onEditCustomerOrder', uuid);
+    $client.load('CustomerOrder', uuid, function(dummy, orderData){
+      $vm.customerOrders[uuid] = ko.mapping.fromJS(orderData, {
+        sum: {
+          create: createSumObject
+        },
+        customerOrderPosition: {
+          create: createCustomerOrderPosition
+        },
+        copy: [
+          'TYPE_NAME',
+          'accountId',
+          'accountUuid',
+          'applicable',
+          'changeMode',
+          'created',
+          'createdBy',
+          '//customerOrderPosition[]',
+          'externalcode',
+          'moment',
+          '//name',
+          'payerVat',
+          'rate',
+          'readMode',
+          'sourceAccountUuid',
+          'sourceAccountUuid',
+          'sourceAgentUuid',
+          'sourceStoreUuid',
+          '//sum{}',
+          'targetAccountUuid',
+          'targetAgentUuid',
+          'updated',
+          'updatedBy',
+          'uuid',
+          'vatIncluded',
+        ]
+      }, {});
+      $vm.currentOrder($vm.customerOrders[uuid]);
+    });
   }
 
   function onChangeHash() {
@@ -149,7 +230,11 @@ function init() {
     console.log('onHashChange', hash);
 
     if(/#customerorder$/.test(hash)){
+      $('#onCustomerOrder').show();
       return onCustomerOrder();
+    }
+    else{
+      $('#onCustomerOrder').hide();
     }
 
     if(/#customerorder\/edit/.test(hash)){
@@ -162,8 +247,6 @@ function init() {
     $log('onStart');
 
     waitForKnockout(20, function(){
-      var plansDiv;
-
       $client = require('moysklad-client').createClient();
 
       //Fixed bug with moysklad-client
@@ -174,16 +257,9 @@ function init() {
         return this;
       }
 
-      $div = $('<div>')
-        .css({display: 'none'})
+      $div = $('<div id="taist">')
+        // .css({display: 'none'})
         .prependTo('body');
-
-      plansDiv = $('<div>')
-        .attr('data-bind', "foreach: {data: $root.processingPlans, as: 'plan'}");
-
-      $("<div>")
-        .attr('data-bind', 'text: plan.name')
-        .appendTo(plansDiv);
 
       $("<select>")
         .attr('id', 'taist_processingPlans')
@@ -191,10 +267,55 @@ function init() {
         .css({ width: '100%' })
         .appendTo($div);
 
-      plansDiv.appendTo($div);
-
       $vm.processingPlans = ko.observableArray([]);
       $vm.selectedPlan = ko.observable(null);
+
+      $vm.goods = {}
+      $vm.customerOrders = {};
+      $vm.currentOrder = ko.observable(null);
+
+      var table  = $('<table border=1 data-bind="if: currentOrder() !== null">'),
+          thead  = $('<thead>').appendTo(table),
+          trhead = $('<tr>').appendTo(thead),
+          tbody  = $('<tbody data-bind="foreach: currentOrder().customerOrderPosition()">').appendTo(table),
+          trbody = $('<tr>').appendTo(tbody);
+
+      [
+        { title: 'goodUuid', bind: 'text', var: '_name' },
+        { title: 'quantity', bind: 'text', var: 'quantity' },
+        { title: 'reserve', bind: 'text', var: 'reserve' },
+        { title: 'price', bind: 'text', var: '_price' },
+        { title: 'vat', bind: 'text', var: 'vat' },
+        { title: 'discount', bind: 'text', var: 'discount' },
+      ].map(function(item){
+        $('<td>').text(item.title).appendTo(trhead);
+        $('<td>').attr("data-bind", item.bind + ":" + item.var).appendTo(trbody);
+      })
+
+      table.appendTo($div);
+
+// <table border=1>
+//   <thead>
+//     <tr>
+//       <th>goodUuid</th>
+//       <th>quantity</th>
+//       <th>reserve</th>
+//       <th>price</th>
+//       <th>vat</th>
+//       <th>discount</th>
+//     </tr>
+//   </thead>
+//   <tbody data-bind="foreach: customerOrderPosition">
+//     <tr>
+//       <td data-bind="text: goodUuid"></td>
+//       <td data-bind="text: quantity"></td>
+//       <td data-bind="text: reserve"></td>
+//       <td data-bind="text: _price"></td>
+//       <td data-bind="text: vat"></td>
+//       <td data-bind="text: discount"></td>
+//     </tr>
+//   </tbody>
+// </table>
 
       ko.applyBindings($vm);
 
