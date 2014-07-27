@@ -37,16 +37,22 @@ function init() {
   }
 
   function parseProcessingPlans(plans) {
-    var i
-      , l
-      , plan;
+    var i, l, j, k,
+        plan, materials;
 
     for(i = 0, l = plans.length; i < l; i += 1) {
       plan = plans[i];
+
+      materials = {};
+      for(j = 0, k = plan.material.length; j < k; j += 1 ) {
+        materials[plan.material[j].goodUuid] = plan.material[j].quantity;
+      }
+
       $vm.processingPlans.push({
         uuid: plan.uuid,
         name: plan.name,
-        data: plan
+        data: plan,
+        materials: materials,
       });
     }
   }
@@ -77,7 +83,6 @@ function init() {
         });
 
         if(positions.length === posinionsQuantity) {
-          console.log(positions);
 
           var order = {
             vatIncluded: true,
@@ -92,10 +97,10 @@ function init() {
           }
 
           $client.save("moysklad.customerOrder", order, function(dummy, order){
-            console.log('try to set', order.uuid);
             $api.companyData.set(order.uuid, {
               uuid: order.uuid,
-              baseTemplate: $vm.selectedPlan().data.uuid
+              baseTemplate: $vm.selectedPlan().data.uuid,
+              presentsCount: 10
             }, function(error){
               location.hash = '#customerorder/edit?id=' + order.uuid;
             })
@@ -183,10 +188,48 @@ function init() {
       return (this.price.sum()/100).toFixed(2).replace('.', ',');
     }, koData);
 
-    koData._quantityPerPresent = ko.observable(koData.quantity());
+    koData._vat = ko.computed(function(){
+      var vat = (this.quantity() * this.price.sum() / 100 * this.vat() / (100 + this.vat()));
+      return Math.round(vat * 100) / 100;
+    }, koData);
+
+    koData._sVat = ko.computed(function(){
+      return this._vat().toFixed(2).replace('.', ',');
+    }, koData);
+
+    koData._total = ko.computed(function(){
+      return (this.quantity() * this.price.sum() / 100);
+    }, koData);
+
+    koData._sTotal = ko.computed(function(){
+      return this._total().toFixed(2).replace('.', ',');
+    }, koData);
+
+    koData._quantityPerPresent = ko.observable(
+      $vm.selectedPlan().materials[koData.goodUuid()] || 1
+    );
+
 
     return koData;
   }
+
+  function onSaveOrder() {
+    $log('onSaveOrder');
+
+    var order = ko.mapping.toJS($vm.currentOrder);
+
+    $client.save("moysklad.customerOrder", order, function(dummy, order){
+      $log('Order saved');
+      $api.companyData.set(order.uuid, {
+        uuid: order.uuid,
+        baseTemplate: $vm.selectedPlan().data.uuid,
+        presentsCount: $vm.currentOrder()._presentsCount(),
+      }, function(error){
+        location.hash = '#customerorder/edit?id=' + order.uuid;
+      })
+    });
+
+  };
 
   function onEditCustomerOrder() {
     var i, l, order, positions,
@@ -230,49 +273,77 @@ function init() {
         ]
       }, {});
 
-      $vm.currentOrder($vm.customerOrders[uuid]);
+      order = $vm.customerOrders[uuid];
 
-      order = $vm.currentOrder();
+      $vm.currentOrder(order);
+
       order._presentsCount = ko.observable(1);
 
       positions = order.customerOrderPosition();
 
       for(i = 0, l = positions.length; i < l; i +=1){
-
         positions[i]._quantity = ko.computed(function(){
-          var cnt = 1;
-          if($vm.currentOrder() && $vm.currentOrder()._presentsCount) {
-            cnt = $vm.currentOrder()._presentsCount();
-          }
-          return this._quantityPerPresent() * cnt;
+          var quantity = this._quantityPerPresent() * order._presentsCount();
+          this.quantity(quantity);
+          return quantity;
         }, positions[i]);
-
-        positions[i]._vat = ko.computed(function(){
-          return (this._quantity() * this.price.sum() / 100 * this.vat() / (100 + this.vat()))
-            .toFixed(2)
-            .replace('.', ',');
-        }, positions[i]);
-
-        positions[i]._total = ko.computed(function(){
-          return (this._quantity() * this.price.sum() / 100)
-            .toFixed(2)
-            .replace('.', ',');
-        }, positions[i]);
-
       }
 
+      order._total = ko.computed(function(){
+        var sum = 0;
+        this.customerOrderPosition().map(function(item){
+          sum += item._total();
+        })
+        order.sum.sum(Math.round(sum * 100));
+        order.sum.sumInCurrency(Math.round(sum * 100));
+        return sum;
+      }, order);
+
+      order._sTotal = ko.computed(function(){
+        return this._total().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._vat = ko.computed(function(){
+        var sum = 0;
+        this.customerOrderPosition().map(function(item){
+          sum += item._vat();
+        })
+        return sum;
+      }, order);
+
+      order._sVat = ko.computed(function(){
+        return this._vat().toFixed(2).replace('.', ',');
+      }, order);
+
       $api.companyData.get(uuid, function(error, result) {
-        console.log('baseTemplate', result.baseTemplate);
         $vm.selectedPlan(
           ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
             return plan.uuid == result.baseTemplate;
           })
-        )
+        );
+
+        order._presentsCount(result.presentsCount || 1);
       });
 
       $api.wait.elementRender('.all-goods-table:visible', function(){
-        $log('appplyBindings for customerOrder');
-        var elem = $('#taist_allGoods')[0];
+        $log('applyBindings for customerOrder');
+        var elem = $('#taist_allGoods')[0],
+            btn,
+            div = $('#onSaveOrder');
+
+        if(div.size() === 0) {
+          btn = $('.b-editor-toolbar .b-popup-button-green').parent(),
+          div = $('<div id="onSaveOrder">')
+            .css({
+              width: btn.width() - 10,
+              height: btn.height() - 3,
+            })
+            .addClass('taist-onSaveOrder')
+            .click(function(event){
+              onSaveOrder();
+            })
+            .appendTo(btn);
+        }
 
         $('tbody tr', elem).not(':first').remove()
 
@@ -286,7 +357,6 @@ function init() {
 
   function onChangeHash() {
     var hash = location.hash;
-    console.log('onHashChange', hash);
 
     if(/#customerorder$/.test(hash)){
       $('#onCustomerOrder').show();
@@ -335,43 +405,61 @@ function init() {
       var processingPlans = $client.from('ProcessingPlan').load();
       parseProcessingPlans(processingPlans);
 
+      ko.applyBindings($vm, $div[0]);
+
       $vm.goods = {}
       $vm.customerOrders = {};
       $vm.currentOrder = ko.observable(null);
       $vm.presentsCount = ko.observable(1);
 
       $vm.currentOrderPositions = ko.observableArray([]);
-      window.cop = $vm.currentOrderPositions;
-
-      // $vm.currentOrder.subscribe(function(){
-      //   var i, l, positions = $vm.currentOrder().customerOrderPosition();
-      //   $vm.currentOrderPositions.removeAll();
-      //
-      //   $log(positions, positions.length)
-      //
-      //   for(i = 0, l = positions.length; i < l; i += 1){
-      //     $vm.currentOrderPositions.push(positions[i]);
-      //   }
-      // });
 
       var allGoods = $('<div id="taist_allGoods" data-bind="if: currentOrder() !== null">'),
-          div = $('<div>').appendTo(allGoods),
+          div,
           table  = $('<table>')
-            .addClass('taist-table')
-            .appendTo(allGoods),
+            .addClass('taist-table'),
           thead  = $('<thead>').appendTo(table),
           trhead = $('<tr>').appendTo(thead),
           tbody  = $('<tbody data-bind="foreach: currentOrder().customerOrderPosition()">').appendTo(table),
           trbody = $('<tr>').appendTo(tbody);
 
+      div = $('<div>')
+        .attr('data-bind', 'if: selectedPlan() !== null')
+        .appendTo(allGoods);
+      $('<span>')
+        .text('Базовая технологическая карта')
+        .appendTo(div);
+      $('<span>')
+        .addClass('ml20 bold')
+        .attr('data-bind', 'text: selectedPlan().name')
+        .appendTo(div);
+
+      div = $('<div>').appendTo(allGoods);
       $('<span>')
         .text('Количество подарков')
         .appendTo(div);
-
       $('<input>')
         .addClass('tar')
-        .attr('data-bind', 'value: $root.currentOrder()._presentsCount')
+        .attr('data-bind', 'value: currentOrder()._presentsCount')
         .css({ width: 40, marginLeft: 20})
+        .appendTo(div);
+
+      div = $('<div>').appendTo(allGoods);
+      $('<span>')
+        .text('Итого:')
+        .appendTo(div);
+      $('<span>')
+        .addClass('ml20 bold fs125')
+        .attr('data-bind', 'text: currentOrder()._sTotal')
+        .appendTo(div);
+
+      div = $('<div>').appendTo(allGoods);
+      $('<span>')
+        .text('НДС:')
+        .appendTo(div);
+      $('<span>')
+        .addClass('ml20')
+        .attr('data-bind', 'text: currentOrder()._sVat')
         .appendTo(div);
 
       [
@@ -382,8 +470,8 @@ function init() {
         { title: 'Цена', bind: 'text', var: '_price', cls: 'tar' },
         // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
         { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
-        { title: 'Сумма НДС', bind: 'text', var: '_vat', cls: 'tar' },
-        { title: 'Итого', bind: 'text', var: '_total', cls: 'tar' },
+        { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
+        { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
       ].map(function(item){
         $('<td>').text(item.title).appendTo(trhead);
         var td = $('<td>')
@@ -396,9 +484,8 @@ function init() {
           .appendTo(td);
       })
 
+      table.appendTo(allGoods);
       allGoods.appendTo($div);
-
-      //ko.applyBindings($vm);
 
       $api.hash.onChange(onChangeHash);
       onChangeHash(location.hash);
