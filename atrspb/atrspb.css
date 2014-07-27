@@ -1,0 +1,44 @@
+.taist-table {
+  width: 100%;
+}
+
+.taist-table {
+}
+
+.taist-table tr {
+  border-bottom: 1px solid silver;
+}
+
+.taist-table thead tr {
+  border-bottom: 1px solid black;
+}
+
+.taist-table thead td {
+  color: #aaa;
+}
+
+.taist-table td {
+  padding: 8px;
+  font-size: 1rem;
+}
+
+.taist-table thead td {
+  text-align: center;
+}
+
+.taist-table td.vat:after {
+  content: "%";
+}
+
+.taist-table td.tar {
+  width: 0;
+}
+
+.tar {
+  text-align: right;
+}
+
+.tar input{
+  text-align: right;
+  width: 40px;
+}
