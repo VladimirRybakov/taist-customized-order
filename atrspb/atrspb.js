@@ -4,6 +4,7 @@ function init() {
     , $client
     , $vm = {}
     , $div
+    , $goods
     , script;
 
   window.$vm = $vm;
@@ -79,8 +80,14 @@ function init() {
           basePrice: {
             sum: good.salePrice,
             sumInCurrency: good.salePrice
-          }
+          },
+          price: {
+            sum: good.salePrice,
+            sumInCurrency: good.salePrice
+          },
         });
+
+        $log(positions);
 
         if(positions.length === posinionsQuantity) {
 
@@ -234,124 +241,129 @@ function init() {
   function onEditCustomerOrder() {
     var i, l, order, positions,
         uuid = location.hash.match(/id=(.+)/)[1];
+
     $log('onEditCustomerOrder', uuid);
 
-    $client.load('CustomerOrder', uuid, function(dummy, orderData){
-      $vm.customerOrders[uuid] = ko.mapping.fromJS(orderData, {
-        sum: {
-          create: createSumObject
-        },
-        customerOrderPosition: {
-          create: createCustomerOrderPosition
-        },
-        copy: [
-          'TYPE_NAME',
-          'accountId',
-          'accountUuid',
-          'applicable',
-          'changeMode',
-          'created',
-          'createdBy',
-          '//customerOrderPosition[]',
-          'externalcode',
-          'moment',
-          '//name',
-          'payerVat',
-          'rate',
-          'readMode',
-          'sourceAccountUuid',
-          'sourceAccountUuid',
-          'sourceAgentUuid',
-          'sourceStoreUuid',
-          '//sum{}',
-          'targetAccountUuid',
-          'targetAgentUuid',
-          'updated',
-          'updatedBy',
-          'uuid',
-          'vatIncluded',
-        ]
-      }, {});
+    $goods.hide();
+    ko.cleanNode($goods[0]);
+    $('tbody tr', $goods).not(':first').remove();
 
-      order = $vm.customerOrders[uuid];
+    $api.companyData.get(uuid, function(error, taistOrderData) {
 
-      $vm.currentOrder(order);
+      $log(error);
+      $log(taistOrderData);
 
-      order._presentsCount = ko.observable(1);
-
-      positions = order.customerOrderPosition();
-
-      for(i = 0, l = positions.length; i < l; i +=1){
-        positions[i]._quantity = ko.computed(function(){
-          var quantity = this._quantityPerPresent() * order._presentsCount();
-          this.quantity(quantity);
-          return quantity;
-        }, positions[i]);
-      }
-
-      order._total = ko.computed(function(){
-        var sum = 0;
-        this.customerOrderPosition().map(function(item){
-          sum += item._total();
+      $vm.selectedPlan(
+        ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
+          return plan.uuid == taistOrderData.baseTemplate;
         })
-        order.sum.sum(Math.round(sum * 100));
-        order.sum.sumInCurrency(Math.round(sum * 100));
-        return sum;
-      }, order);
+      );
 
-      order._sTotal = ko.computed(function(){
-        return this._total().toFixed(2).replace('.', ',');
-      }, order);
+      $client.load('CustomerOrder', uuid, function(dummy, orderData){
 
-      order._vat = ko.computed(function(){
-        var sum = 0;
-        this.customerOrderPosition().map(function(item){
-          sum += item._vat();
-        })
-        return sum;
-      }, order);
+        $vm.customerOrders[uuid] = ko.mapping.fromJS(orderData, {
+          sum: {
+            create: createSumObject
+          },
+          customerOrderPosition: {
+            create: createCustomerOrderPosition
+          },
+          copy: [
+            'TYPE_NAME',
+            'accountId',
+            'accountUuid',
+            'applicable',
+            'changeMode',
+            'created',
+            'createdBy',
+            '//customerOrderPosition[]',
+            'externalcode',
+            'moment',
+            '//name',
+            'payerVat',
+            'rate',
+            'readMode',
+            'sourceAccountUuid',
+            'sourceAccountUuid',
+            'sourceAgentUuid',
+            'sourceStoreUuid',
+            '//sum{}',
+            'targetAccountUuid',
+            'targetAgentUuid',
+            'updated',
+            'updatedBy',
+            'uuid',
+            'vatIncluded',
+          ]
+        }, {});
 
-      order._sVat = ko.computed(function(){
-        return this._vat().toFixed(2).replace('.', ',');
-      }, order);
+        order = $vm.customerOrders[uuid];
 
-      $api.companyData.get(uuid, function(error, result) {
-        $vm.selectedPlan(
-          ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
-            return plan.uuid == result.baseTemplate;
-          })
-        );
+        $vm.currentOrder(order);
 
-        order._presentsCount(result.presentsCount || 1);
-      });
+        order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
 
-      $api.wait.elementRender('.all-goods-table:visible', function(){
-        $log('applyBindings for customerOrder');
-        var elem = $('#taist_allGoods')[0],
-            btn,
-            div = $('#onSaveOrder');
+        positions = order.customerOrderPosition();
 
-        if(div.size() === 0) {
-          btn = $('.b-editor-toolbar .b-popup-button-green').parent(),
-          div = $('<div id="onSaveOrder">')
-            .css({
-              width: btn.width() - 10,
-              height: btn.height() - 3,
-            })
-            .addClass('taist-onSaveOrder')
-            .click(function(event){
-              onSaveOrder();
-            })
-            .appendTo(btn);
+        for(i = 0, l = positions.length; i < l; i +=1){
+          positions[i]._quantity = ko.computed(function(){
+            var quantity = this._quantityPerPresent() * order._presentsCount();
+            this.quantity(quantity);
+            return quantity;
+          }, positions[i]);
         }
 
-        $('tbody tr', elem).not(':first').remove()
+        order._total = ko.computed(function(){
+          var sum = 0;
+          this.customerOrderPosition().map(function(item){
+            sum += item._total();
+          })
+          order.sum.sum(Math.round(sum * 100));
+          order.sum.sumInCurrency(Math.round(sum * 100));
+          return sum;
+        }, order);
 
-        ko.cleanNode(elem);
-        ko.applyBindings($vm, elem);
-        $(elem).prependTo( $('.all-goods-table').parent() );
+        order._sTotal = ko.computed(function(){
+          return this._total().toFixed(2).replace('.', ',');
+        }, order);
+
+        order._vat = ko.computed(function(){
+          var sum = 0;
+          this.customerOrderPosition().map(function(item){
+            sum += item._vat();
+          })
+          return sum;
+        }, order);
+
+        order._sVat = ko.computed(function(){
+          return this._vat().toFixed(2).replace('.', ',');
+        }, order);
+
+        $api.wait.elementRender('.all-goods-table:visible', function(){
+          $log('applyBindings for customerOrder');
+          var btn,
+              div = $('#onSaveOrder');
+
+          if(div.size() === 0) {
+            btn = $('.b-editor-toolbar .b-popup-button-green').parent(),
+            div = $('<div id="onSaveOrder">')
+              .css({
+                width: btn.width() - 10,
+                height: btn.height() - 3,
+              })
+              .addClass('taist-onSaveOrder')
+              .click(function(event){
+                onSaveOrder();
+              })
+              .appendTo(btn);
+          }
+
+          ko.applyBindings($vm, $goods[0]);
+          $goods.prependTo( $('.all-goods-table').parent() );
+          $goods.show();
+        });
+
       });
-
     });
   }
 
@@ -414,8 +426,9 @@ function init() {
 
       $vm.currentOrderPositions = ko.observableArray([]);
 
-      var allGoods = $('<div id="taist_allGoods" data-bind="if: currentOrder() !== null">'),
-          div,
+      $goods = $('<div id="taist_allGoods" data-bind="if: currentOrder() !== null">');
+
+      var div,
           table  = $('<table>')
             .addClass('taist-table'),
           thead  = $('<thead>').appendTo(table),
@@ -425,7 +438,7 @@ function init() {
 
       div = $('<div>')
         .attr('data-bind', 'if: selectedPlan() !== null')
-        .appendTo(allGoods);
+        .appendTo($goods);
       $('<span>')
         .text('Базовая технологическая карта')
         .appendTo(div);
@@ -434,7 +447,7 @@ function init() {
         .attr('data-bind', 'text: selectedPlan().name')
         .appendTo(div);
 
-      div = $('<div>').appendTo(allGoods);
+      div = $('<div>').appendTo($goods);
       $('<span>')
         .text('Количество подарков')
         .appendTo(div);
@@ -444,7 +457,7 @@ function init() {
         .css({ width: 40, marginLeft: 20})
         .appendTo(div);
 
-      div = $('<div>').appendTo(allGoods);
+      div = $('<div>').appendTo($goods);
       $('<span>')
         .text('Итого:')
         .appendTo(div);
@@ -453,7 +466,7 @@ function init() {
         .attr('data-bind', 'text: currentOrder()._sTotal')
         .appendTo(div);
 
-      div = $('<div>').appendTo(allGoods);
+      div = $('<div>').appendTo($goods);
       $('<span>')
         .text('НДС:')
         .appendTo(div);
@@ -484,8 +497,8 @@ function init() {
           .appendTo(td);
       })
 
-      table.appendTo(allGoods);
-      allGoods.appendTo($div);
+      table.appendTo($goods);
+      $goods.appendTo($div);
 
       $api.hash.onChange(onChangeHash);
       onChangeHash(location.hash);
