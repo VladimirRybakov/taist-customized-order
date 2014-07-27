@@ -13,6 +13,33 @@ function init() {
   script.src = "https://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js";
   document.head.appendChild(script);
 
+  function parseOrderData(order){
+    var labels  = $('.b-operation-form-top td.label'),
+        widgets = $('.b-operation-form-top td.widget input:visible'),
+        i, l,
+        label,
+        key,
+        mapping = {
+          'Организация': '_company',
+          'Контрагент': '_customer',
+          'Сотрудник': '_manager',
+          'Склад': '_store',
+          'Договор': '_contract',
+          'План. дата отгрузки': '_date',
+        };
+
+    for(i = 0, l = labels.length; i < l; i += 1) {
+      label = $(labels[i]).text();
+      key = mapping[label]
+      if(typeof key !== 'undefined') {
+        if(typeof order[key] != 'function') {
+          order[key] = ko.observable('');
+        }
+        order[key]( $(widgets[i]).val() );
+      }
+    }
+  }
+
   function waitForObject(count, parent, objectName, callback){
     if(count > -1) {
       if(typeof(parent[objectName]) !== 'object') {
@@ -107,7 +134,8 @@ function init() {
             $api.companyData.set(order.uuid, {
               uuid: order.uuid,
               baseTemplate: $vm.selectedPlan().data.uuid,
-              presentsCount: 10
+              orderTemplate: '',
+              presentsCount: 10,
             }, function(error){
               location.hash = '#customerorder/edit?id=' + order.uuid;
             })
@@ -223,19 +251,45 @@ function init() {
   function onSaveOrder() {
     $log('onSaveOrder');
 
-    var order = ko.mapping.toJS($vm.currentOrder);
+    var order = ko.mapping.toJS($vm.selectedOrder),
+        i, l,
+        plan,
+        templateUuid = $vm.selectedOrder()._template(),
+        save = function(templateUuid){
+          $client.save("moysklad.customerOrder", order, function(dummy, order){
+            $log('Order saved');
+            $api.companyData.set(order.uuid, {
+              uuid: order.uuid,
+              baseTemplate: $vm.selectedPlan().data.uuid,
+              orderTemplate: templateUuid,
+              presentsCount: $vm.selectedOrder()._presentsCount(),
+            }, function(error){
+              location.hash = '#customerorder/edit?id=' + order.uuid;
+            })
+          });
+        };
 
-    $client.save("moysklad.customerOrder", order, function(dummy, order){
-      $log('Order saved');
-      $api.companyData.set(order.uuid, {
-        uuid: order.uuid,
-        baseTemplate: $vm.selectedPlan().data.uuid,
-        presentsCount: $vm.currentOrder()._presentsCount(),
-      }, function(error){
-        location.hash = '#customerorder/edit?id=' + order.uuid;
-      })
-    });
+    if(templateUuid === '') {
+      plan = $.extend(true, {}, $vm.selectedPlan().data);
+      plan.name = order.name;
+      plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
+      for(i = 0, l = plan.material.length; i < l; i += 1) {
+        delete(plan.material[i].uuid);
+      }
+      for(i = 0, l = plan.product.length; i < l; i += 1) {
+        delete(plan.product[i].uuid);
+      }
+      delete(plan.uuid);
+      $log(plan);
+      $client.save("moysklad.processingPlan", plan, function(dummy, template){
+        //save(template.uuid);
+      });
+    } else {
+      save(templateUuid);
+    };
 
+    // Шаблоны: 3bef3f09-15d2-11e4-c910-002590a28eca
+    // Заказы:  dd17179f-15d2-11e4-7a1b-002590a28eca
   };
 
   function onEditCustomerOrder() {
@@ -249,9 +303,6 @@ function init() {
     $('tbody tr', $goods).not(':first').remove();
 
     $api.companyData.get(uuid, function(error, taistOrderData) {
-
-      $log(error);
-      $log(taistOrderData);
 
       $vm.selectedPlan(
         ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
@@ -299,9 +350,10 @@ function init() {
 
         order = $vm.customerOrders[uuid];
 
-        $vm.currentOrder(order);
+        $vm.selectedOrder(order);
 
         order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
+        order._template = ko.observable(taistOrderData.orderTemplate || '');
 
         positions = order.customerOrderPosition();
 
@@ -338,6 +390,18 @@ function init() {
         order._sVat = ko.computed(function(){
           return this._vat().toFixed(2).replace('.', ',');
         }, order);
+
+        order._customer = ko.observable('');
+
+        order._name = ko.computed(function(){
+          var name = $vm.selectedPlan().name
+            + ' - ' + this._customer()
+            + ' - ' + this._presentsCount() + 'шт.';
+          this.name(name);
+          return name;
+        }, order);
+
+        parseOrderData(order);
 
         $api.wait.elementRender('.all-goods-table:visible', function(){
           $log('applyBindings for customerOrder');
@@ -421,19 +485,19 @@ function init() {
 
       $vm.goods = {}
       $vm.customerOrders = {};
-      $vm.currentOrder = ko.observable(null);
+      $vm.selectedOrder = ko.observable(null);
       $vm.presentsCount = ko.observable(1);
 
-      $vm.currentOrderPositions = ko.observableArray([]);
+      $vm.selectedOrderPositions = ko.observableArray([]);
 
-      $goods = $('<div id="taist_allGoods" data-bind="if: currentOrder() !== null">');
+      $goods = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
 
       var div,
           table  = $('<table>')
             .addClass('taist-table'),
           thead  = $('<thead>').appendTo(table),
           trhead = $('<tr>').appendTo(thead),
-          tbody  = $('<tbody data-bind="foreach: currentOrder().customerOrderPosition()">').appendTo(table),
+          tbody  = $('<tbody data-bind="foreach: selectedOrder().customerOrderPosition()">').appendTo(table),
           trbody = $('<tr>').appendTo(tbody);
 
       div = $('<div>')
@@ -447,13 +511,23 @@ function init() {
         .attr('data-bind', 'text: selectedPlan().name')
         .appendTo(div);
 
+      div = $('<div>')
+        .appendTo($goods);
+      $('<span>')
+        .text('Название заказа')
+        .appendTo(div);
+      $('<span>')
+        .addClass('ml20 bold')
+        .attr('data-bind', 'text: selectedOrder().name')
+        .appendTo(div);
+
       div = $('<div>').appendTo($goods);
       $('<span>')
         .text('Количество подарков')
         .appendTo(div);
       $('<input>')
         .addClass('tar')
-        .attr('data-bind', 'value: currentOrder()._presentsCount')
+        .attr('data-bind', 'value: selectedOrder()._presentsCount')
         .css({ width: 40, marginLeft: 20})
         .appendTo(div);
 
@@ -463,7 +537,7 @@ function init() {
         .appendTo(div);
       $('<span>')
         .addClass('ml20 bold fs125')
-        .attr('data-bind', 'text: currentOrder()._sTotal')
+        .attr('data-bind', 'text: selectedOrder()._sTotal')
         .appendTo(div);
 
       div = $('<div>').appendTo($goods);
@@ -472,7 +546,7 @@ function init() {
         .appendTo(div);
       $('<span>')
         .addClass('ml20')
-        .attr('data-bind', 'text: currentOrder()._sVat')
+        .attr('data-bind', 'text: selectedOrder()._sVat')
         .appendTo(div);
 
       [
