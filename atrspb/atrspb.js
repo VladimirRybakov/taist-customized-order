@@ -269,24 +269,26 @@ function init() {
           });
         };
 
-    if(templateUuid === '') {
-      plan = $.extend(true, {}, $vm.selectedPlan().data);
-      plan.name = order.name;
-      plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
-      for(i = 0, l = plan.material.length; i < l; i += 1) {
-        delete(plan.material[i].uuid);
-      }
-      for(i = 0, l = plan.product.length; i < l; i += 1) {
-        delete(plan.product[i].uuid);
-      }
-      delete(plan.uuid);
-      $log(plan);
-      $client.save("moysklad.processingPlan", plan, function(dummy, template){
-        //save(template.uuid);
-      });
-    } else {
-      save(templateUuid);
-    };
+    save(templateUuid);
+
+    // if(templateUuid === '') {
+    //   plan = $.extend(true, {}, $vm.selectedPlan().data);
+    //   plan.name = order.name;
+    //   plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
+    //   for(i = 0, l = plan.material.length; i < l; i += 1) {
+    //     delete(plan.material[i].uuid);
+    //   }
+    //   for(i = 0, l = plan.product.length; i < l; i += 1) {
+    //     delete(plan.product[i].uuid);
+    //   }
+    //   delete(plan.uuid);
+    //   $log(plan);
+    //   $client.save("moysklad.processingPlan", plan, function(dummy, template){
+    //     save(template.uuid);
+    //   });
+    // } else {
+    //   save(templateUuid);
+    // };
 
     // Шаблоны: 3bef3f09-15d2-11e4-c910-002590a28eca
     // Заказы:  dd17179f-15d2-11e4-7a1b-002590a28eca
@@ -420,6 +422,28 @@ function init() {
                 onSaveOrder();
               })
               .appendTo(btn);
+
+            var buttons = $('[role=button]', '.all-goods-table-buttons');
+            buttons.click(function(event){
+              var buttonName = $(event.target).text(),
+                  selector,
+                  element;
+
+              $log(buttonName);
+              // switch(buttonName){
+              //   case 'Добавить позицию':
+              //     selector = '.dialog-content .b-popup-button.b-popup-button-green:visible';
+              //     $api.wait.elementRender(selector, function(){
+              //       element = $(selector);
+              //       if(!element.hasClass('taist-action')) {
+              //         element.click(function(){
+              //           alert('onAdd');
+              //         }).addClass('taist-action');
+              //       }
+              //     });
+              //     break;
+              // }
+            });
           }
 
           ko.applyBindings($vm, $goods[0]);
