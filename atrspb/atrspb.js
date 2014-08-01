@@ -475,6 +475,55 @@ function init() {
   function onStart() {
     $log('onStart');
 
+    function registerXMLHttpHandlers(handlers) {
+      var XMLHttpRequestSend = XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.send = function() {
+        var onReady = this.onreadystatechange,
+            ts = new Date().getTime(),
+            self = this;
+
+        this._request = $.extend(true, {}, this);
+        this._arguments = arguments;
+
+        this.onreadystatechange = function(){
+          if(self.readyState === 4) {
+            var args = self._arguments[0],
+                matches,
+                service,
+                method,
+                handlerName;
+
+            if(args) {
+              matches = args.match(/com\.lognex\.([\w.]+)?\.([^.|]+)\|([^|]+)/);
+              if(matches) {
+                service = matches[2];
+                method = matches[3];
+                if(method !== 'ping') {
+                  handlerName = service + '.' + method;
+                  $log('OnResponse', ts, handlerName);
+                  if(handlers && typeof handlers[handlerName] === 'function') {
+                    handlers[handlerName](args, self.responseText);
+                  }
+                }
+              }
+            }
+          }
+          onReady && onReady.apply(self, arguments);
+        }
+
+        XMLHttpRequestSend.apply(this, arguments);
+      }
+    }
+
+    registerXMLHttpHandlers({
+      'CommonService.getItemTO': function(requestData, responseText){
+        $log(requestData, responseText);
+      },
+      'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
+        $log(requestData, responseText);
+      },
+    });
+
     waitForKnockout(20, function(){
       $client = require('moysklad-client').createClient();
       $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
