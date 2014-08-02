@@ -20,8 +20,8 @@ function init() {
       },
 
       options: {
-        baseTemplatesUuid: '',
-        orderTemplatesUuid: '',
+        baseTemplatesGroupUuid:  '3bef3f09-15d2-11e4-c910-002590a28eca', // Шаблоны
+        orderTemplatesGroupUuid: 'dd17179f-15d2-11e4-7a1b-002590a28eca', // Заказы
       },
     }
 
@@ -327,27 +327,9 @@ function init() {
           return materials;
         };
 
-    // save(templateUuid);
-
     plan = $.extend(true, {}, $vm.selectedPlan().data);
     plan.name = order.name;
-    plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
-
-    // plan.name = order.name;
-    // plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
-    //
-
-    // delete(plan.uuid);
-    // delete(plan.changeMode);
-    // delete(plan.externalcode);
-    // delete(plan.updated);
-    // delete(plan.updatedBy);
-
-    // for(i = 0, l = plan.product.length; i < l; i += 1) {
-    //   delete(plan.product[i].uuid);
-    // }
-
-    $log(plan);
+    plan.parentUuid = $app.options.orderTemplatesGroupUuid;
 
     if(templateUuid === '') {
       plan.material = [];
@@ -381,8 +363,6 @@ function init() {
         saveOrder(plan.uuid);
     }
 
-    // Шаблоны: 3bef3f09-15d2-11e4-c910-002590a28eca
-    // Заказы:  dd17179f-15d2-11e4-7a1b-002590a28eca
   };
 
   function onEditCustomerOrder() {
@@ -403,11 +383,16 @@ function init() {
         })
       );
 
-      $vm.selectedPlan(
-        ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
-          return plan.uuid == (taistOrderData.orderTemplate || taistOrderData.baseTemplate);
-        })
-      );
+      var selected = ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
+        return plan.uuid == (taistOrderData.orderTemplate || taistOrderData.baseTemplate);
+      })
+
+      if(selected == null) {
+        //Reset order template because it is not found
+        taistOrderData.orderTemplate = '';
+      }
+
+      $vm.selectedPlan(selected || $vm.basePlan());
 
       $log($vm.basePlan(), $vm.selectedPlan());
 
@@ -693,11 +678,18 @@ function init() {
 
       $("<select>")
         .attr('id', 'taist_processingPlans')
-        .attr('data-bind', "options: processingPlans, optionsText: 'name', value: basePlan")
+        .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
         .css({ width: '100%' })
         .appendTo($div);
 
       $vm.processingPlans = ko.observableArray([]);
+
+      $vm.baseProcessingPlans = ko.computed(function(){
+        return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
+          return plan.data.parentUuid === $app.options.baseTemplatesGroupUuid;
+        });
+      }).extend({ throttle: 1 });
+
       $vm.selectedPlan = ko.observable(null);
       $vm.basePlan = ko.observable(null);
 
