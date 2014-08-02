@@ -4,7 +4,7 @@ function init() {
     , $client
     , $vm = {}
     , $div
-    , $goods
+    , $goodsDOMNode
     , sctipt
 
     , $app = {
@@ -14,9 +14,15 @@ function init() {
           data: data
         })
       },
+
       getLastState: function(){
         return $state[$state.length - 1];
-      }
+      },
+
+      options: {
+        baseTemplatesUuid: '',
+        orderTemplatesUuid: '',
+      },
     }
 
     , $state = []
@@ -91,29 +97,36 @@ function init() {
 
   function parseProcessingPlans(plans) {
     var i, l, j, k,
-        plan, materials;
+        plan;
 
     for(i = 0, l = plans.length; i < l; i += 1) {
       plan = plans[i];
 
-      materials = {};
-      for(j = 0, k = plan.material.length; j < k; j += 1 ) {
-        materials[plan.material[j].goodUuid] = plan.material[j].quantity;
-      }
+      if(plan.material) {
+        var materials = {};
 
-      $vm.processingPlans.push({
-        uuid: plan.uuid,
-        name: plan.name,
-        data: plan,
-        materials: materials,
-      });
+        for(j = 0, k = plan.material.length; j < k; j += 1 ) {
+          materials[plan.material[j].goodUuid] = plan.material[j].quantity;
+        }
+
+        $vm.processingPlans.remove(function(item) {
+          return item.uuid === plan.uuid
+        });
+
+        $vm.processingPlans.push({
+          uuid: plan.uuid,
+          name: plan.name,
+          data: plan,
+          materials: materials,
+        });
+      }
     }
   }
 
   function onNewCustomOrder() {
-    $log('onNewCustomOrder', $vm.selectedPlan());
+    $log('onNewCustomOrder', $vm.basePlan());
     var i,
-        materials = $vm.selectedPlan().data.material,
+        materials = $vm.basePlan().data.material,
         posinionsQuantity = materials.length,
         uuid,
         quantities = {},
@@ -158,7 +171,7 @@ function init() {
           $client.save("moysklad.customerOrder", order, function(dummy, order){
             $api.companyData.set(order.uuid, {
               uuid: order.uuid,
-              baseTemplate: $vm.selectedPlan().data.uuid,
+              baseTemplate: $vm.basePlan().data.uuid,
               orderTemplate: '',
               presentsCount: 10,
             }, function(error){
@@ -269,7 +282,6 @@ function init() {
       $vm.selectedPlan().materials[koData.goodUuid()] || 1
     );
 
-
     return koData;
   }
 
@@ -279,41 +291,95 @@ function init() {
     var order = ko.mapping.toJS($vm.selectedOrder),
         i, l,
         plan,
+        m,
+        materials = [],
+        products = [],
         templateUuid = $vm.selectedOrder()._template(),
-        save = function(templateUuid){
+
+        saveOrder = function(templateUuid){
           $client.save("moysklad.customerOrder", order, function(dummy, order){
             $log('Order saved');
             $api.companyData.set(order.uuid, {
               uuid: order.uuid,
-              baseTemplate: $vm.selectedPlan().data.uuid,
+              baseTemplate: $vm.basePlan().data.uuid,
               orderTemplate: templateUuid,
               presentsCount: $vm.selectedOrder()._presentsCount(),
             }, function(error){
               location.hash = '#customerorder/edit?id=' + order.uuid;
             })
           });
+        },
+
+        prepareMaterials = function(plan){
+          for(i = 0, l = $vm.selectedOrder().customerOrderPosition().length; i < l; i += 1) {
+            m = $vm.selectedOrder().customerOrderPosition()[i];
+            materials.push({
+              TYPE_NAME: "moysklad.material",
+              planUuid: plan.uuid,
+              accountId: m.accountId,
+              accountUuid: m.accountUuid,
+              changeMode: "NONE",
+              goodUuid: m.goodUuid(),
+              quantity: parseInt(m._quantityPerPresent(), 10),
+              readMode: "ALL"
+            });
+          }
+          return materials;
         };
 
-    save(templateUuid);
+    // save(templateUuid);
 
-    // if(templateUuid === '') {
-    //   plan = $.extend(true, {}, $vm.selectedPlan().data);
-    //   plan.name = order.name;
-    //   plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
-    //   for(i = 0, l = plan.material.length; i < l; i += 1) {
-    //     delete(plan.material[i].uuid);
-    //   }
-    //   for(i = 0, l = plan.product.length; i < l; i += 1) {
-    //     delete(plan.product[i].uuid);
-    //   }
-    //   delete(plan.uuid);
-    //   $log(plan);
-    //   $client.save("moysklad.processingPlan", plan, function(dummy, template){
-    //     save(template.uuid);
-    //   });
-    // } else {
-    //   save(templateUuid);
-    // };
+    plan = $.extend(true, {}, $vm.selectedPlan().data);
+    plan.name = order.name;
+    plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
+
+    // plan.name = order.name;
+    // plan.parentUuid = 'dd17179f-15d2-11e4-7a1b-002590a28eca';
+    //
+
+    // delete(plan.uuid);
+    // delete(plan.changeMode);
+    // delete(plan.externalcode);
+    // delete(plan.updated);
+    // delete(plan.updatedBy);
+
+    // for(i = 0, l = plan.product.length; i < l; i += 1) {
+    //   delete(plan.product[i].uuid);
+    // }
+
+    $log(plan);
+
+    if(templateUuid === '') {
+      plan.material = [];
+      products = plan.product;
+      plan.product = [];
+      delete(plan.uuid);
+
+      $client.save("moysklad.processingPlan", plan, function(error, plan){
+
+        plan.material = prepareMaterials(plan)
+
+        for(i = 0, l = products.length; i < l; i += 1) {
+          products[i].planUuid = plan.uuid;
+          delete(products[i].uuid);
+        }
+        plan.product = products;
+
+        $client.save("moysklad.processingPlan", plan, function(error, plan){
+          $log('New plan saved', plan);
+          parseProcessingPlans([plan]);
+        });
+
+        saveOrder(plan.uuid);
+      });
+    } else {
+        plan.material = prepareMaterials(plan)
+        $client.save("moysklad.processingPlan", plan, function(error, plan){
+          $log('Plan updated', plan);
+          parseProcessingPlans([plan]);
+        });
+        saveOrder(plan.uuid);
+    }
 
     // Шаблоны: 3bef3f09-15d2-11e4-c910-002590a28eca
     // Заказы:  dd17179f-15d2-11e4-7a1b-002590a28eca
@@ -325,17 +391,25 @@ function init() {
 
     $log('onEditCustomerOrder', uuid);
 
-    $goods.hide();
-    ko.cleanNode($goods[0]);
-    $('tbody tr', $goods).not(':first').remove();
+    $goodsDOMNode.hide();
+    ko.cleanNode($goodsDOMNode[0]);
+    $('tbody tr', $goodsDOMNode).not(':first').remove();
 
     $api.companyData.get(uuid, function(error, taistOrderData) {
 
-      $vm.selectedPlan(
+      $vm.basePlan(
         ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
           return plan.uuid == taistOrderData.baseTemplate;
         })
       );
+
+      $vm.selectedPlan(
+        ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
+          return plan.uuid == (taistOrderData.orderTemplate || taistOrderData.baseTemplate);
+        })
+      );
+
+      $log($vm.basePlan(), $vm.selectedPlan());
 
       $client.load('CustomerOrder', uuid, function(dummy, orderData){
 
@@ -421,7 +495,7 @@ function init() {
         order._customer = ko.observable('');
 
         order._name = ko.computed(function(){
-          var name = $vm.selectedPlan().name
+          var name = $vm.basePlan().name
             + ' - ' + this._customer()
             + ' - ' + this._presentsCount() + 'шт.';
           this.name(name);
@@ -463,9 +537,9 @@ function init() {
             });
           }
 
-          ko.applyBindings($vm, $goods[0]);
-          $goods.prependTo( $('.all-goods-table').parent() );
-          $goods.show();
+          ko.applyBindings($vm, $goodsDOMNode[0]);
+          $goodsDOMNode.prependTo( $('.all-goods-table').parent() );
+          $goodsDOMNode.show();
         });
 
       });
@@ -537,7 +611,7 @@ function init() {
       'CommonService.getItemTO': function(requestData, responseText){
         $log(requestData, responseText);
         var state = $app.getLastState();
-        if(state && state.name !== STATE.ORDER.newGoodWaited)
+        if(!state || state.name !== STATE.ORDER.newGoodWaited)
         {
           return false;
         }
@@ -554,7 +628,7 @@ function init() {
       'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
         $log(requestData, responseText);
         var state = $app.getLastState();
-        if(state && state.name !== STATE.ORDER.newGoodSelected) {
+        if(!state || state.name !== STATE.ORDER.newGoodSelected) {
           return false;
         }
 
@@ -619,12 +693,13 @@ function init() {
 
       $("<select>")
         .attr('id', 'taist_processingPlans')
-        .attr('data-bind', "options: processingPlans, optionsText: 'name', value: selectedPlan")
+        .attr('data-bind', "options: processingPlans, optionsText: 'name', value: basePlan")
         .css({ width: '100%' })
         .appendTo($div);
 
       $vm.processingPlans = ko.observableArray([]);
       $vm.selectedPlan = ko.observable(null);
+      $vm.basePlan = ko.observable(null);
 
       var processingPlans = $client.from('ProcessingPlan').load();
       parseProcessingPlans(processingPlans);
@@ -638,7 +713,7 @@ function init() {
 
       $vm.selectedOrderPositions = ko.observableArray([]);
 
-      $goods = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
+      $goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
 
       var div,
           table  = $('<table>')
@@ -649,18 +724,18 @@ function init() {
           trbody = $('<tr>').appendTo(tbody);
 
       div = $('<div>')
-        .attr('data-bind', 'if: selectedPlan() !== null')
-        .appendTo($goods);
+        .attr('data-bind', 'if: basePlan() !== null')
+        .appendTo($goodsDOMNode);
       $('<span>')
         .text('Базовая технологическая карта')
         .appendTo(div);
       $('<span>')
         .addClass('ml20 bold')
-        .attr('data-bind', 'text: selectedPlan().name')
+        .attr('data-bind', 'text: basePlan().name')
         .appendTo(div);
 
       div = $('<div>')
-        .appendTo($goods);
+        .appendTo($goodsDOMNode);
       $('<span>')
         .text('Название заказа')
         .appendTo(div);
@@ -669,7 +744,7 @@ function init() {
         .attr('data-bind', 'text: selectedOrder().name')
         .appendTo(div);
 
-      div = $('<div>').appendTo($goods);
+      div = $('<div>').appendTo($goodsDOMNode);
       $('<span>')
         .text('Количество подарков')
         .appendTo(div);
@@ -679,7 +754,7 @@ function init() {
         .css({ width: 40, marginLeft: 20})
         .appendTo(div);
 
-      div = $('<div>').appendTo($goods);
+      div = $('<div>').appendTo($goodsDOMNode);
       $('<span>')
         .text('Итого:')
         .appendTo(div);
@@ -688,7 +763,7 @@ function init() {
         .attr('data-bind', 'text: selectedOrder()._sTotal')
         .appendTo(div);
 
-      div = $('<div>').appendTo($goods);
+      div = $('<div>').appendTo($goodsDOMNode);
       $('<span>')
         .text('НДС:')
         .appendTo(div);
@@ -719,8 +794,8 @@ function init() {
           .appendTo(td);
       })
 
-      table.appendTo($goods);
-      $goods.appendTo($div);
+      table.appendTo($goodsDOMNode);
+      $goodsDOMNode.appendTo($div);
 
       $api.hash.onChange(onChangeHash);
       onChangeHash(location.hash);
