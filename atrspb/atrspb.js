@@ -5,7 +5,32 @@ function init() {
     , $vm = {}
     , $div
     , $goods
-    , script;
+    , sctipt
+
+    , $app = {
+      changeState: function(name, data){
+        $state.push({
+          name: name,
+          data: data
+        })
+      },
+      getLastState: function(){
+        return $state[$state.length - 1];
+      }
+    }
+
+    , $state = []
+    , STATE = {
+        APP: {
+          appStarted:      'appStarted',
+        },
+        ORDER: {
+          newGoodWaited:   'newGoodWaited',
+          newGoodSelected: 'newGoodSelected',
+          newGoodAdded:    'newGoodAdded',
+        },
+      }
+    ;
 
   window.$vm = $vm;
 
@@ -430,19 +455,11 @@ function init() {
                   element;
 
               $log(buttonName);
-              // switch(buttonName){
-              //   case 'Добавить позицию':
-              //     selector = '.dialog-content .b-popup-button.b-popup-button-green:visible';
-              //     $api.wait.elementRender(selector, function(){
-              //       element = $(selector);
-              //       if(!element.hasClass('taist-action')) {
-              //         element.click(function(){
-              //           alert('onAdd');
-              //         }).addClass('taist-action');
-              //       }
-              //     });
-              //     break;
-              // }
+              switch(buttonName){
+                case 'Добавить позицию':
+                  $app.changeState(STATE.ORDER.newGoodWaited);
+                  break;
+              }
             });
           }
 
@@ -516,12 +533,33 @@ function init() {
     }
 
     registerXMLHttpHandlers({
+
       'CommonService.getItemTO': function(requestData, responseText){
         $log(requestData, responseText);
+        if($app.getLastState().name !== STATE.ORDER.newGoodWaited)
+        {
+          return false;
+        }
+
+        var matches = responseText.match(/"Good","([^"]+)","([^"]+)","([^"]+)"\]/);
+        if(matches) {
+          $app.changeState(STATE.ORDER.newGoodSelected, {
+            uuid: matches[3],
+            name: matches[2],
+          });
+        }
       },
+
       'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
         $log(requestData, responseText);
+        var state = $app.getLastState();
+        if(state.name !== STATE.ORDER.newGoodSelected) {
+          return false;
+        }
+
+        $log('New position', state.data);
       },
+
     });
 
     waitForKnockout(20, function(){
