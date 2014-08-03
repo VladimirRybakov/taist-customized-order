@@ -19,6 +19,10 @@ function init() {
         return $state[$state.length - 1];
       },
 
+      getFirstState: function(){
+        return $state[0];
+      },
+
       options: {
         baseTemplatesGroupUuid:  '3bef3f09-15d2-11e4-c910-002590a28eca', // Шаблоны
         orderTemplatesGroupUuid: 'dd17179f-15d2-11e4-7a1b-002590a28eca', // Заказы
@@ -29,6 +33,7 @@ function init() {
     , STATE = {
         APP: {
           appStarted:      'appStarted',
+          orderOpened:     'orderOpened',
         },
         ORDER: {
           newGoodWaited:   'newGoodWaited',
@@ -159,10 +164,10 @@ function init() {
           var order = {
             vatIncluded: true,
             applicable: true,
-            sourceStoreUuid: "123f239f-0216-11e4-4d38-002590a28eca",
+            // sourceStoreUuid: "123f239f-0216-11e4-4d38-002590a28eca", // основной склад
             payerVat: true,
-            sourceAgentUuid: "123fbe60-0216-11e4-4cbf-002590a28eca",
-            targetAgentUuid: "123da6d2-0216-11e4-3a51-002590a28eca",
+            // sourceAgentUuid: "123fbe60-0216-11e4-4cbf-002590a28eca", // контрагент
+            // targetAgentUuid: "123da6d2-0216-11e4-3a51-002590a28eca", // моя компания
             moment: new Date(),
             name: new Date().getTime().toString(),
             customerOrderPosition: positions
@@ -281,6 +286,10 @@ function init() {
     koData._quantityPerPresent = ko.observable(
       $vm.selectedPlan().materials[koData.goodUuid()] || 1
     );
+
+    koData._onRemove = function(){
+      $vm.selectedOrder().customerOrderPosition.remove(this);
+    }
 
     return koData;
   }
@@ -534,6 +543,8 @@ function init() {
   function onChangeHash() {
     var hash = location.hash;
 
+    $state = [];
+
     if(/#customerorder$/.test(hash)){
       $('#onCustomerOrder').show();
       return onCustomerOrder();
@@ -543,6 +554,7 @@ function init() {
     }
 
     if(/#customerorder\/edit/.test(hash)){
+      $app.changeState(STATE.APP.orderOpened);
       return onEditCustomerOrder();
     }
 
@@ -654,6 +666,32 @@ function init() {
           $log(position);
           order.customerOrderPosition.push(position);
         });
+      },
+
+      'TagService.getTags': function(requestData, responseText){
+        $log(requestData, responseText);
+      },
+
+      'ContractService.getContracts': function(requestData, responseText){
+        $log(requestData, responseText);
+        var state = $app.getFirstState();
+        if(!state || state.name !== STATE.APP.orderOpened) {
+          return false;
+        }
+
+        var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+            matches = requestData.match(pattern);
+        if(matches) {
+          $client.load('Company', matches[0], function(dummy, company){
+            if(company) {
+              var order = $vm.selectedOrder();
+              order.sourceAccountUuid = company.accountUuid;
+              order.sourceAgentUuid   = company.uuid;
+              order._customer(company.name);
+              $log(company);
+            }
+          });
+        }
       },
 
     });
@@ -774,15 +812,21 @@ function init() {
         { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
         { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
         { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
+        { title: '', bind: 'text', var: "'x'", cls: 'removePosition', click: '_onRemove'},
       ].map(function(item){
         $('<td>').text(item.title).appendTo(trhead);
         var td = $('<td>')
           .addClass(item.cls || '')
           .addClass(item.var)
-          .appendTo(trbody);
+          .appendTo(trbody),
+            bindValue = item.bind + ":" + item.var;
+
+        if(item.click) {
+          bindValue += ', click: ' + item.click;
+        }
 
         $(item.bind == 'value' ? '<input>' : '<span>')
-          .attr("data-bind", item.bind + ":" + item.var)
+          .attr("data-bind", bindValue)
           .appendTo(td);
       })
 
