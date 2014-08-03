@@ -559,7 +559,38 @@ function init() {
     }
   }
 
-  function createSettingsInterface() {
+  function createSettingsInterface(taistOptions) {
+
+    $log('createSettingsInterface', taistOptions);
+    taistOptions || (taistOptions = {})
+
+    function parseCollection(collection, type) {
+      var result = [],
+          i = 0,
+          l = collection.length;
+
+      for(; i < l; i += 1) {
+        if(type && collection[i].TYPE_NAME !== type) {
+          continue;
+        }
+        result.push({
+          uuid: collection[i].uuid,
+          name: collection[i].name,
+        });
+      }
+
+      return result;
+    }
+
+    function saveTaistOptions(){
+      $log('saveTaistOptions');
+
+      $api.companyData.set('taistOptions', {
+        basePlanFolder:  $vm.basePlanFolder().uuid,
+        orderPlanFolder: $vm.orderPlanFolder().uuid,
+      }, function(){});
+    }
+
     var container = $('.b-main-panel .info tr'),
         td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">')
           .appendTo(container),
@@ -569,9 +600,11 @@ function init() {
             top: 32,
             right: 64,
             display: 'none',
-            background: 'white',
+            background: 'rgba(220, 228, 220, 0.9)',
             padding: 20,
+            zIndex: 1024,
           })
+          .addClass('taist-options')
           .html("<h2>Настройки</h2>")
           .appendTo(td);
 
@@ -584,6 +617,45 @@ function init() {
         $(div).toggle();
       })
       .appendTo(td);
+
+    var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
+    $vm.processingPlanFolders = ko.observableArray(
+      parseCollection(processingPlanFolders, 'moysklad.processingPlanFolder')
+    );
+
+    $vm.basePlanFolder = ko.observable(
+      ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
+          return plan.uuid == taistOptions.basePlanFolder;
+      })
+    )
+
+    $("<div>")
+      .text("Папка с базовыми технологическими картами/шаблонами")
+      .appendTo(div);
+    $("<select>")
+      .attr('data-bind', "options: processingPlanFolders, optionsText: 'name', value: basePlanFolder")
+      .css({ width: 400 })
+      .appendTo(div);
+
+    $vm.orderPlanFolder = ko.observable(
+      ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
+          return plan.uuid == taistOptions.orderPlanFolder;
+      })
+    );
+
+    $("<div>")
+      .text("Папка для производных технологических карт")
+      .appendTo(div);
+    $("<select>")
+      .attr('data-bind', "options: processingPlanFolders, optionsText: 'name', value: orderPlanFolder")
+      .css({ width: 400 })
+      .appendTo(div);
+
+
+    ko.applyBindings($vm, div[0]);
+
+    $vm.basePlanFolder.subscribe(saveTaistOptions);
+    $vm.orderPlanFolder.subscribe(saveTaistOptions);
 
     return div;
   }
@@ -738,133 +810,136 @@ function init() {
         return this;
       }
 
-      $div = $('<div id="taist">')
-        .css({display: 'none'})
-        .prependTo('body');
+      $api.companyData.get('taistOptions', function(error, taistOptions){
 
-      $("<select>")
-        .attr('id', 'taist_processingPlans')
-        .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
-        .css({ width: '100%' })
-        .appendTo($div);
+        $div = $('<div id="taist">')
+          .css({display: 'none'})
+          .prependTo('body');
 
-      $vm.processingPlans = ko.observableArray([]);
+        $("<select>")
+          .attr('id', 'taist_processingPlans')
+          .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
+          .css({ width: '100%' })
+          .appendTo($div);
 
-      $vm.baseProcessingPlans = ko.computed(function(){
-        return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
-          return plan.data.parentUuid === $app.options.baseTemplatesGroupUuid;
-        });
-      }).extend({ throttle: 1 });
+        $vm.processingPlans = ko.observableArray([]);
 
-      $vm.selectedPlan = ko.observable(null);
-      $vm.basePlan = ko.observable(null);
+        $vm.selectedPlan = ko.observable(null);
+        $vm.basePlan = ko.observable(null);
 
-      var processingPlans = $client.from('ProcessingPlan').load();
-      parseProcessingPlans(processingPlans);
+        var processingPlans = $client.from('ProcessingPlan').load();
+        parseProcessingPlans(processingPlans);
 
-      ko.applyBindings($vm, $div[0]);
+        $vm.baseProcessingPlans = ko.computed(function(){
+          return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
+            return plan.data.parentUuid === taistOptions.basePlanFolder;
+          });
+        }).extend({ throttle: 1 });
 
-      $vm.goods = {}
-      $vm.customerOrders = {};
-      $vm.selectedOrder = ko.observable(null);
-      $vm.presentsCount = ko.observable(1);
+        ko.applyBindings($vm, $div[0]);
 
-      $vm.selectedOrderPositions = ko.observableArray([]);
+        createSettingsInterface(taistOptions);
 
-      $goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
+        $vm.goods = {}
+        $vm.customerOrders = {};
+        $vm.selectedOrder = ko.observable(null);
+        $vm.presentsCount = ko.observable(1);
 
-      var div,
-          table  = $('<table>')
-            .addClass('taist-table'),
-          thead  = $('<thead>').appendTo(table),
-          trhead = $('<tr>').appendTo(thead),
-          tbody  = $('<tbody data-bind="foreach: selectedOrder().customerOrderPosition()">').appendTo(table),
-          trbody = $('<tr>').appendTo(tbody);
+        $vm.selectedOrderPositions = ko.observableArray([]);
 
-      div = $('<div>')
-        .attr('data-bind', 'if: basePlan() !== null')
-        .appendTo($goodsDOMNode);
-      $('<span>')
-        .text('Базовая технологическая карта')
-        .appendTo(div);
-      $('<span>')
-        .addClass('ml20 bold')
-        .attr('data-bind', 'text: basePlan().name')
-        .appendTo(div);
+        $goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
 
-      div = $('<div>')
-        .appendTo($goodsDOMNode);
-      $('<span>')
-        .text('Название заказа')
-        .appendTo(div);
-      $('<span>')
-        .addClass('ml20 bold')
-        .attr('data-bind', 'text: selectedOrder().name')
-        .appendTo(div);
+        var div,
+            table  = $('<table>')
+              .addClass('taist-table'),
+            thead  = $('<thead>').appendTo(table),
+            trhead = $('<tr>').appendTo(thead),
+            tbody  = $('<tbody data-bind="foreach: selectedOrder().customerOrderPosition()">').appendTo(table),
+            trbody = $('<tr>').appendTo(tbody);
 
-      div = $('<div>').appendTo($goodsDOMNode);
-      $('<span>')
-        .text('Количество подарков')
-        .appendTo(div);
-      $('<input>')
-        .addClass('tar')
-        .attr('data-bind', 'value: selectedOrder()._presentsCount')
-        .css({ width: 40, marginLeft: 20})
-        .appendTo(div);
+        div = $('<div>')
+          .attr('data-bind', 'if: basePlan() !== null')
+          .appendTo($goodsDOMNode);
+        $('<span>')
+          .text('Базовая технологическая карта')
+          .appendTo(div);
+        $('<span>')
+          .addClass('ml20 bold')
+          .attr('data-bind', 'text: basePlan().name')
+          .appendTo(div);
 
-      div = $('<div>').appendTo($goodsDOMNode);
-      $('<span>')
-        .text('Итого:')
-        .appendTo(div);
-      $('<span>')
-        .addClass('ml20 bold fs125')
-        .attr('data-bind', 'text: selectedOrder()._sTotal')
-        .appendTo(div);
+        div = $('<div>')
+          .appendTo($goodsDOMNode);
+        $('<span>')
+          .text('Название заказа')
+          .appendTo(div);
+        $('<span>')
+          .addClass('ml20 bold')
+          .attr('data-bind', 'text: selectedOrder().name')
+          .appendTo(div);
 
-      div = $('<div>').appendTo($goodsDOMNode);
-      $('<span>')
-        .text('НДС:')
-        .appendTo(div);
-      $('<span>')
-        .addClass('ml20')
-        .attr('data-bind', 'text: selectedOrder()._sVat')
-        .appendTo(div);
+        div = $('<div>').appendTo($goodsDOMNode);
+        $('<span>')
+          .text('Количество подарков')
+          .appendTo(div);
+        $('<input>')
+          .addClass('tar')
+          .attr('data-bind', 'value: selectedOrder()._presentsCount')
+          .css({ width: 40, marginLeft: 20})
+          .appendTo(div);
 
-      [
-        { title: 'Товар', bind: 'text', var: '_name' },
-        { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
-        { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
-        { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
-        { title: 'Цена', bind: 'text', var: '_price', cls: 'tar' },
-        // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
-        { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
-        { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
-        { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
-        { title: '', bind: 'text', var: "'x'", cls: 'removePosition', click: '_onRemove'},
-      ].map(function(item){
-        $('<td>').text(item.title).appendTo(trhead);
-        var td = $('<td>')
-          .addClass(item.cls || '')
-          .addClass(item.var)
-          .appendTo(trbody),
-            bindValue = item.bind + ":" + item.var;
+        div = $('<div>').appendTo($goodsDOMNode);
+        $('<span>')
+          .text('Итого:')
+          .appendTo(div);
+        $('<span>')
+          .addClass('ml20 bold fs125')
+          .attr('data-bind', 'text: selectedOrder()._sTotal')
+          .appendTo(div);
 
-        if(item.click) {
-          bindValue += ', click: ' + item.click;
-        }
+        div = $('<div>').appendTo($goodsDOMNode);
+        $('<span>')
+          .text('НДС:')
+          .appendTo(div);
+        $('<span>')
+          .addClass('ml20')
+          .attr('data-bind', 'text: selectedOrder()._sVat')
+          .appendTo(div);
 
-        $(item.bind == 'value' ? '<input>' : '<span>')
-          .attr("data-bind", bindValue)
-          .appendTo(td);
-      })
+        [
+          { title: 'Товар', bind: 'text', var: '_name' },
+          { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
+          { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
+          { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
+          { title: 'Цена', bind: 'text', var: '_price', cls: 'tar' },
+          // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
+          { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
+          { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
+          { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
+          { title: '', bind: 'text', var: "'x'", cls: 'removePosition', click: '_onRemove'},
+        ].map(function(item){
+          $('<td>').text(item.title).appendTo(trhead);
+          var td = $('<td>')
+            .addClass(item.cls || '')
+            .addClass(item.var)
+            .appendTo(trbody),
+              bindValue = item.bind + ":" + item.var;
 
-      createSettingsInterface();
+          if(item.click) {
+            bindValue += ', click: ' + item.click;
+          }
 
-      table.appendTo($goodsDOMNode);
-      $goodsDOMNode.appendTo($div);
+          $(item.bind == 'value' ? '<input>' : '<span>')
+            .attr("data-bind", bindValue)
+            .appendTo(td);
+        })
 
-      $api.hash.onChange(onChangeHash);
-      onChangeHash(location.hash);
+        table.appendTo($goodsDOMNode);
+        $goodsDOMNode.appendTo($div);
+
+        $api.hash.onChange(onChangeHash);
+        onChangeHash(location.hash);
+      });
     });
   }
 
