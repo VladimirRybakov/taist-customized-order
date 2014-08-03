@@ -24,7 +24,6 @@ function init() {
       },
 
       options: {
-        baseTemplatesGroupUuid:  '3bef3f09-15d2-11e4-c910-002590a28eca', // Шаблоны
         orderTemplatesGroupUuid: 'dd17179f-15d2-11e4-7a1b-002590a28eca', // Заказы
       },
     }
@@ -164,9 +163,9 @@ function init() {
           var order = {
             vatIncluded: true,
             applicable: true,
-            // sourceStoreUuid: "123f239f-0216-11e4-4d38-002590a28eca", // основной склад
+            sourceStoreUuid: $vm.selectedWarehouse().uuid, // основной склад
             payerVat: true,
-            // sourceAgentUuid: "123fbe60-0216-11e4-4cbf-002590a28eca", // контрагент
+            sourceAgentUuid: $vm.selectedCompany().uuid, // контрагент
             // targetAgentUuid: "123da6d2-0216-11e4-3a51-002590a28eca", // моя компания
             moment: new Date(),
             name: new Date().getTime().toString(),
@@ -338,7 +337,7 @@ function init() {
 
     plan = $.extend(true, {}, $vm.selectedPlan().data);
     plan.name = order.name;
-    plan.parentUuid = $app.options.orderTemplatesGroupUuid;
+    plan.parentUuid = $vm.orderPlanFolder().uuid;
 
     if(templateUuid === '') {
       plan.material = [];
@@ -588,6 +587,8 @@ function init() {
       $api.companyData.set('taistOptions', {
         basePlanFolder:  $vm.basePlanFolder().uuid,
         orderPlanFolder: $vm.orderPlanFolder().uuid,
+        selectedWarehouse: $vm.selectedWarehouse().uuid,
+        selectedCompany: $vm.selectedCompany().uuid,
       }, function(){});
     }
 
@@ -627,7 +628,7 @@ function init() {
       ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
           return plan.uuid == taistOptions.basePlanFolder;
       })
-    )
+    );
 
     $("<div>")
       .text("Папка с базовыми технологическими картами/шаблонами")
@@ -651,11 +652,46 @@ function init() {
       .css({ width: 400 })
       .appendTo(div);
 
+    var warehouses = $client.from('Warehouse').load()
+    $vm.warehouses = ko.observableArray(
+      parseCollection(warehouses)
+    )
+    $vm.selectedWarehouse = ko.observable(
+      ko.utils.arrayFirst($vm.warehouses(), function(warehouse) {
+          return warehouse.uuid == taistOptions.selectedWarehouse;
+      })
+    );
 
-    ko.applyBindings($vm, div[0]);
+    $("<div>")
+      .text("Склад по умолчанию")
+      .appendTo(div);
+    $("<select>")
+      .attr('data-bind', "options: warehouses, optionsText: 'name', value: selectedWarehouse")
+      .css({ width: 400 })
+      .appendTo(div);
+
+    var companies = $client.from('MyCompany').load()
+    $vm.companies = ko.observableArray(
+      parseCollection(companies)
+    )
+    $vm.selectedCompany = ko.observable(
+      ko.utils.arrayFirst($vm.companies(), function(company) {
+          return company.uuid == taistOptions.selectedCompany;
+      })
+    );
+
+    $("<div>")
+      .text("Компания/юридическое лицо по умолчанию")
+      .appendTo(div);
+    $("<select>")
+      .attr('data-bind', "options: companies, optionsText: 'name', value: selectedCompany")
+      .css({ width: 400 })
+      .appendTo(div);
 
     $vm.basePlanFolder.subscribe(saveTaistOptions);
     $vm.orderPlanFolder.subscribe(saveTaistOptions);
+    $vm.selectedWarehouse.subscribe(saveTaistOptions);
+    $vm.selectedCompany.subscribe(saveTaistOptions);
 
     return div;
   }
@@ -836,9 +872,10 @@ function init() {
           });
         }).extend({ throttle: 1 });
 
-        ko.applyBindings($vm, $div[0]);
+        var settingsDiv = createSettingsInterface(taistOptions);
 
-        createSettingsInterface(taistOptions);
+        ko.applyBindings($vm, $div[0]);
+        ko.applyBindings($vm, settingsDiv[0]);
 
         $vm.goods = {}
         $vm.customerOrders = {};
