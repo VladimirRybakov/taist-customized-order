@@ -557,7 +557,35 @@ function init() {
       $app.changeState(STATE.APP.orderOpened);
       return onEditCustomerOrder();
     }
+  }
 
+  function createSettingsInterface() {
+    var container = $('.b-main-panel .info tr'),
+        td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">')
+          .appendTo(container),
+        div = $('<div>')
+          .css({
+            position: 'absolute',
+            top: 32,
+            right: 64,
+            display: 'none',
+            background: 'white',
+            padding: 20,
+          })
+          .html("<h2>Настройки</h2>")
+          .appendTo(td);
+
+    $('<img src="http://www.tai.st/images/logo_sq_180.png">')
+      .css({
+        width: 24,
+        cursor: 'pointer',
+      })
+      .click(function(){
+        $(div).toggle();
+      })
+      .appendTo(td);
+
+    return div;
   }
 
   function onStart() {
@@ -829,6 +857,8 @@ function init() {
           .attr("data-bind", bindValue)
           .appendTo(td);
       })
+
+      createSettingsInterface();
 
       table.appendTo($goodsDOMNode);
       $goodsDOMNode.appendTo($div);
