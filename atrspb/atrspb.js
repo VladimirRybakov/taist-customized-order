@@ -165,8 +165,8 @@ function init() {
             applicable: true,
             sourceStoreUuid: $vm.selectedWarehouse().uuid, // основной склад
             payerVat: true,
-            sourceAgentUuid: $vm.selectedCompany().uuid, // контрагент
-            // targetAgentUuid: "123da6d2-0216-11e4-3a51-002590a28eca", // моя компания
+            // sourceAgentUuid: "", // контрагент
+            targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
             moment: new Date(),
             name: new Date().getTime().toString(),
             customerOrderPosition: positions
@@ -497,8 +497,13 @@ function init() {
 
         parseOrderData(order);
 
-        $api.wait.elementRender('.all-goods-table:visible', function(){
+        $api.wait.elementRender('.all-goods-table', function(){
           $log('applyBindings for customerOrder');
+
+          var originalGoodsTable = $('.all-goods-table');
+          // originalGoodsTable.hide();
+          // $('.totals-delivery', originalGoodsTable.parent()).hide();
+
           var btn,
               div = $('#onSaveOrder');
 
@@ -531,7 +536,7 @@ function init() {
           }
 
           ko.applyBindings($vm, $goodsDOMNode[0]);
-          $goodsDOMNode.prependTo( $('.all-goods-table').parent() );
+          $goodsDOMNode.appendTo( originalGoodsTable.parent() );
           $goodsDOMNode.show();
         });
 
