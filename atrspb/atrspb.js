@@ -136,55 +136,58 @@ function init() {
         quantities = {},
         positions = []
 
+    var ts = new Date().getTime()
     for(i = 0; i < posinionsQuantity; i++) {
       uuid = materials[i].goodUuid;
       quantities[uuid] = materials[i].quantity
-      $client.load('Good', uuid, function(dummy, good){
-        positions.push({
-          vat: 18,
-          goodUuid: good.uuid,
-          quantity: quantities[good.uuid],
-          discount: 0,
-          reserve: 0,
-          basePrice: {
-            sum: good.salePrice,
-            sumInCurrency: good.salePrice
-          },
-          price: {
-            sum: good.salePrice,
-            sumInCurrency: good.salePrice
-          },
-        });
 
-        $log(positions);
+        $client.load('Good', uuid, function(dummy, good){
+          positions.push({
+            vat: 18,
+            goodUuid: good.uuid,
+            quantity: quantities[good.uuid],
+            discount: 0,
+            reserve: 0,
+            basePrice: {
+              sum: good.salePrice,
+              sumInCurrency: good.salePrice
+            },
+            price: {
+              sum: good.salePrice,
+              sumInCurrency: good.salePrice
+            },
+          });
 
-        if(positions.length === posinionsQuantity) {
+          $log(positions);
 
-          var order = {
-            vatIncluded: true,
-            applicable: true,
-            sourceStoreUuid: $vm.selectedWarehouse().uuid, // основной склад
-            payerVat: true,
-            // sourceAgentUuid: "", // контрагент
-            targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
-            moment: new Date(),
-            name: new Date().getTime().toString(),
-            customerOrderPosition: positions
+          if(positions.length === posinionsQuantity) {
+
+            var order = {
+              vatIncluded: true,
+              applicable: true,
+              sourceStoreUuid: $vm.selectedWarehouse().uuid, // основной склад
+              payerVat: true,
+              // sourceAgentUuid: "", // контрагент
+              targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
+              moment: new Date(),
+              name: new Date().getTime().toString(),
+              customerOrderPosition: positions
+            }
+
+            $client.save("moysklad.customerOrder", order, function(dummy, order){
+              $api.companyData.set(order.uuid, {
+                uuid: order.uuid,
+                baseTemplate: $vm.basePlan().data.uuid,
+                orderTemplate: '',
+                presentsCount: 10,
+              }, function(error){
+                location.hash = '#customerorder/edit?id=' + order.uuid;
+              })
+            });
           }
 
-          $client.save("moysklad.customerOrder", order, function(dummy, order){
-            $api.companyData.set(order.uuid, {
-              uuid: order.uuid,
-              baseTemplate: $vm.basePlan().data.uuid,
-              orderTemplate: '',
-              presentsCount: 10,
-            }, function(error){
-              location.hash = '#customerorder/edit?id=' + order.uuid;
-            })
-          });
-        }
+        });
 
-      });
     }
   }
 
@@ -227,6 +230,21 @@ function init() {
     );
   }
 
+  var $goodsQueue = [];
+  function goodsQueue() {
+    var l = $goodsQueue.length, item;
+    if(l > 0) {
+      item = $goodsQueue.shift();
+      $client.load('Good', item.uuid, function(dummy, good){
+        setTimeout(goodsQueue, 42);
+        item.callback(dummy, good);
+      });
+    } else {
+      setTimeout(goodsQueue, 1000);
+    }
+  }
+  goodsQueue();
+
   function createCustomerOrderPosition(options) {
     var koData = ko.mapping.fromJS(options.data, {
       basePrice: createSumObject,
@@ -254,8 +272,15 @@ function init() {
       $vm.goods[goodUuid] = {
         name: ko.observable(goodUuid)
       };
-      $client.load('Good', goodUuid, function(dummy, good){
-        $vm.goods[good.uuid].name(good.name);
+
+      // $client.load('Good', goodUuid, function(dummy, good){
+      //   $vm.goods[good.uuid].name(good.name);
+      // });
+      $goodsQueue.push({
+        uuid: goodUuid,
+        callback: function(dummy, good){
+          $vm.goods[good.uuid].name(good.name);
+        }
       });
     }
 
@@ -313,7 +338,8 @@ function init() {
               orderTemplate: templateUuid,
               presentsCount: $vm.selectedOrder()._presentsCount(),
             }, function(error){
-              location.hash = '#customerorder/edit?id=' + order.uuid;
+              location.reload();
+              //location.hash = '#customerorder/edit?id=' + order.uuid;
             })
           });
         },
@@ -501,8 +527,6 @@ function init() {
           $log('applyBindings for customerOrder');
 
           var originalGoodsTable = $('.all-goods-table');
-          // originalGoodsTable.hide();
-          // $('.totals-delivery', originalGoodsTable.parent()).hide();
 
           var btn,
               div = $('#onSaveOrder');
@@ -559,7 +583,11 @@ function init() {
 
     if(/#customerorder\/edit/.test(hash)){
       $app.changeState(STATE.APP.orderOpened);
+      $('#site').addClass('newOrderInterface');
       return onEditCustomerOrder();
+    }
+    else{
+      $('#site').removeClass('newOrderInterface');
     }
   }
 
@@ -590,10 +618,10 @@ function init() {
       $log('saveTaistOptions');
 
       $api.companyData.set('taistOptions', {
-        basePlanFolder:  $vm.basePlanFolder().uuid,
-        orderPlanFolder: $vm.orderPlanFolder().uuid,
-        selectedWarehouse: $vm.selectedWarehouse().uuid,
-        selectedCompany: $vm.selectedCompany().uuid,
+        basePlanFolder:    ($vm.basePlanFolder()    || {}).uuid,
+        orderPlanFolder:   ($vm.orderPlanFolder()   || {}).uuid,
+        selectedWarehouse: ($vm.selectedWarehouse() || {}).uuid,
+        selectedCompany:   ($vm.selectedCompany()   || {}).uuid,
       }, function(){});
     }
 
@@ -839,6 +867,7 @@ function init() {
 
     waitForKnockout(20, function(){
       $client = require('moysklad-client').createClient();
+      $client.setAuth('admin@ntts', '15c316837613');
       $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
 
       $api.companyData.setCompanyKey($vm.companyUuid);
@@ -852,6 +881,8 @@ function init() {
       }
 
       $api.companyData.get('taistOptions', function(error, taistOptions){
+
+        taistOptions || (taistOptions = {});
 
         $div = $('<div id="taist">')
           .css({display: 'none'})

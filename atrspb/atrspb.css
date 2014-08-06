@@ -88,3 +88,9 @@
   margin-top: 8px;
   margin-bottom: 4px;
 }
+
+.newOrderInterface .all-goods-table,
+.newOrderInterface .totals-delivery
+{
+  display: none;
+}
