@@ -28,17 +28,7 @@ var $api
   }
 
   , $state = []
-  , STATE = {
-      APP: {
-        appStarted:      'appStarted',
-        orderOpened:     'orderOpened',
-      },
-      ORDER: {
-        newGoodWaited:   'newGoodWaited',
-        newGoodSelected: 'newGoodSelected',
-        newGoodAdded:    'newGoodAdded',
-      },
-    }
+  , STATE = require('./state')
   ;
 
 window.$vm = $vm;
@@ -747,18 +737,21 @@ function onStart(_taistApi) {
 
   var globals = require("./globals")
 
-  globals.set('app', $api);
+  globals.set('app', $app);
+  globals.set('api', $api);
   globals.set('log', $api.log);
   $log = globals.log;
 
   $log('onStart');
 
-  var handlers = require("./xmlhttphandlers");
-  require("./xmlhttpproxy").registerHandlers( handlers );
-
   waitForKnockout(20, function(){
     $client = window.require('moysklad-client').createClient();
     $client.setAuth('admin@ntts', '15c316837613');
+
+    globals.set('client', $client);
+    var handlers = require("./xmlhttphandlers");
+    require("./xmlhttpproxy").registerHandlers( handlers );
+
     $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
 
     $api.companyData.setCompanyKey($vm.companyUuid);

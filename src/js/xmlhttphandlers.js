@@ -1,11 +1,13 @@
 var globals = require('./globals'),
     $app    = globals.app,
-    $log    = globals.log;
+    $log    = globals.log,
+    $client = globals.client,
+    STATE   = require('./state');
 
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
     $log(requestData, responseText);
-    var state = $app.getLastState();
+    var state = $app().getLastState();
     if(!state || state.name !== STATE.ORDER.newGoodWaited)
     {
       return false;
@@ -13,7 +15,7 @@ module.exports = {
 
     var matches = responseText.match(/"Good","([^"]+)","([^"]+)","([^"]+)"\]/);
     if(matches) {
-      $app.changeState(STATE.ORDER.newGoodSelected, {
+      $app().changeState(STATE.ORDER.newGoodSelected, {
         uuid: matches[3],
         name: matches[2],
       });
@@ -22,13 +24,13 @@ module.exports = {
 
   'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
     $log(requestData, responseText);
-    var state = $app.getLastState();
+    var state = $app().getLastState();
     if(!state || state.name !== STATE.ORDER.newGoodSelected) {
       return false;
     }
 
     $log('New position', state.data);
-    $client.load('Good', state.data.uuid, function(dummy, good){
+    $client().load('Good', state.data.uuid, function(dummy, good){
 
       if(!$vm.goods[good.uuid]) {
         $vm.goods[good.uuid] = {
@@ -72,7 +74,7 @@ module.exports = {
 
   'ContractService.getContracts': function(requestData, responseText){
     $log(requestData, responseText);
-    var state = $app.getFirstState();
+    var state = $app().getFirstState();
     if(!state || state.name !== STATE.APP.orderOpened) {
       return false;
     }
@@ -80,7 +82,7 @@ module.exports = {
     var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
         matches = requestData.match(pattern);
     if(matches) {
-      $client.load('Company', matches[0], function(dummy, company){
+      $client().load('Company', matches[0], function(dummy, company){
         if(company) {
           var order = $vm.selectedOrder();
           order.sourceAccountUuid = company.accountUuid;
