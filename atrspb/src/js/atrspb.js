@@ -1,4 +1,3 @@
-function init() {
   var $api
     , $log
     , $client
@@ -742,7 +741,12 @@ function init() {
     return div;
   }
 
-  function onStart() {
+  function onStart(_taistApi) {
+    $api = _taistApi;
+    window.$api = $api;
+
+    $log = $api.log;
+
     $log('onStart');
 
     function registerXMLHttpHandlers(handlers) {
@@ -879,14 +883,14 @@ function init() {
     });
 
     waitForKnockout(20, function(){
-      $client = require('moysklad-client').createClient();
+      $client = window.require('moysklad-client').createClient();
       $client.setAuth('admin@ntts', '15c316837613');
       $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
 
       $api.companyData.setCompanyKey($vm.companyUuid);
 
       //Fixed bug with moysklad-client
-      require('xmldom').DOMImplementation = function(){
+      window.require('xmldom').DOMImplementation = function(){
         this.createDocument = function(){
           return document.implementation.createDocument('', '', null);
         }
@@ -1031,13 +1035,8 @@ function init() {
 
   var addonEntry = {
     start: function(_taistApi, entryPoint) {
-      $api = _taistApi;
-      window.$api = $api;
-
-      $log = $api.log;
-      onStart();
+      onStart(_taistApi);
     }
   };
 
-  return addonEntry;
-}
+  module.exports = addonEntry;
