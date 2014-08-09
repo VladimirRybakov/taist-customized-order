@@ -230,20 +230,20 @@ function init() {
     );
   }
 
-  var $goodsQueue = [];
-  function goodsQueue() {
-    var l = $goodsQueue.length, item;
-    if(l > 0) {
-      item = $goodsQueue.shift();
-      $client.load('Good', item.uuid, function(dummy, good){
-        setTimeout(goodsQueue, 42);
-        item.callback(dummy, good);
-      });
-    } else {
-      setTimeout(goodsQueue, 1000);
-    }
-  }
-  goodsQueue();
+  // var $goodsQueue = [];
+  // function goodsQueue() {
+  //   var l = $goodsQueue.length, item;
+  //   if(l > 0) {
+  //     item = $goodsQueue.shift();
+  //     $client.load('Good', item.uuid, function(dummy, good){
+  //       setTimeout(goodsQueue, 42);
+  //       item.callback(dummy, good);
+  //     });
+  //   } else {
+  //     setTimeout(goodsQueue, 1000);
+  //   }
+  // }
+  // goodsQueue();
 
   function createCustomerOrderPosition(options) {
     var koData = ko.mapping.fromJS(options.data, {
@@ -273,15 +273,15 @@ function init() {
         name: ko.observable(goodUuid)
       };
 
-      // $client.load('Good', goodUuid, function(dummy, good){
-      //   $vm.goods[good.uuid].name(good.name);
-      // });
-      $goodsQueue.push({
-        uuid: goodUuid,
-        callback: function(dummy, good){
-          $vm.goods[good.uuid].name(good.name);
-        }
+      $client.load('Good', goodUuid, function(dummy, good){
+        $vm.goods[good.uuid].name(good.name);
       });
+      // $goodsQueue.push({
+      //   uuid: goodUuid,
+      //   callback: function(dummy, good){
+      //     $vm.goods[good.uuid].name(good.name);
+      //   }
+      // });
     }
 
     koData._name = $vm.goods[goodUuid].name;
@@ -431,6 +431,19 @@ function init() {
       $log($vm.basePlan(), $vm.selectedPlan());
 
       $client.load('CustomerOrder', uuid, function(dummy, orderData){
+
+        var good;
+        order = $.extend({}, orderData);
+        lazyLoader = $client.createLazyLoader();
+        lazyLoader.attach(order, ['customerOrderPosition.good']);
+        for(i = 0, l = order.customerOrderPosition.length; i < l; i += 1) {
+          good = order.customerOrderPosition[i].good;
+          if(!$vm.goods[good.uuid]) {
+            $vm.goods[good.uuid] = {
+              name: ko.observable(good.name)
+            };
+          }
+        }
 
         $vm.customerOrders[uuid] = ko.mapping.fromJS(orderData, {
           sum: {
