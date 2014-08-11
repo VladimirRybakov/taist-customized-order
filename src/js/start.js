@@ -6,27 +6,7 @@ var $api = require('./globals/api')
   , $goodsDOMNode
   , sctipt
   , handlers = require('./handlers')
-
-  , $app = {
-    changeState: function(name, data){
-      $state.push({
-        name: name,
-        data: data
-      })
-    },
-
-    getLastState: function(){
-      return $state[$state.length - 1];
-    },
-
-    getFirstState: function(){
-      return $state[0];
-    },
-
-    options: {
-      orderTemplatesGroupUuid: 'dd17179f-15d2-11e4-7a1b-002590a28eca', // Заказы
-    },
-  }
+  , $app = require('./globals/app')
 
   , $state = []
   , STATE = require('./state')
@@ -90,8 +70,8 @@ function parseProcessingPlans(plans) {
   }
 }
 
-function onNewCustomOrder() {
-  $log('onNewCustomOrder', $vm.basePlan());
+function onNewCustomerOrder() {
+  $log('onNewCustomerOrder', $vm.basePlan());
   var i,
       materials = $vm.basePlan().data.material,
       posinionsQuantity = materials.length,
@@ -152,36 +132,6 @@ function onNewCustomOrder() {
       });
 
   }
-}
-
-function onCustomerOrder() {
-  $log('onCustomerOrder');
-  $api.wait.elementRender('.pump-title-panel:visible', function(){
-
-    var container = $('>tbody', '.pump-title-panel:visible'),
-        td = $('.taist_container', container),
-        tr,
-        originalButton;
-
-    if(td.length === 0) {
-      tr = $('<tr id="onCustomerOrder">');
-      td = $('<td>')
-        .addClass('taist_container')
-        .attr('colspan', 3)
-        .css({ paddingRight: '10px'})
-        .appendTo(tr);
-      tr.appendTo(container);
-
-      originalButton = $($('>tr>td', container)[1]);
-      originalButton
-        .clone()
-        .appendTo(tr)
-        .click(onNewCustomOrder);
-    }
-
-    $('#taist_processingPlans').appendTo(td);
-  });
-
 }
 
 // var $goodsQueue = [];
@@ -280,48 +230,20 @@ function onSaveOrder() {
 
 };
 
-function onChangeHash() {
-  var hash = location.hash;
-
-  $state = [];
-
-  if(/#customerorder$/.test(hash)){
-    $('#onCustomerOrder').show();
-    return onCustomerOrder();
-  }
-  else{
-    $('#onCustomerOrder').hide();
-  }
-
-  if(/#customerorder\/edit/.test(hash)){
-    $app.changeState(STATE.APP.orderOpened);
-    $('#site').addClass('newOrderInterface');
-    return handlers.onEditCustomerOrder();
-  }
-  else{
-    $('#site').removeClass('newOrderInterface');
-  }
-}
-
 function onStart(_taistApi) {
 
   $.extend($api, _taistApi);
   window.$api = $api;
 
-  var globals = require("./globals")
-
-  globals.set('app', $app);
-  globals.set('log', $api.log);
-  $log = globals.log;
-
+  $log = $api.log;
   $log('onStart');
 
   waitForKnockout(20, function(){
     $.extend($client, window.require('moysklad-client').createClient());
     $client.setAuth('admin@ntts', '15c316837613');
 
-    var handlers = require("./xmlhttphandlers");
-    require("./xmlhttpproxy").registerHandlers( handlers );
+    var xmlhttphandlers = require("./xmlhttphandlers");
+    require("./xmlhttpproxy").registerHandlers( xmlhttphandlers );
 
     $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
 
@@ -362,8 +284,8 @@ function onStart(_taistApi) {
 
       $vm.goods = {}
       $vm.customerOrders = {};
-      $vm.selectedOrder = ko.observable(null);
-      $vm.presentsCount = ko.observable(1);
+      $vm.selectedOrder  = ko.observable(null);
+      $vm.presentsCount  = ko.observable(1);
 
       $vm.selectedOrderPositions = ko.observableArray([]);
 
@@ -371,8 +293,8 @@ function onStart(_taistApi) {
       require('./customOrderInterface').create($goodsDOMNode);
       $goodsDOMNode.appendTo($div);
 
-      $api.hash.onChange(onChangeHash);
-      onChangeHash(location.hash);
+      $api.hash.onChange(handlers.onChangeHash);
+      handlers.onChangeHash(location.hash);
     });
   });
 }
