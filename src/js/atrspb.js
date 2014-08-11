@@ -1,8 +1,7 @@
+var addonEntry = {
+  start: function(_taistApi, entryPoint) {
+    require('./start')(_taistApi);
+  }
+};
 
-  var addonEntry = {
-    start: function(_taistApi, entryPoint) {
-      require('./start')(_taistApi);
-    }
-  };
-
-  module.exports = addonEntry;
+module.exports = addonEntry;

@@ -1,5 +1,5 @@
-$api = require('./globals/api');
-$client = require('./globals/client');
+var $api = require('./globals/api');
+var $client = require('./globals/client');
 
 module.exports = {
   create: function (taistOptions) {
