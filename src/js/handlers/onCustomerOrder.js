@@ -22,7 +22,7 @@ module.exports = function() {
       originalButton
         .clone()
         .appendTo(tr)
-        .click(require('../handlers').onNewCustomOrder);
+        .click(require('../handlers').onNewCustomerOrder);
     }
 
     $('#taist_processingPlans').appendTo(td);
