@@ -1,7 +1,5 @@
 var globals = {
-  api: {},
   app: {},
-  client: {},
   log: function(){},
 }
 
@@ -12,10 +10,6 @@ module.exports = {
 
   app: function(){
     return globals.app;
-  },
-
-  client: function() {
-    return globals.client;
   },
 
   log: globals.log,
