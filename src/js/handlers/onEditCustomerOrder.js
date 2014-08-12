@@ -1,6 +1,8 @@
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
-    $dom = require('../globals/dom');
+    $dom = require('../globals/dom'),
+
+    $queue = require('../requestQueue');
 
 function parseOrderData(order){
   var labels  = $('.b-operation-form-top td.label'),
@@ -70,13 +72,26 @@ function createCustomerOrderPosition(options) {
 
   koData._stock = ko.observable('');
 
-  $client.stock({
-    goodUuid: goodUuid
-  }, function(dummy, data){
-    $log(data);
-    // koData._stock(data.quantity + / + );
-    // $vm.goods[good.uuid].name(good.name);
+  $queue.push({
+    req: function(callback){
+      $client.stock({
+        goodUuid: goodUuid
+      }, function(){
+        callback.apply(null, arguments);
+      });
+    },
+    res: function(dummy, data){
+      $log(data);
+    }
   });
+
+  // $client.stock({
+  //   goodUuid: goodUuid
+  // }, function(dummy, data){
+  //   $log(data);
+  //   // koData._stock(data.quantity + / + );
+  //   // $vm.goods[good.uuid].name(good.name);
+  // });
 
   koData._name = $vm.goods[goodUuid].name;
 

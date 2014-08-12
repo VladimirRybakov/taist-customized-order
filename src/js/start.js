@@ -69,21 +69,6 @@ function parseProcessingPlans(plans) {
   }
 }
 
-// var $goodsQueue = [];
-// function goodsQueue() {
-//   var l = $goodsQueue.length, item;
-//   if(l > 0) {
-//     item = $goodsQueue.shift();
-//     $client.load('Good', item.uuid, function(dummy, good){
-//       setTimeout(goodsQueue, 42);
-//       item.callback(dummy, good);
-//     });
-//   } else {
-//     setTimeout(goodsQueue, 1000);
-//   }
-// }
-// goodsQueue();
-
 function onSaveOrder() {
   $log('onSaveOrder');
 
