@@ -4,7 +4,7 @@ var $app = require('../globals/app'),
 module.exports = function() {
   var hash = location.hash;
 
-  $state = [];
+  $app.resetState();
 
   if(/#customerorder$/.test(hash)){
     $('#onCustomerOrder').show();

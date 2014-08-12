@@ -3,12 +3,11 @@ var $api = require('./globals/api')
   , $client = require('./globals/client')
   , $vm = require('./globals/vm')
   , $div
-  , $goodsDOMNode
+  , $dom = require('./globals/dom')
   , sctipt
   , handlers = require('./handlers')
   , $app = require('./globals/app')
 
-  , $state = []
   , STATE = require('./state')
   ;
 
@@ -225,9 +224,10 @@ function onStart(_taistApi) {
 
       $vm.selectedOrderPositions = ko.observableArray([]);
 
-      $goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
-      require('./customOrderInterface').create($goodsDOMNode);
-      $goodsDOMNode.appendTo($div);
+      var goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
+      require('./customOrderInterface').create(goodsDOMNode);
+      goodsDOMNode.appendTo($div);
+      $dom.setGoodsNode(goodsDOMNode[0]);
 
       $api.hash.onChange(handlers.onChangeHash);
       handlers.onChangeHash(location.hash);

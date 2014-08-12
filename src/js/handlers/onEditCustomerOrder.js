@@ -1,5 +1,6 @@
-var $api = require('../globals/api');
-var $client = require('../globals/client');
+var $api = require('../globals/api'),
+    $client = require('../globals/client'),
+    $dom = require('../globals/dom');
 
 function parseOrderData(order){
   var labels  = $('.b-operation-form-top td.label'),
@@ -38,37 +39,44 @@ function createSumObject(options) {
 }
 
 function createCustomerOrderPosition(options) {
-  var koData = ko.mapping.fromJS(options.data, {
-    basePrice: createSumObject,
-    price: createSumObject,
-    copy: [
-      'TYPE_NAME',
-      'accountId',
-      'accountUuid',
-      '//basePrice{}',
-      'changeMode',
-      'consignmentUuid',
-      '//discount',
-      '//goodUuid',
-      '//price{}',
-      '//quantity',
-      'readMode',
-      '//reserve',
-      'uuid',
-      '//vat',
-    ]
-  }),
-  goodUuid = koData.goodUuid();
+  var $log = $api.log,
+      koData = ko.mapping.fromJS(options.data, {
+      basePrice: createSumObject,
+      price: createSumObject,
+      copy: [
+        'TYPE_NAME',
+        'accountId',
+        'accountUuid',
+        '//basePrice{}',
+        'changeMode',
+        'consignmentUuid',
+        '//discount',
+        '//goodUuid',
+        '//price{}',
+        '//quantity',
+        'readMode',
+        '//reserve',
+        'uuid',
+        '//vat',
+      ]
+    }),
+    goodUuid = koData.goodUuid();
 
   if(!$vm.goods[goodUuid]) {
     $vm.goods[goodUuid] = {
       name: ko.observable(goodUuid)
     };
-
-    $client.load('Good', goodUuid, function(dummy, good){
-      $vm.goods[good.uuid].name(good.name);
-    });
   }
+
+  koData._stock = ko.observable('');
+
+  $client.stock({
+    goodUuid: goodUuid
+  }, function(dummy, data){
+    $log(data);
+    // koData._stock(data.quantity + / + );
+    // $vm.goods[good.uuid].name(good.name);
+  });
 
   koData._name = $vm.goods[goodUuid].name;
 
@@ -111,10 +119,10 @@ module.exports = function() {
 
   $log('onEditCustomerOrder', uuid);
 
-  $goodsDOMNode = $('#taist_allGoods');
-  $goodsDOMNode.hide();
-  ko.cleanNode($goodsDOMNode[0]);
-  $('tbody tr', $goodsDOMNode).not(':first').remove();
+  var goodsDOMNode = $dom.getGoodsNode();
+  ko.cleanNode(goodsDOMNode);
+  $(goodsDOMNode).hide();
+  $('tbody tr', goodsDOMNode).not(':first').remove();
 
   $api.companyData.get(uuid, function(error, taistOrderData) {
 
@@ -279,9 +287,10 @@ module.exports = function() {
           });
         }
 
-        ko.applyBindings($vm, $goodsDOMNode[0]);
-        $goodsDOMNode.appendTo( originalGoodsTable.parent() );
-        $goodsDOMNode.show();
+        ko.applyBindings($vm, goodsDOMNode);
+        $(goodsDOMNode)
+          .appendTo( originalGoodsTable.parent() )
+          .show();
       });
 
     });
