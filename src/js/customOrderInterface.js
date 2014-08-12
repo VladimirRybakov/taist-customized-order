@@ -61,6 +61,7 @@ module.exports = {
       { title: 'Товар', bind: 'text', var: '_name' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
+      { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar' },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
       { title: 'Цена', bind: 'text', var: '_price', cls: 'tar' },
       // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },

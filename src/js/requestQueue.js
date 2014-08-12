@@ -13,7 +13,7 @@ function process(){
     request = queue.shift();
     request.req(function(){
       request.res.apply(null, arguments);
-      setTimeout(process, 42 * 2);
+      setTimeout(process, 42 * 3);
     });
   } else {
     isInProgress = false;

@@ -70,7 +70,7 @@ function createCustomerOrderPosition(options) {
     };
   }
 
-  koData._stock = ko.observable('');
+  koData._available = ko.observable('');
 
   $queue.push({
     req: function(callback){
@@ -81,17 +81,11 @@ function createCustomerOrderPosition(options) {
       });
     },
     res: function(dummy, data){
-      $log(data);
+      koData._available(
+        data[0].stock + ' / ' + data[0].reserve + ' / ' + data[0].inTransit
+      );
     }
   });
-
-  // $client.stock({
-  //   goodUuid: goodUuid
-  // }, function(dummy, data){
-  //   $log(data);
-  //   // koData._stock(data.quantity + / + );
-  //   // $vm.goods[good.uuid].name(good.name);
-  // });
 
   koData._name = $vm.goods[goodUuid].name;
 
