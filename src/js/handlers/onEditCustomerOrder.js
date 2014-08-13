@@ -254,7 +254,6 @@ module.exports = function() {
         var name = $vm.basePlan().name
           + ' - ' + this._customer()
           + ' - ' + this._presentsCount() + 'шт.';
-        this.name(name);
         return name;
       }, order);
 
@@ -277,7 +276,7 @@ module.exports = function() {
             })
             .addClass('taist-onSaveOrder')
             .click(function(event){
-              onSaveOrder();
+              require('../handlers').onSaveOrder();
             })
             .appendTo(btn);
 

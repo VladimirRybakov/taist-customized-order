@@ -33,10 +33,10 @@ module.exports = {
       }, function(){});
     }
 
-    var container = $('.b-main-panel .info tr'),
-        td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">')
-          .appendTo(container),
-        div = $('<div>')
+    // var container = $('.b-main-panel .info tr'),
+    //     td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">')
+    //       .appendTo(container),
+    var div = $('<div>')
           .css({
             position: 'absolute',
             top: 32,
@@ -47,18 +47,8 @@ module.exports = {
             zIndex: 1024,
           })
           .addClass('taist-options')
-          .html("<h2>Настройки</h2>")
-          .appendTo(td);
-
-    $('<img src="http://www.tai.st/images/logo_sq_180.png">')
-      .css({
-        width: 24,
-        cursor: 'pointer',
-      })
-      .click(function(){
-        $(div).toggle();
-      })
-      .appendTo(td);
+          .html("<h2>Настройки</h2>");
+          // .appendTo(td);
 
     var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
     $vm.processingPlanFolders = ko.observableArray(

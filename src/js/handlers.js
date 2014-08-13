@@ -3,4 +3,5 @@ module.exports = {
   onChangeHash: require('./handlers/onChangeHash'),
   onCustomerOrder: require('./handlers/onCustomerOrder'),
   onNewCustomerOrder: require('./handlers/onNewCustomerOrder'),
+  onSaveOrder: require('./handlers/onSaveOrder'),
 }

@@ -46,13 +46,14 @@ module.exports = function() {
             // sourceAgentUuid: "", // контрагент
             targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
             moment: new Date(),
-            name: new Date().getTime().toString(),
+            // name: new Date().getTime().toString(),
             customerOrderPosition: positions
           }
 
           $client.save("moysklad.customerOrder", order, function(dummy, order){
             $api.companyData.set(order.uuid, {
               uuid: order.uuid,
+              name: '',
               baseTemplate: $vm.basePlan().data.uuid,
               orderTemplate: '',
               presentsCount: 10,

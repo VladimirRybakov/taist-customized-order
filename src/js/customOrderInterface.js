@@ -26,7 +26,7 @@ module.exports = {
       .appendTo(div);
     $('<span>')
       .addClass('ml20 bold')
-      .attr('data-bind', 'text: selectedOrder().name')
+      .attr('data-bind', 'text: selectedOrder()._name')
       .appendTo(div);
 
     div = $('<div>').appendTo(container);

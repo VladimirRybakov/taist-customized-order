@@ -41,115 +41,6 @@ function waitForKnockout(count, callback){
   });
 }
 
-function parseProcessingPlans(plans) {
-  var i, l, j, k,
-      plan;
-
-  for(i = 0, l = plans.length; i < l; i += 1) {
-    plan = plans[i];
-
-    if(plan.material) {
-      var materials = {};
-
-      for(j = 0, k = plan.material.length; j < k; j += 1 ) {
-        materials[plan.material[j].goodUuid] = plan.material[j].quantity;
-      }
-
-      $vm.processingPlans.remove(function(item) {
-        return item.uuid === plan.uuid
-      });
-
-      $vm.processingPlans.push({
-        uuid: plan.uuid,
-        name: plan.name,
-        data: plan,
-        materials: materials,
-      });
-    }
-  }
-}
-
-function onSaveOrder() {
-  $log('onSaveOrder');
-
-  var order = ko.mapping.toJS($vm.selectedOrder),
-      i, l,
-      plan,
-      m,
-      materials = [],
-      products = [],
-      templateUuid = $vm.selectedOrder()._template(),
-
-      saveOrder = function(templateUuid){
-        $client.save("moysklad.customerOrder", order, function(dummy, order){
-          $log('Order saved');
-          $api.companyData.set(order.uuid, {
-            uuid: order.uuid,
-            baseTemplate: $vm.basePlan().data.uuid,
-            orderTemplate: templateUuid,
-            presentsCount: $vm.selectedOrder()._presentsCount(),
-          }, function(error){
-            location.reload();
-            //location.hash = '#customerorder/edit?id=' + order.uuid;
-          })
-        });
-      },
-
-      prepareMaterials = function(plan){
-        for(i = 0, l = $vm.selectedOrder().customerOrderPosition().length; i < l; i += 1) {
-          m = $vm.selectedOrder().customerOrderPosition()[i];
-          materials.push({
-            TYPE_NAME: "moysklad.material",
-            planUuid: plan.uuid,
-            accountId: m.accountId,
-            accountUuid: m.accountUuid,
-            changeMode: "NONE",
-            goodUuid: m.goodUuid(),
-            quantity: parseInt(m._quantityPerPresent(), 10),
-            readMode: "ALL"
-          });
-        }
-        return materials;
-      };
-
-  plan = $.extend(true, {}, $vm.selectedPlan().data);
-  plan.name = order.name;
-  plan.parentUuid = $vm.orderPlanFolder().uuid;
-
-  if(templateUuid === '') {
-    plan.material = [];
-    products = plan.product;
-    plan.product = [];
-    delete(plan.uuid);
-
-    $client.save("moysklad.processingPlan", plan, function(error, plan){
-
-      plan.material = prepareMaterials(plan)
-
-      for(i = 0, l = products.length; i < l; i += 1) {
-        products[i].planUuid = plan.uuid;
-        delete(products[i].uuid);
-      }
-      plan.product = products;
-
-      $client.save("moysklad.processingPlan", plan, function(error, plan){
-        $log('New plan saved', plan);
-        parseProcessingPlans([plan]);
-      });
-
-      saveOrder(plan.uuid);
-    });
-  } else {
-      plan.material = prepareMaterials(plan)
-      $client.save("moysklad.processingPlan", plan, function(error, plan){
-        $log('Plan updated', plan);
-        parseProcessingPlans([plan]);
-      });
-      saveOrder(plan.uuid);
-  }
-
-};
-
 function onStart(_taistApi) {
 
   $.extend($api, _taistApi);
@@ -189,7 +80,7 @@ function onStart(_taistApi) {
       $vm.basePlan = ko.observable(null);
 
       var processingPlans = $client.from('ProcessingPlan').load();
-      parseProcessingPlans(processingPlans);
+      require('./utils').parseProcessingPlans(processingPlans);
 
       $vm.baseProcessingPlans = ko.computed(function(){
         return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
@@ -197,10 +88,30 @@ function onStart(_taistApi) {
         });
       }).extend({ throttle: 1 });
 
+      var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
+      // ko.applyBindings($vm, settingsDiv[0]);
+      settingsDiv.appendTo($div);
       ko.applyBindings($vm, $div[0]);
 
-      var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
-      ko.applyBindings($vm, settingsDiv[0]);
+      var td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">');
+
+      settingsDiv.appendTo(td);
+
+      $('<img src="http://www.tai.st/images/logo_sq_180.png">')
+        .css({
+          width: 24,
+          cursor: 'pointer',
+        })
+        .click(function(){
+          $(settingsDiv).toggle();
+        })
+        .appendTo(td);
+
+      setTimeout(function(){
+        var container = $('.b-main-panel .info tr');
+        $log('!!!!!!!', container);
+        td.appendTo(container);
+      }, 2000);
 
       $vm.goods = {}
       $vm.customerOrders = {};
