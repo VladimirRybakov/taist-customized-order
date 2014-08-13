@@ -207,11 +207,11 @@ module.exports = function() {
 
       order = $vm.customerOrders[uuid];
 
-      $vm.selectedOrder(order);
-
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
+
+      $vm.selectedOrder(order);
 
       positions = order.customerOrderPosition();
 
