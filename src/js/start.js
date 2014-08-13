@@ -51,7 +51,6 @@ function onStart(_taistApi) {
 
   waitForKnockout(20, function(){
     $.extend($client, window.require('moysklad-client').createClient());
-    $client.setAuth('admin@ntts', '15c316837613');
 
     var xmlhttphandlers = require("./xmlhttphandlers");
     require("./xmlhttpproxy").registerHandlers( xmlhttphandlers );
