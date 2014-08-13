@@ -29,6 +29,15 @@ module.exports = {
       .attr('data-bind', 'text: selectedOrder()._name')
       .appendTo(div);
 
+    div = $('<div>')
+      .appendTo(container);
+    $('<span>')
+      .text('')
+      .appendTo(div);
+    $('<input>')
+      .attr('data-bind', 'value: selectedOrder()._customName')
+      .appendTo(div);
+
     div = $('<div>').appendTo(container);
     $('<span>')
       .text('Количество подарков')

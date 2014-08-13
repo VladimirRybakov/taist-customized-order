@@ -54,6 +54,7 @@ module.exports = function() {
             $api.companyData.set(order.uuid, {
               uuid: order.uuid,
               name: '',
+              customName: '',
               baseTemplate: $vm.basePlan().data.uuid,
               orderTemplate: '',
               presentsCount: 10,

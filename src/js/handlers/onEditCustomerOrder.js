@@ -211,6 +211,7 @@ module.exports = function() {
 
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
+      order._customName = ko.observable(taistOrderData.customName || '');
 
       positions = order.customerOrderPosition();
 
@@ -251,7 +252,9 @@ module.exports = function() {
       order._customer = ko.observable('');
 
       order._name = ko.computed(function(){
-        var name = $vm.basePlan().name
+        var name = ($vm.selectedOrder()._customName() !== ''
+            ? $vm.selectedOrder()._customName()
+            : $vm.basePlan().name)
           + ' - ' + this._customer()
           + ' - ' + this._presentsCount() + 'шт.';
         return name;
