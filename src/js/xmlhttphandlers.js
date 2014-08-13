@@ -37,7 +37,7 @@ module.exports = {
         };
       }
 
-      var position = createCustomerOrderPosition({
+      var position = require('./processors').createCustomerOrderPosition({
         data: {
           vat: 18,
           goodUuid: good.uuid,
