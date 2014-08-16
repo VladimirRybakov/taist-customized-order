@@ -19,7 +19,7 @@ module.exports = function (grunt) {
 
             atrspb: {
                 src: ['src/js/atrspb.js'],
-                dest: 'atrspb.js',
+                dest: 'build/atrspb.js',
                 options: {
                     external: ['moysklad-client', 'xmldom'],
                     alias: [
