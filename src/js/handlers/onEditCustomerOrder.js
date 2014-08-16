@@ -181,6 +181,7 @@ module.exports = function() {
             div = $('#onSaveOrder');
 
         if(div.size() === 0) {
+
           btn = $('.b-editor-toolbar .b-popup-button-green').parent(),
           div = $('<div id="onSaveOrder">')
             .css({
@@ -193,7 +194,25 @@ module.exports = function() {
             })
             .appendTo(btn);
 
-          var buttons = $('[role=button]', '.all-goods-table-buttons');
+          var buttons = $('[role=button]', '.all-goods-table-buttons'),
+              hiddenButtons = [
+                'по штрихкоду',
+                'из остатков',
+                'Удалить',
+              ],
+              btn;
+
+          for(i = 0, l = buttons.size(); i < l; i += 1) {
+            btn = $(buttons[i]);
+            if(hiddenButtons.indexOf(btn.text()) > -1) {
+              btn.css({
+                width: btn.width(),
+                border: 'none'
+              });
+              btn.children().hide();
+            }
+          }
+
           buttons.click(function(event){
             var buttonName = $(event.target).text(),
                 selector,
@@ -203,6 +222,12 @@ module.exports = function() {
             switch(buttonName){
               case 'Добавить позицию':
                 $app.changeState(STATE.ORDER.newGoodWaited);
+                break;
+              case 'Зарезервировать':
+
+                break;
+              case 'Очистить резерв':
+
                 break;
             }
           });
