@@ -167,10 +167,18 @@ module.exports = {
 
 },{"./handlers/onChangeHash":10,"./handlers/onCustomerOrder":11,"./handlers/onEditCustomerOrder":12,"./handlers/onNewCustomerOrder":13,"./handlers/onReserve":14,"./handlers/onSaveOrder":15}],10:[function(require,module,exports){
 var $app = require('../globals/app'),
+    $api = require('../globals/api'),
     STATE = require('../state');
 
 module.exports = function() {
   var hash = location.hash;
+
+  if($app.getFirstState() && $('.b-lognex-dialog-box.b-message-box').size() > 0) {
+    $('.b-popup-button', '.b-lognex-dialog-box.b-message-box')
+      .click(function(){
+        $api.log('CHANGES MESSAGE');
+      });
+  }
 
   $app.resetState();
 
@@ -193,7 +201,7 @@ module.exports = function() {
   }
 }
 
-},{"../globals/app":5,"../handlers":9,"../state":21}],11:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":21}],11:[function(require,module,exports){
 module.exports = function() {
   var $log = require('../globals/api').log;
 
@@ -651,6 +659,10 @@ var $api = require('../globals/api'),
     $queue = require('../requestQueue');
 
 module.exports = function (options) {
+  if(!options.data.vat) {
+    options.data.vat = 18;
+  }
+
   var $log = $api.log,
       koData = ko.mapping.fromJS(options.data, {
       basePrice: require('../processors').createSumObject,
@@ -1180,10 +1192,12 @@ module.exports = {
       $client.load('Company', matches[0], function(dummy, company){
         if(company) {
           var order = $vm.selectedOrder();
-          order.sourceAccountUuid = company.accountUuid;
-          order.sourceAgentUuid   = company.uuid;
-          order._customer(company.name);
-          $log(company);
+          if(order) {
+            order.sourceAccountUuid = company.accountUuid;
+            order.sourceAgentUuid   = company.uuid;
+            order._customer(company.name);
+            $log(company);            
+          }
         }
       });
     }

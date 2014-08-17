@@ -7,6 +7,10 @@ var $api = require('../globals/api'),
     $queue = require('../requestQueue');
 
 module.exports = function (options) {
+  if(!options.data.vat) {
+    options.data.vat = 18;
+  }
+
   var $log = $api.log,
       koData = ko.mapping.fromJS(options.data, {
       basePrice: require('../processors').createSumObject,

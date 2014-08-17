@@ -84,10 +84,12 @@ module.exports = {
       $client.load('Company', matches[0], function(dummy, company){
         if(company) {
           var order = $vm.selectedOrder();
-          order.sourceAccountUuid = company.accountUuid;
-          order.sourceAgentUuid   = company.uuid;
-          order._customer(company.name);
-          $log(company);
+          if(order) {
+            order.sourceAccountUuid = company.accountUuid;
+            order.sourceAgentUuid   = company.uuid;
+            order._customer(company.name);
+            $log(company);            
+          }
         }
       });
     }

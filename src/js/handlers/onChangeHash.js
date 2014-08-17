@@ -1,8 +1,16 @@
 var $app = require('../globals/app'),
+    $api = require('../globals/api'),
     STATE = require('../state');
 
 module.exports = function() {
   var hash = location.hash;
+
+  if($app.getFirstState() && $('.b-lognex-dialog-box.b-message-box').size() > 0) {
+    $('.b-popup-button', '.b-lognex-dialog-box.b-message-box')
+      .click(function(){
+        $api.log('CHANGES MESSAGE');
+      });
+  }
 
   $app.resetState();
 
