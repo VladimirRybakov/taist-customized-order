@@ -224,10 +224,10 @@ module.exports = function() {
                 $app.changeState(STATE.ORDER.newGoodWaited);
                 break;
               case 'Зарезервировать':
-
+                require('../handlers').onReserve(true);
                 break;
               case 'Очистить резерв':
-
+                require('../handlers').onReserve(false);
                 break;
             }
           });
