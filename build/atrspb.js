@@ -23,7 +23,7 @@ module.exports = {
     div = $('<div>')
       .attr('data-bind', 'if: basePlan() !== null')
       .appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Базовая технологическая карта')
       .appendTo(div);
     $('<span>')
@@ -33,7 +33,7 @@ module.exports = {
 
     div = $('<div>')
       .appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Название заказа')
       .appendTo(div);
     $('<span>')
@@ -43,15 +43,16 @@ module.exports = {
 
     div = $('<div>')
       .appendTo(container);
-    $('<span>')
-      .text('')
+    $('<span class="w200">')
+      .html('&nbsp;')
       .appendTo(div);
     $('<input>')
       .attr('data-bind', 'value: selectedOrder()._customName')
+      .css({ width: 300, marginLeft: 20})
       .appendTo(div);
 
     div = $('<div>').appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Количество подарков')
       .appendTo(div);
     $('<input>')
@@ -61,7 +62,7 @@ module.exports = {
       .appendTo(div);
 
     div = $('<div>').appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Итого:')
       .appendTo(div);
     $('<span>')
@@ -70,7 +71,7 @@ module.exports = {
       .appendTo(div);
 
     div = $('<div>').appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('НДС:')
       .appendTo(div);
     $('<span>')
@@ -901,7 +902,7 @@ function onStart(_taistApi) {
       $vm.selectedOrderPositions = ko.observableArray([]);
 
       var goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
-      require('./customOrderInterface').create(goodsDOMNode);
+      require('./customerOrderInterface').create(goodsDOMNode);
       goodsDOMNode.appendTo($div);
       $dom.setGoodsNode(goodsDOMNode[0]);
 
@@ -913,7 +914,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":21,"./taistSettingsInterface":22,"./utils":23,"./xmlhttphandlers":24,"./xmlhttpproxy":25}],21:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":21,"./taistSettingsInterface":22,"./utils":23,"./xmlhttphandlers":24,"./xmlhttpproxy":25}],21:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:      'appStarted',

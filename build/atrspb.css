@@ -90,7 +90,15 @@
 }
 
 .newOrderInterface .all-goods-table,
-.newOrderInterface .totals-delivery
-{
+.newOrderInterface .totals-delivery {
   display: none;
+}
+
+#taist_allGoods>div {
+  margin-bottom: 4px;
+}
+
+.w200 {
+  display: inline-block;
+  width: 200px;
 }

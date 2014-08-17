@@ -11,7 +11,7 @@ module.exports = {
     div = $('<div>')
       .attr('data-bind', 'if: basePlan() !== null')
       .appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Базовая технологическая карта')
       .appendTo(div);
     $('<span>')
@@ -21,7 +21,7 @@ module.exports = {
 
     div = $('<div>')
       .appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Название заказа')
       .appendTo(div);
     $('<span>')
@@ -31,15 +31,16 @@ module.exports = {
 
     div = $('<div>')
       .appendTo(container);
-    $('<span>')
-      .text('')
+    $('<span class="w200">')
+      .html('&nbsp;')
       .appendTo(div);
     $('<input>')
       .attr('data-bind', 'value: selectedOrder()._customName')
+      .css({ width: 300, marginLeft: 20})
       .appendTo(div);
 
     div = $('<div>').appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Количество подарков')
       .appendTo(div);
     $('<input>')
@@ -49,7 +50,7 @@ module.exports = {
       .appendTo(div);
 
     div = $('<div>').appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('Итого:')
       .appendTo(div);
     $('<span>')
@@ -58,7 +59,7 @@ module.exports = {
       .appendTo(div);
 
     div = $('<div>').appendTo(container);
-    $('<span>')
+    $('<span class="w200">')
       .text('НДС:')
       .appendTo(div);
     $('<span>')

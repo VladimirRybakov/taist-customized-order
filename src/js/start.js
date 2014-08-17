@@ -120,7 +120,7 @@ function onStart(_taistApi) {
       $vm.selectedOrderPositions = ko.observableArray([]);
 
       var goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
-      require('./customOrderInterface').create(goodsDOMNode);
+      require('./customerOrderInterface').create(goodsDOMNode);
       goodsDOMNode.appendTo($div);
       $dom.setGoodsNode(goodsDOMNode[0]);
 
