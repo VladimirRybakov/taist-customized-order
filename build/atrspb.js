@@ -209,16 +209,10 @@ module.exports = function() {
       tr = $('<tr id="onCustomerOrder">');
       td = $('<td>')
         .addClass('taist_container')
-        .attr('colspan', 3)
+        .attr('colspan', 8)
         .css({ paddingRight: '10px'})
         .appendTo(tr);
       tr.appendTo(container);
-
-      originalButton = $($('>tr>td', container)[1]);
-      originalButton
-        .clone()
-        .appendTo(tr)
-        .click(require('../handlers').onNewCustomerOrder);
     }
 
     $('#taist_processingPlans').appendTo(td);
@@ -226,7 +220,7 @@ module.exports = function() {
 
 }
 
-},{"../globals/api":4,"../handlers":9}],12:[function(require,module,exports){
+},{"../globals/api":4}],12:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -849,11 +843,19 @@ function onStart(_taistApi) {
         .css({display: 'none'})
         .prependTo('body');
 
+      var div = $('<div id = "taist_processingPlans">');
       $("<select>")
-        .attr('id', 'taist_processingPlans')
         .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
-        .css({ width: '100%' })
-        .appendTo($div);
+        .css({ width: 400 })
+        .appendTo(div);
+
+      $("<button>")
+        .text('Заказ по шаблону')
+        .css({marginLeft: 20})
+        .click(require('./handlers').onNewCustomerOrder)
+        .appendTo(div);
+
+      div.appendTo($div);
 
       $vm.processingPlans = ko.observableArray([]);
 
@@ -890,7 +892,6 @@ function onStart(_taistApi) {
 
       setTimeout(function(){
         var container = $('.b-main-panel .info tr');
-        $log('!!!!!!!', container);
         td.appendTo(container);
       }, 2000);
 

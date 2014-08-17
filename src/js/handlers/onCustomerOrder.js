@@ -13,16 +13,10 @@ module.exports = function() {
       tr = $('<tr id="onCustomerOrder">');
       td = $('<td>')
         .addClass('taist_container')
-        .attr('colspan', 3)
+        .attr('colspan', 8)
         .css({ paddingRight: '10px'})
         .appendTo(tr);
       tr.appendTo(container);
-
-      originalButton = $($('>tr>td', container)[1]);
-      originalButton
-        .clone()
-        .appendTo(tr)
-        .click(require('../handlers').onNewCustomerOrder);
     }
 
     $('#taist_processingPlans').appendTo(td);
