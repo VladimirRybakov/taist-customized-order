@@ -252,6 +252,11 @@ module.exports = function(){
         break;
     }
   });
+
+  $('.b-close-button', '.b-lognex-dialog-box.b-message-box')
+    .click(function(){
+      $app.changeState(STATE.APP.orderClosingCanceled);
+    });
 }
 
 },{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":22}],12:[function(require,module,exports){
