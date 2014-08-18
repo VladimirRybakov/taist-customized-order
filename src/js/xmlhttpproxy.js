@@ -1,3 +1,5 @@
+var $api = require("./globals/api");
+
 var registerXMLHttpHandlers = function (handlers) {
   var XMLHttpRequestSend = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function() {
@@ -21,10 +23,13 @@ var registerXMLHttpHandlers = function (handlers) {
           if(matches) {
             service = matches[2];
             method = matches[3];
-            if(method !== 'ping') {
+            if(method !== 'ping' && method !== 'pull') {
               handlerName = service + '.' + method;
               if(handlers && typeof handlers[handlerName] === 'function') {
                 handlers[handlerName](args, self.responseText);
+              }
+              else {
+                $api.log('REQUEST', service, method, self.responseText);
               }
             }
           }

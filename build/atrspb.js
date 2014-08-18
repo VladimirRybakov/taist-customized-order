@@ -1172,15 +1172,18 @@ module.exports = {
 
 },{"./globals/vm":8}],25:[function(require,module,exports){
 var $app    = require('./globals/app'),
-    $log    = require('./globals/api').log,
+    $api    = require('./globals/api'),
     $client = require('./globals/client'),
     STATE   = require('./state');
 
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log('CommonService.getItemTO', requestData, responseText);
     var state = $app.getLastState();
-    if(!state || state.name !== STATE.ORDER.newGoodWaited)
+    if(!state
+      ||
+        state.name !== STATE.ORDER.newGoodWaited
+        && state.name !== STATE.ORDER.newGoodSelected )
     {
       return false;
     }
@@ -1194,14 +1197,18 @@ module.exports = {
     }
   },
 
+  'ConsignmentService.getGoodConsignmentList': function(requestData, responseText){
+
+  },
+
   'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log(requestData, responseText);
     var state = $app.getLastState();
     if(!state || state.name !== STATE.ORDER.newGoodSelected) {
       return false;
     }
 
-    $log('New position', state.data);
+    $api.log('New position', state.data);
     $client.load('Good', state.data.uuid, function(dummy, good){
 
       if(!$vm.goods[good.uuid]) {
@@ -1235,17 +1242,17 @@ module.exports = {
         return quantity;
       }, position);
 
-      $log(position);
+      $api.log(position);
       order.customerOrderPosition.push(position);
     });
   },
 
   'TagService.getTags': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log(requestData, responseText);
   },
 
   'ContractService.getContracts': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log(requestData, responseText);
     var state = $app.getFirstState();
     if(!state || state.name !== STATE.APP.orderOpened) {
       return false;
@@ -1261,7 +1268,7 @@ module.exports = {
             order.sourceAccountUuid = company.accountUuid;
             order.sourceAgentUuid   = company.uuid;
             order._customer(company.name);
-            $log(company);            
+            $api.log(company);
           }
         }
       });
@@ -1270,6 +1277,8 @@ module.exports = {
 }
 
 },{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":17,"./state":22}],26:[function(require,module,exports){
+var $api = require("./globals/api");
+
 var registerXMLHttpHandlers = function (handlers) {
   var XMLHttpRequestSend = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function() {
@@ -1293,10 +1302,13 @@ var registerXMLHttpHandlers = function (handlers) {
           if(matches) {
             service = matches[2];
             method = matches[3];
-            if(method !== 'ping') {
+            if(method !== 'ping' && method !== 'pull') {
               handlerName = service + '.' + method;
               if(handlers && typeof handlers[handlerName] === 'function') {
                 handlers[handlerName](args, self.responseText);
+              }
+              else {
+                $api.log('REQUEST', service, method, self.responseText);
               }
             }
           }
@@ -1313,4 +1325,4 @@ module.exports = {
   registerHandlers: registerXMLHttpHandlers
 };
 
-},{}]},{},["x7s1YF"]);return require("atrspb")};
+},{"./globals/api":4}]},{},["x7s1YF"]);return require("atrspb")};

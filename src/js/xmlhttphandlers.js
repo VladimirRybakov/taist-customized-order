@@ -1,13 +1,16 @@
 var $app    = require('./globals/app'),
-    $log    = require('./globals/api').log,
+    $api    = require('./globals/api'),
     $client = require('./globals/client'),
     STATE   = require('./state');
 
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log('CommonService.getItemTO', requestData, responseText);
     var state = $app.getLastState();
-    if(!state || state.name !== STATE.ORDER.newGoodWaited)
+    if(!state
+      ||
+        state.name !== STATE.ORDER.newGoodWaited
+        && state.name !== STATE.ORDER.newGoodSelected )
     {
       return false;
     }
@@ -21,14 +24,18 @@ module.exports = {
     }
   },
 
+  'ConsignmentService.getGoodConsignmentList': function(requestData, responseText){
+
+  },
+
   'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log(requestData, responseText);
     var state = $app.getLastState();
     if(!state || state.name !== STATE.ORDER.newGoodSelected) {
       return false;
     }
 
-    $log('New position', state.data);
+    $api.log('New position', state.data);
     $client.load('Good', state.data.uuid, function(dummy, good){
 
       if(!$vm.goods[good.uuid]) {
@@ -62,17 +69,17 @@ module.exports = {
         return quantity;
       }, position);
 
-      $log(position);
+      $api.log(position);
       order.customerOrderPosition.push(position);
     });
   },
 
   'TagService.getTags': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log(requestData, responseText);
   },
 
   'ContractService.getContracts': function(requestData, responseText){
-    $log(requestData, responseText);
+    $api.log(requestData, responseText);
     var state = $app.getFirstState();
     if(!state || state.name !== STATE.APP.orderOpened) {
       return false;
@@ -88,7 +95,7 @@ module.exports = {
             order.sourceAccountUuid = company.accountUuid;
             order.sourceAgentUuid   = company.uuid;
             order._customer(company.name);
-            $log(company);            
+            $api.log(company);
           }
         }
       });
