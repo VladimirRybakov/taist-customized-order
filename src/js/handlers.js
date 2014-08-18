@@ -5,4 +5,5 @@ module.exports = {
   onNewCustomerOrder: require('./handlers/onNewCustomerOrder'),
   onSaveOrder: require('./handlers/onSaveOrder'),
   onReserve: require('./handlers/onReserve'),
+  onChangesDialog: require('./handlers/onChangesDialog'),
 }

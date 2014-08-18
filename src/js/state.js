@@ -1,7 +1,8 @@
 module.exports = {
   APP: {
-    appStarted:      'appStarted',
-    orderOpened:     'orderOpened',
+    appStarted:           'appStarted',
+    orderOpened:          'orderOpened',
+    orderClosingCanceled: 'orderClosingCanceled',
   },
   ORDER: {
     newGoodWaited:   'newGoodWaited',

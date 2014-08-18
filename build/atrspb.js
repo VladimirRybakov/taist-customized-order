@@ -9,7 +9,7 @@ var addonEntry = {
 
 module.exports = addonEntry;
 
-},{"./start":20}],3:[function(require,module,exports){
+},{"./start":21}],3:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var div,
@@ -163,21 +163,20 @@ module.exports = {
   onNewCustomerOrder: require('./handlers/onNewCustomerOrder'),
   onSaveOrder: require('./handlers/onSaveOrder'),
   onReserve: require('./handlers/onReserve'),
+  onChangesDialog: require('./handlers/onChangesDialog'),
 }
 
-},{"./handlers/onChangeHash":10,"./handlers/onCustomerOrder":11,"./handlers/onEditCustomerOrder":12,"./handlers/onNewCustomerOrder":13,"./handlers/onReserve":14,"./handlers/onSaveOrder":15}],10:[function(require,module,exports){
+},{"./handlers/onChangeHash":10,"./handlers/onChangesDialog":11,"./handlers/onCustomerOrder":12,"./handlers/onEditCustomerOrder":13,"./handlers/onNewCustomerOrder":14,"./handlers/onReserve":15,"./handlers/onSaveOrder":16}],10:[function(require,module,exports){
 var $app = require('../globals/app'),
     $api = require('../globals/api'),
     STATE = require('../state');
 
 module.exports = function() {
-  var hash = location.hash;
+  var hash = location.hash,
+      isCancelled = ($app.getLastState() || {}).name === 'orderClosingCanceled';
 
   if($app.getFirstState() && $('.b-lognex-dialog-box.b-message-box').size() > 0) {
-    $('.b-popup-button', '.b-lognex-dialog-box.b-message-box')
-      .click(function(){
-        $api.log('CHANGES MESSAGE');
-      });
+    return require('../handlers').onChangesDialog()
   }
 
   $app.resetState();
@@ -194,14 +193,45 @@ module.exports = function() {
 
     $app.changeState(STATE.APP.orderOpened);
     $('#site').addClass('newOrderInterface');
-    return require('../handlers').onEditCustomerOrder();
+    if(isCancelled) {
+      return false
+    }
+    else {
+      return require('../handlers').onEditCustomerOrder();
+    }
   }
   else{
     $('#site').removeClass('newOrderInterface');
   }
 }
 
-},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":21}],11:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":22}],11:[function(require,module,exports){
+var $api = require('../globals/api'),
+    $app = require('../globals/app'),
+    STATE = require('../state')
+
+module.exports = function(){
+  $('.b-popup-button', '.b-lognex-dialog-box.b-message-box')
+    .parent()
+    .click(function(event){
+      var target = event.target,
+          action = $(target).text();
+
+      switch(action){
+        case 'Да':
+        break;
+
+        case 'Нет':
+        break;
+
+        case 'Отмена':
+          $app.changeState(STATE.APP.orderClosingCanceled);
+        break;
+      }
+    });
+}
+
+},{"../globals/api":4,"../globals/app":5,"../state":22}],12:[function(require,module,exports){
 module.exports = function() {
   var $log = require('../globals/api').log;
 
@@ -228,7 +258,7 @@ module.exports = function() {
 
 }
 
-},{"../globals/api":4}],12:[function(require,module,exports){
+},{"../globals/api":4}],13:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -474,7 +504,7 @@ module.exports = function() {
   });
 }
 
-},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../handlers":9,"../processors":16,"../state":21}],13:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../handlers":9,"../processors":17,"../state":22}],14:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
@@ -546,7 +576,7 @@ module.exports = function() {
   }
 }
 
-},{"../globals/api":4,"../globals/client":6,"../globals/vm":8}],14:[function(require,module,exports){
+},{"../globals/api":4,"../globals/client":6,"../globals/vm":8}],15:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(doesUserWantToReserve){
@@ -556,7 +586,7 @@ module.exports = function(doesUserWantToReserve){
   require('../handlers').onSaveOrder();
 }
 
-},{"../globals/vm":8,"../handlers":9}],15:[function(require,module,exports){
+},{"../globals/vm":8,"../handlers":9}],16:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client');
 
@@ -643,13 +673,13 @@ module.exports = function() {
   }
 };
 
-},{"../globals/api":4,"../globals/client":6,"../utils":23}],16:[function(require,module,exports){
+},{"../globals/api":4,"../globals/client":6,"../utils":24}],17:[function(require,module,exports){
 module.exports = {
   createCustomerOrderPosition: require('./processors/createCustomerOrderPosition'),
   createSumObject: require('./processors/createSumObject'),
 }
 
-},{"./processors/createCustomerOrderPosition":17,"./processors/createSumObject":18}],17:[function(require,module,exports){
+},{"./processors/createCustomerOrderPosition":18,"./processors/createSumObject":19}],18:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -743,7 +773,7 @@ module.exports = function (options) {
   return koData;
 }
 
-},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../processors":16,"../requestQueue":19,"../state":21}],18:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../processors":17,"../requestQueue":20,"../state":22}],19:[function(require,module,exports){
 module.exports = function (options) {
   return ko.mapping.fromJS(
     options.data,
@@ -753,7 +783,7 @@ module.exports = function (options) {
   );
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var $api = require('./globals/api'),
     queue = [],
     isInProgress = false;
@@ -785,7 +815,7 @@ module.exports = {
   }
 }
 
-},{"./globals/api":4}],20:[function(require,module,exports){
+},{"./globals/api":4}],21:[function(require,module,exports){
 var $api = require('./globals/api')
   , $log
   , $client = require('./globals/client')
@@ -927,11 +957,12 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":21,"./taistSettingsInterface":22,"./utils":23,"./xmlhttphandlers":24,"./xmlhttpproxy":25}],21:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":22,"./taistSettingsInterface":23,"./utils":24,"./xmlhttphandlers":25,"./xmlhttpproxy":26}],22:[function(require,module,exports){
 module.exports = {
   APP: {
-    appStarted:      'appStarted',
-    orderOpened:     'orderOpened',
+    appStarted:           'appStarted',
+    orderOpened:          'orderOpened',
+    orderClosingCanceled: 'orderClosingCanceled',
   },
   ORDER: {
     newGoodWaited:   'newGoodWaited',
@@ -940,7 +971,7 @@ module.exports = {
   },
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var $api = require('./globals/api');
 var $client = require('./globals/client');
 
@@ -1072,7 +1103,7 @@ module.exports = {
 
 }
 
-},{"./globals/api":4,"./globals/client":6}],23:[function(require,module,exports){
+},{"./globals/api":4,"./globals/client":6}],24:[function(require,module,exports){
 var $vm = require('./globals/vm');
 
 module.exports = {
@@ -1105,7 +1136,7 @@ module.exports = {
   }
 }
 
-},{"./globals/vm":8}],24:[function(require,module,exports){
+},{"./globals/vm":8}],25:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $log    = require('./globals/api').log,
     $client = require('./globals/client'),
@@ -1204,7 +1235,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":16,"./state":21}],25:[function(require,module,exports){
+},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":17,"./state":22}],26:[function(require,module,exports){
 var registerXMLHttpHandlers = function (handlers) {
   var XMLHttpRequestSend = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function() {

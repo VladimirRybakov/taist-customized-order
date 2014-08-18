@@ -3,13 +3,11 @@ var $app = require('../globals/app'),
     STATE = require('../state');
 
 module.exports = function() {
-  var hash = location.hash;
+  var hash = location.hash,
+      isCancelled = ($app.getLastState() || {}).name === 'orderClosingCanceled';
 
   if($app.getFirstState() && $('.b-lognex-dialog-box.b-message-box').size() > 0) {
-    $('.b-popup-button', '.b-lognex-dialog-box.b-message-box')
-      .click(function(){
-        $api.log('CHANGES MESSAGE');
-      });
+    return require('../handlers').onChangesDialog()
   }
 
   $app.resetState();
@@ -26,7 +24,12 @@ module.exports = function() {
 
     $app.changeState(STATE.APP.orderOpened);
     $('#site').addClass('newOrderInterface');
-    return require('../handlers').onEditCustomerOrder();
+    if(isCancelled) {
+      return false
+    }
+    else {
+      return require('../handlers').onEditCustomerOrder();
+    }
   }
   else{
     $('#site').removeClass('newOrderInterface');
