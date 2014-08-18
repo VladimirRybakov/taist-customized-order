@@ -182,6 +182,8 @@ module.exports = function() {
 
         if(div.size() === 0) {
 
+          var btn;
+
           btn = $('.b-editor-toolbar .b-popup-button-green').parent(),
           div = $('<div id="onSaveOrder">')
             .css({
@@ -194,13 +196,17 @@ module.exports = function() {
             })
             .appendTo(btn);
 
+          btn = $('.b-editor-toolbar .b-popup-button-gray:visible:first');
+          btn.click(function(){
+            require('../handlers').onChangesDialog();
+          })
+
           var buttons = $('[role=button]', '.all-goods-table-buttons'),
               hiddenButtons = [
                 'по штрихкоду',
                 'из остатков',
                 'Удалить',
-              ],
-              btn;
+              ];
 
           for(i = 0, l = buttons.size(); i < l; i += 1) {
             btn = $(buttons[i]);
