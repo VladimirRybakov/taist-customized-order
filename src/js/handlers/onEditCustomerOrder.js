@@ -172,8 +172,41 @@ module.exports = function() {
 
       parseOrderData(order);
 
+      function redefineButtons(parent, id){
+        var btn, div = $('#' + id);
+
+        if(div.size() === 0) {
+          btn = $('.b-popup-button-green', parent).parent(),
+          div = $('<div>')
+          .attr('id', id)
+          .css({
+            width: btn.width() - 10,
+            height: btn.height() - 3,
+          })
+          .addClass('taist-onSaveOrder')
+          .click(function(event){
+            require('../handlers').onSaveOrder();
+          })
+          .appendTo(btn);
+
+          btn.css({position: 'relative'});
+
+          btn = $('.b-popup-button-gray:visible:first', parent);
+          btn.click(function(){
+            $log('ON CHANGE DIALOG');
+            require('../handlers').onChangesDialog();
+          });
+        }
+      }
+
+      // $api.wait.elementRender('.b-fixed-panel.b-fixed-panel-up.b-fixed-panel-up-last', function(elem){
+      //   $log('PANEL')
+      //   redefineButtons(elem, 'onSaveOrderPanel');
+      // });
+
       $api.wait.elementRender('.all-goods-table', function(){
         $log('applyBindings for customerOrder');
+
 
         var originalGoodsTable = $('.all-goods-table');
 
@@ -182,24 +215,7 @@ module.exports = function() {
 
         if(div.size() === 0) {
 
-          var btn;
-
-          btn = $('.b-editor-toolbar .b-popup-button-green').parent(),
-          div = $('<div id="onSaveOrder">')
-            .css({
-              width: btn.width() - 10,
-              height: btn.height() - 3,
-            })
-            .addClass('taist-onSaveOrder')
-            .click(function(event){
-              require('../handlers').onSaveOrder();
-            })
-            .appendTo(btn);
-
-          btn = $('.b-editor-toolbar .b-popup-button-gray:visible:first');
-          btn.click(function(){
-            require('../handlers').onChangesDialog();
-          })
+          redefineButtons('.b-editor-toolbar', 'onSaveOrder');
 
           var buttons = $('[role=button]', '.all-goods-table-buttons'),
               hiddenButtons = [

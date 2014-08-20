@@ -55,12 +55,17 @@
   font-size: 1.25rem;
 }
 
+.newOrderInterface .taist-onSaveOrder {
+  display: block;
+}
+
 .taist-onSaveOrder {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 51, 0, 0.1);
   cursor: pointer;
   position: absolute;
   top: 0px;
   left: 0px;
+  display: none;
 }
 
 .taist-onSaveOrder:hover {
