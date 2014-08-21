@@ -19,6 +19,7 @@ module.exports = function() {
       tr.appendTo(container);
     }
 
+    $('#onCustomerOrder').show();
     $('#taist_processingPlans').appendTo(td);
   });
 
