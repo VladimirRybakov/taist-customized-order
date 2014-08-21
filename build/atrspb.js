@@ -192,7 +192,7 @@ module.exports = function() {
   if(/#customerorder\/edit/.test(hash)){
 
     $app.changeState(STATE.APP.orderOpened);
-    $('body').addClass('newOrderInterface');
+    $('#site').addClass('newOrderInterface');
     if(isCancelled) {
       return false
     }
@@ -201,7 +201,7 @@ module.exports = function() {
     }
   }
   else{
-    $('body').removeClass('newOrderInterface');
+    $('#site').removeClass('newOrderInterface');
   }
 }
 
@@ -1203,11 +1203,13 @@ module.exports = {
     {
       return false;
     }
+    // "Good","lb__fRJLif2eCLCrJe-xb1","Свечка \"Шишка\"","630da863-02d6-11e4-3af0-002590a28eca"
 
-    var matches = responseText.match(/"Good","([^"]+)","([^"]+)","([^"]+)"\]/);
+    var matches = responseText.match(/"Good","([^"]+)","(([^"]|\\\")+?)","([^"]+)"\]/);
     if(matches) {
+      $api.log('MATCHED GOOD', matches);
       $app.changeState(STATE.ORDER.newGoodSelected, {
-        uuid: matches[3],
+        uuid: matches[4],
         name: matches[2],
       });
     }
