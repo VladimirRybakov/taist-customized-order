@@ -41,6 +41,7 @@ module.exports = function (options) {
   }
 
   koData._available = ko.observable('');
+  koData._availableInfo = ko.observable('');
 
   $queue.push({
     req: function(callback){
@@ -52,7 +53,14 @@ module.exports = function (options) {
     },
     res: function(dummy, data){
       koData._available(
-        data[0].stock + ' / ' + data[0].reserve + ' / ' + data[0].inTransit
+        data[0].quantity
+      );
+
+      koData._availableInfo(
+          'Доступно: ' + data[0].quantity + '<br>'
+        + 'Остаток: ' + data[0].stock + '<br>'
+        + 'Резерв: ' + data[0].reserve + '<br>'
+        + 'Ожидание: ' + data[0].inTransit
       );
     }
   });
