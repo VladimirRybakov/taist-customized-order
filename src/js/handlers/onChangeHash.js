@@ -23,7 +23,7 @@ module.exports = function() {
   if(/#customerorder\/edit/.test(hash)){
 
     $app.changeState(STATE.APP.orderOpened);
-    $('#site').addClass('newOrderInterface');
+    $('body').addClass('newOrderInterface');
     if(isCancelled) {
       return false
     }
@@ -32,6 +32,6 @@ module.exports = function() {
     }
   }
   else{
-    $('#site').removeClass('newOrderInterface');
+    $('#body').removeClass('newOrderInterface');
   }
 }
