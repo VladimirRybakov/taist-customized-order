@@ -32,6 +32,6 @@ module.exports = function() {
     }
   }
   else{
-    $('#body').removeClass('newOrderInterface');
+    $('body').removeClass('newOrderInterface');
   }
 }
