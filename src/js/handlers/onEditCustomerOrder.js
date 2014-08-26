@@ -221,7 +221,6 @@ module.exports = function() {
               hiddenButtons = [
                 'по штрихкоду',
                 'из остатков',
-                'Удалить',
               ];
 
           for(i = 0, l = buttons.size(); i < l; i += 1) {
@@ -235,23 +234,28 @@ module.exports = function() {
             }
           }
 
-          buttons.click(function(event){
-            var buttonName = $(event.target).text(),
-                selector,
-                element;
+          buttons
+            .removeClass('b-popup-button-disabled')
+            .click(function(event){
+              var buttonName = $(event.target).text(),
+                  selector,
+                  element;
 
-            $log(buttonName);
-            switch(buttonName){
-              case 'Добавить позицию':
-                $app.changeState(STATE.ORDER.newGoodWaited);
-                break;
-              case 'Зарезервировать':
-                require('../handlers').onReserve(true);
-                break;
-              case 'Очистить резерв':
-                require('../handlers').onReserve(false);
-                break;
-            }
+              $log(buttonName);
+              switch(buttonName){
+                case 'Добавить позицию':
+                  $app.changeState(STATE.ORDER.newGoodWaited);
+                  break;
+                case 'Зарезервировать':
+                  require('../handlers').onReserve(true);
+                  break;
+                case 'Очистить резерв':
+                  require('../handlers').onReserve(false);
+                  break;
+                case 'Удалить':
+                  require('../handlers').onDelete();
+                  break;
+              }
           });
         }
 
