@@ -124,6 +124,19 @@ function onStart(_taistApi) {
       $vm.selectedOrder  = ko.observable(null);
       $vm.presentsCount  = ko.observable(1);
 
+      $vm.selectedPositions = ko.computed(function(){
+        var order = $vm.selectedOrder();
+
+        if(order === null) {
+          return [];
+        }
+
+        return ko.utils.arrayFilter(order.customerOrderPosition(), function(pos) {
+          return pos._isSelected();
+        })
+
+      }).extend({ rateLimit: 50 });
+
       $vm.selectedOrderPositions = ko.observableArray([]);
 
       var goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');

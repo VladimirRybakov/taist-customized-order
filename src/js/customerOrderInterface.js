@@ -114,6 +114,7 @@ module.exports = {
     }
 
     [
+      { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
@@ -138,9 +139,13 @@ module.exports = {
         bindValue += ', click: ' + item.click;
       }
 
-      elem = $(item.bind == 'value' ? '<input>' : '<span>')
+      elem = $(item.bind == 'text' ? '<span>' : '<input>')
         .attr("data-bind", bindValue)
         .appendTo(td);
+
+      if(item.bind == 'checked') {
+        elem.attr('type', 'checkbox');
+      }
 
       if(typeof item.custom === 'function') {
         item.custom(elem);

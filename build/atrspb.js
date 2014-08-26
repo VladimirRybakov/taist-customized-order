@@ -126,6 +126,7 @@ module.exports = {
     }
 
     [
+      { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
@@ -150,9 +151,13 @@ module.exports = {
         bindValue += ', click: ' + item.click;
       }
 
-      elem = $(item.bind == 'value' ? '<input>' : '<span>')
+      elem = $(item.bind == 'text' ? '<span>' : '<input>')
         .attr("data-bind", bindValue)
         .appendTo(td);
+
+      if(item.bind == 'checked') {
+        elem.attr('type', 'checkbox');
+      }
 
       if(typeof item.custom === 'function') {
         item.custom(elem);
@@ -682,10 +687,20 @@ module.exports = function() {
 var $vm = require('../globals/vm');
 
 module.exports = function(doesUserWantToReserve){
-  ko.utils.arrayForEach($vm.selectedOrder().customerOrderPosition(), function(item) {
+  var positions = $vm.selectedOrder().customerOrderPosition();
+  if($vm.selectedPositions().length > 0) {
+    positions = $vm.selectedPositions();
+  }
+
+  ko.utils.arrayForEach(positions, function(item) {
     item.reserve(doesUserWantToReserve ? item._quantity() : 0);
   });
+
   require('../handlers').onSaveOrder();
+
+  ko.utils.arrayForEach($vm.selectedPositions(), function(pos){
+    pos._isSelected(false);
+  })
 }
 
 },{"../globals/vm":8,"../handlers":9}],16:[function(require,module,exports){
@@ -826,6 +841,7 @@ module.exports = function (options) {
 
   koData._available = ko.observable('');
   koData._availableInfo = ko.observable('');
+  koData._isSelected = ko.observable(false);
 
   $queue.push({
     req: function(callback){
@@ -1051,6 +1067,19 @@ function onStart(_taistApi) {
       $vm.customerOrders = {};
       $vm.selectedOrder  = ko.observable(null);
       $vm.presentsCount  = ko.observable(1);
+
+      $vm.selectedPositions = ko.computed(function(){
+        var order = $vm.selectedOrder();
+
+        if(order === null) {
+          return [];
+        }
+
+        return ko.utils.arrayFilter(order.customerOrderPosition(), function(pos) {
+          return pos._isSelected();
+        })
+
+      }).extend({ rateLimit: 50 });
 
       $vm.selectedOrderPositions = ko.observableArray([]);
 

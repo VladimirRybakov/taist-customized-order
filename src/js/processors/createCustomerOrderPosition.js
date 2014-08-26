@@ -42,6 +42,7 @@ module.exports = function (options) {
 
   koData._available = ko.observable('');
   koData._availableInfo = ko.observable('');
+  koData._isSelected = ko.observable(false);
 
   $queue.push({
     req: function(callback){
