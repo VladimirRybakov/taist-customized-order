@@ -767,6 +767,11 @@ module.exports = function() {
         return materials;
       };
 
+  if($vm.selectedOrder()._customer() == '') {
+    alert('Выберите контрагента перед сохранением заказа');
+    return false;
+  }
+
   plan = $.extend(true, {}, $vm.selectedPlan().data);
   plan.name = $vm.selectedOrder()._name();
   plan.parentUuid = $vm.orderPlanFolder().uuid;
