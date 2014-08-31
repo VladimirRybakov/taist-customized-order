@@ -113,6 +113,9 @@ function onStart(_taistApi) {
         .css({
           width: 24,
           cursor: 'pointer',
+          position: 'absolute',
+          right: 40,
+          top: 60,
         })
         .click(function(){
           $(settingsDiv).toggle();
