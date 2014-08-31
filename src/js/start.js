@@ -63,6 +63,11 @@ function onStart(_taistApi) {
 
       taistOptions || (taistOptions = {});
 
+      if(taistOptions.moyskladClientUser && taistOptions.moyskladClientUser.length > 0
+      && taistOptions.moyskladClientPass && taistOptions.moyskladClientPass.length > 0) {
+        $client.setAuth(taistOptions.moyskladClientUser, taistOptions.moyskladClientPass);
+      }
+
       $div = $('<div id="taist">')
         .css({display: 'none'})
         .prependTo('body');

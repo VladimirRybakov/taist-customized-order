@@ -26,10 +26,13 @@ module.exports = {
 
     function saveTaistOptions(){
       $api.companyData.set('taistOptions', {
-        basePlanFolder:    ($vm.basePlanFolder()    || {}).uuid,
-        orderPlanFolder:   ($vm.orderPlanFolder()   || {}).uuid,
-        selectedWarehouse: ($vm.selectedWarehouse() || {}).uuid,
-        selectedCompany:   ($vm.selectedCompany()   || {}).uuid,
+        basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
+        orderPlanFolder:    ($vm.orderPlanFolder()    || {}).uuid,
+        selectedWarehouse:  ($vm.selectedWarehouse()  || {}).uuid,
+        selectedCompany:    ($vm.selectedCompany()    || {}).uuid,
+
+        moyskladClientUser: $vm.moyskladClientUser(),
+        moyskladClientPass: $vm.moyskladClientPass(),
       }, function(){});
     }
 
@@ -123,6 +126,28 @@ module.exports = {
     $vm.orderPlanFolder.subscribe(saveTaistOptions);
     $vm.selectedWarehouse.subscribe(saveTaistOptions);
     $vm.selectedCompany.subscribe(saveTaistOptions);
+
+    $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
+    $('<div>')
+      .text('Имя пользователя')
+      .appendTo(div);
+    $('<input>')
+      .attr('data-bind', 'value: moyskladClientUser')
+      .css({ width: 400 })
+      .appendTo(div);
+
+    $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
+    $('<div>')
+      .text('Пароль')
+      .appendTo(div);
+    $('<input>')
+      .attr('data-bind', 'value: moyskladClientPass')
+      .attr('type', 'password')
+      .css({ width: 400 })
+      .appendTo(div);
+
+    $vm.moyskladClientUser.subscribe(saveTaistOptions);
+    $vm.moyskladClientPass.subscribe(saveTaistOptions);
 
     return div;
   }
