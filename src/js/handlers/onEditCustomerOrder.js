@@ -67,7 +67,7 @@ module.exports = function() {
     $client.load('CustomerOrder', uuid, function(dummy, orderData){
 
       var good;
-      order = $.extend({}, orderData);
+      order = $.extend({description: ''}, orderData);
       lazyLoader = $client.createLazyLoader();
       lazyLoader.attach(order, ['customerOrderPosition.good']);
       for(i = 0, l = order.customerOrderPosition.length; i < l; i += 1) {
@@ -95,6 +95,7 @@ module.exports = function() {
           'created',
           'createdBy',
           '//customerOrderPosition[]',
+          '//description',
           'externalcode',
           'moment',
           '//name',

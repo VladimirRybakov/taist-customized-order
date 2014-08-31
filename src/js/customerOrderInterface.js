@@ -151,7 +151,22 @@ module.exports = {
         item.custom(elem);
       }
     })
-
     table.appendTo(container);
+
+    div = $('<div>').appendTo(container);
+    $('<div>')
+      .text('Комментарий к заказу:')
+      .css({
+        margin: 12
+      })
+      .appendTo(div);
+    $('<textarea>')
+      .attr('data-bind', 'value: selectedOrder().description')
+      .css({
+        width: 600,
+        height: 80,
+        margin: 12,
+      })
+      .appendTo(div);
   }
 }

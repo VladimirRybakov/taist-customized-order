@@ -163,8 +163,23 @@ module.exports = {
         item.custom(elem);
       }
     })
-
     table.appendTo(container);
+
+    div = $('<div>').appendTo(container);
+    $('<div>')
+      .text('Комментарий к заказу:')
+      .css({
+        margin: 12
+      })
+      .appendTo(div);
+    $('<textarea>')
+      .attr('data-bind', 'value: selectedOrder().description')
+      .css({
+        width: 600,
+        height: 80,
+        margin: 12,
+      })
+      .appendTo(div);
   }
 }
 
@@ -423,7 +438,7 @@ module.exports = function() {
     $client.load('CustomerOrder', uuid, function(dummy, orderData){
 
       var good;
-      order = $.extend({}, orderData);
+      order = $.extend({description: ''}, orderData);
       lazyLoader = $client.createLazyLoader();
       lazyLoader.attach(order, ['customerOrderPosition.good']);
       for(i = 0, l = order.customerOrderPosition.length; i < l; i += 1) {
@@ -451,6 +466,7 @@ module.exports = function() {
           'created',
           'createdBy',
           '//customerOrderPosition[]',
+          '//description',
           'externalcode',
           'moment',
           '//name',
