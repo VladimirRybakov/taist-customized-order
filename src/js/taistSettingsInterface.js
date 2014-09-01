@@ -25,20 +25,25 @@ module.exports = {
     }
 
     function saveTaistOptions(){
+      var processingPlans = [];
+      $vm.baseProcessingPlans().forEach(function(plan){
+        processingPlans.push(plan.data);
+      })
+
       $api.companyData.set('taistOptions', {
         basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
         orderPlanFolder:    ($vm.orderPlanFolder()    || {}).uuid,
         selectedWarehouse:  ($vm.selectedWarehouse()  || {}).uuid,
         selectedCompany:    ($vm.selectedCompany()    || {}).uuid,
 
+        processingPlans:    processingPlans,
+        processingPlansFolder: $vm.processingPlanFolders(),
+
         moyskladClientUser: $vm.moyskladClientUser(),
         moyskladClientPass: $vm.moyskladClientPass(),
       }, function(){});
     }
 
-    // var container = $('.b-main-panel .info tr'),
-    //     td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">')
-    //       .appendTo(container),
     var div = $('<div>')
           .css({
             position: 'absolute',
@@ -53,16 +58,20 @@ module.exports = {
           .html("<h2>Настройки</h2>");
           // .appendTo(td);
 
-    var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
-    $vm.processingPlanFolders = ko.observableArray(
-      parseCollection(processingPlanFolders, 'moysklad.processingPlanFolder')
-    );
+    if(typeof taistOptions.processingPlansFolder === 'undefined') {
+      var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
+      $vm.processingPlanFolders = ko.observableArray(
+        parseCollection(processingPlanFolders, 'moysklad.processingPlanFolder')
+      ).extend({ rateLimit: 50 });
+    } else {
+      $vm.processingPlanFolders = ko.observableArray(taistOptions.processingPlansFolder);
+    }
 
     $vm.basePlanFolder = ko.observable(
       ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
           return plan.uuid == taistOptions.basePlanFolder;
       })
-    );
+    ).extend({ rateLimit: 50 });
 
     $("<div>")
       .text("Папка с базовыми технологическими картами/шаблонами")
@@ -76,7 +85,7 @@ module.exports = {
       ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
           return plan.uuid == taistOptions.orderPlanFolder;
       })
-    );
+    ).extend({ rateLimit: 50 });
 
     $("<div>")
       .text("Папка для производных технологических карт")

@@ -1065,22 +1065,28 @@ function onStart(_taistApi) {
 
       div.appendTo($div);
 
-      $vm.processingPlans = ko.observableArray([]);
+      $vm.processingPlans = ko.observableArray([]).extend({ rateLimit: 50 });
 
       $vm.selectedPlan = ko.observable(null);
       $vm.basePlan = ko.observable(null);
 
-      var processingPlans = $client.from('ProcessingPlan').load();
+      var processingPlans;
+
+      if(typeof taistOptions.processingPlans === 'undefined') {
+        processingPlans = $client.from('ProcessingPlan').load();
+      } else {
+        processingPlans = taistOptions.processingPlans;
+      }
+
       require('./utils').parseProcessingPlans(processingPlans);
 
       $vm.baseProcessingPlans = ko.computed(function(){
         return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
           return plan.data.parentUuid === taistOptions.basePlanFolder;
         });
-      }).extend({ throttle: 1 });
+      }).extend({ rateLimit: 1 });
 
       var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
-      // ko.applyBindings($vm, settingsDiv[0]);
       settingsDiv.appendTo($div);
       ko.applyBindings($vm, $div[0]);
 
@@ -1181,11 +1187,19 @@ module.exports = {
     }
 
     function saveTaistOptions(){
+      var processingPlans = [];
+      $vm.baseProcessingPlans().forEach(function(plan){
+        processingPlans.push(plan.data);
+      })
+
       $api.companyData.set('taistOptions', {
         basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
         orderPlanFolder:    ($vm.orderPlanFolder()    || {}).uuid,
         selectedWarehouse:  ($vm.selectedWarehouse()  || {}).uuid,
         selectedCompany:    ($vm.selectedCompany()    || {}).uuid,
+
+        processingPlans:    processingPlans,
+        processingPlansFolder: $vm.processingPlanFolders(),
 
         moyskladClientUser: $vm.moyskladClientUser(),
         moyskladClientPass: $vm.moyskladClientPass(),
@@ -1209,16 +1223,20 @@ module.exports = {
           .html("<h2>Настройки</h2>");
           // .appendTo(td);
 
-    var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
-    $vm.processingPlanFolders = ko.observableArray(
-      parseCollection(processingPlanFolders, 'moysklad.processingPlanFolder')
-    );
+    if(typeof taistOptions.processingPlansFolder === 'undefined') {
+      var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
+      $vm.processingPlanFolders = ko.observableArray(
+        parseCollection(processingPlanFolders, 'moysklad.processingPlanFolder')
+      ).extend({ rateLimit: 50 });
+    } else {
+      $vm.processingPlanFolders = ko.observableArray(taistOptions.processingPlansFolder);
+    }
 
     $vm.basePlanFolder = ko.observable(
       ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
           return plan.uuid == taistOptions.basePlanFolder;
       })
-    );
+    ).extend({ rateLimit: 50 });
 
     $("<div>")
       .text("Папка с базовыми технологическими картами/шаблонами")
@@ -1232,7 +1250,7 @@ module.exports = {
       ko.utils.arrayFirst($vm.processingPlanFolders(), function(plan) {
           return plan.uuid == taistOptions.orderPlanFolder;
       })
-    );
+    ).extend({ rateLimit: 50 });
 
     $("<div>")
       .text("Папка для производных технологических карт")

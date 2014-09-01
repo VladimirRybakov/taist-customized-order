@@ -86,22 +86,28 @@ function onStart(_taistApi) {
 
       div.appendTo($div);
 
-      $vm.processingPlans = ko.observableArray([]);
+      $vm.processingPlans = ko.observableArray([]).extend({ rateLimit: 50 });
 
       $vm.selectedPlan = ko.observable(null);
       $vm.basePlan = ko.observable(null);
 
-      var processingPlans = $client.from('ProcessingPlan').load();
+      var processingPlans;
+
+      if(typeof taistOptions.processingPlans === 'undefined') {
+        processingPlans = $client.from('ProcessingPlan').load();
+      } else {
+        processingPlans = taistOptions.processingPlans;
+      }
+
       require('./utils').parseProcessingPlans(processingPlans);
 
       $vm.baseProcessingPlans = ko.computed(function(){
         return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
           return plan.data.parentUuid === taistOptions.basePlanFolder;
         });
-      }).extend({ throttle: 1 });
+      }).extend({ rateLimit: 1 });
 
       var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
-      // ko.applyBindings($vm, settingsDiv[0]);
       settingsDiv.appendTo($div);
       ko.applyBindings($vm, $div[0]);
 
