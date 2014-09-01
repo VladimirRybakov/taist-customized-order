@@ -45,6 +45,11 @@ module.exports = function() {
 
   $api.companyData.get(uuid, function(error, taistOrderData) {
 
+    if(typeof taistOrderData === 'undefined') {
+      $('body').removeClass('newOrderInterface');
+      return;
+    }
+
     $vm.basePlan(
       ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
         return plan.uuid == taistOrderData.baseTemplate;

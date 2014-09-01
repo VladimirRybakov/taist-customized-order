@@ -416,6 +416,11 @@ module.exports = function() {
 
   $api.companyData.get(uuid, function(error, taistOrderData) {
 
+    if(typeof taistOrderData === 'undefined') {
+      $('body').removeClass('newOrderInterface');
+      return;
+    }
+
     $vm.basePlan(
       ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
         return plan.uuid == taistOrderData.baseTemplate;
@@ -1206,9 +1211,6 @@ module.exports = {
       }, function(){});
     }
 
-    // var container = $('.b-main-panel .info tr'),
-    //     td = $('<td align="left" style="vertical-align: top; padding-left: 20px;">')
-    //       .appendTo(container),
     var div = $('<div>')
           .css({
             position: 'absolute',
