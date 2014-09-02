@@ -14,6 +14,7 @@ module.exports = function() {
       templateUuid = $vm.selectedOrder()._template(),
 
       saveOrder = function(templateUuid){
+        $log('#saveOrder', order);
         $client.save("moysklad.customerOrder", order, function(dummy, order){
           $log('Order saved');
           $api.companyData.set(order.uuid, {
@@ -61,7 +62,9 @@ module.exports = function() {
     products = plan.product;
     plan.product = [];
     delete(plan.uuid);
+    delete(plan.updated);
 
+    $log("savePlan", plan);
     $client.save("moysklad.processingPlan", plan, function(error, plan){
 
       plan.material = prepareMaterials(plan)

@@ -6,7 +6,7 @@ var $api = require('../globals/api'),
 
 function parseOrderData(order){
   var labels  = $('.b-operation-form-top td.label'),
-      widgets = $('.b-operation-form-top td.widget input:visible'),
+      widgets = $('.b-operation-form-top td.widget'),
       i, l,
       label,
       key,
@@ -26,7 +26,7 @@ function parseOrderData(order){
       if(typeof order[key] != 'function') {
         order[key] = ko.observable('');
       }
-      order[key]( $(widgets[i]).val() );
+      order[key]( $('input:first', widgets[i]).val() );
     }
   }
 }
@@ -49,6 +49,12 @@ module.exports = function() {
       $('body').removeClass('newOrderInterface');
       return;
     }
+
+    var processingPlans = $client.from('ProcessingPlan')
+      .select( { uuid: (taistOrderData.orderTemplate || taistOrderData.baseTemplate) } )
+      .load();
+
+    require('../utils').parseProcessingPlans(processingPlans);
 
     $vm.basePlan(
       ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
@@ -96,6 +102,7 @@ module.exports = function() {
           'accountId',
           'accountUuid',
           'applicable',
+          'attribute',
           'changeMode',
           'created',
           'createdBy',

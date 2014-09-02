@@ -377,7 +377,7 @@ var $api = require('../globals/api'),
 
 function parseOrderData(order){
   var labels  = $('.b-operation-form-top td.label'),
-      widgets = $('.b-operation-form-top td.widget input:visible'),
+      widgets = $('.b-operation-form-top td.widget'),
       i, l,
       label,
       key,
@@ -397,7 +397,7 @@ function parseOrderData(order){
       if(typeof order[key] != 'function') {
         order[key] = ko.observable('');
       }
-      order[key]( $(widgets[i]).val() );
+      order[key]( $('input:first', widgets[i]).val() );
     }
   }
 }
@@ -420,6 +420,12 @@ module.exports = function() {
       $('body').removeClass('newOrderInterface');
       return;
     }
+
+    var processingPlans = $client.from('ProcessingPlan')
+      .select( { uuid: (taistOrderData.orderTemplate || taistOrderData.baseTemplate) } )
+      .load();
+
+    require('../utils').parseProcessingPlans(processingPlans);
 
     $vm.basePlan(
       ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
@@ -467,6 +473,7 @@ module.exports = function() {
           'accountId',
           'accountUuid',
           'applicable',
+          'attribute',
           'changeMode',
           'created',
           'createdBy',
@@ -646,7 +653,7 @@ module.exports = function() {
   });
 }
 
-},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../handlers":9,"../processors":18,"../state":23}],15:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../handlers":9,"../processors":18,"../state":23,"../utils":25}],15:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
@@ -755,6 +762,7 @@ module.exports = function() {
       templateUuid = $vm.selectedOrder()._template(),
 
       saveOrder = function(templateUuid){
+        $log('#saveOrder', order);
         $client.save("moysklad.customerOrder", order, function(dummy, order){
           $log('Order saved');
           $api.companyData.set(order.uuid, {
@@ -802,7 +810,9 @@ module.exports = function() {
     products = plan.product;
     plan.product = [];
     delete(plan.uuid);
+    delete(plan.updated);
 
+    $log("savePlan", plan);
     $client.save("moysklad.processingPlan", plan, function(error, plan){
 
       plan.material = prepareMaterials(plan)
