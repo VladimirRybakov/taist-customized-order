@@ -36,7 +36,8 @@ module.exports = function (options) {
 
   if(!$vm.goods[goodUuid]) {
     $vm.goods[goodUuid] = {
-      name: ko.observable(goodUuid)
+      name: ko.observable(goodUuid),
+      unit: ko.observable(goodUuid)
     };
   }
 
@@ -67,6 +68,7 @@ module.exports = function (options) {
   });
 
   koData._name = $vm.goods[goodUuid].name;
+  koData._unit = $vm.goods[goodUuid].unit;
 
   koData._price = ko.computed(function(){
     return (this.price.sum()/100).toFixed(2).replace('.', ',');

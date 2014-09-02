@@ -57,6 +57,11 @@ function onStart(_taistApi) {
 
     $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
 
+    $vm.units = {};
+    $client.from('Uom').load().forEach(function(uom){
+      $vm.units[uom.uuid] = uom.name;
+    })
+
     $api.companyData.setCompanyKey($vm.companyUuid);
 
     $api.companyData.get('taistOptions', function(error, taistOptions){

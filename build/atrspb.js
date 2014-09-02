@@ -129,6 +129,7 @@ module.exports = {
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
+      { title: '', bind: 'text', var: '_unit' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
@@ -457,7 +458,8 @@ module.exports = function() {
         good = order.customerOrderPosition[i].good;
         if(!$vm.goods[good.uuid]) {
           $vm.goods[good.uuid] = {
-            name: ko.observable(good.name)
+            name: ko.observable(good.name),
+            unit: ko.observable($vm.units[good.uomUuid])
           };
         }
       }
@@ -886,7 +888,8 @@ module.exports = function (options) {
 
   if(!$vm.goods[goodUuid]) {
     $vm.goods[goodUuid] = {
-      name: ko.observable(goodUuid)
+      name: ko.observable(goodUuid),
+      unit: ko.observable(goodUuid)
     };
   }
 
@@ -917,6 +920,7 @@ module.exports = function (options) {
   });
 
   koData._name = $vm.goods[goodUuid].name;
+  koData._unit = $vm.goods[goodUuid].unit;
 
   koData._price = ko.computed(function(){
     return (this.price.sum()/100).toFixed(2).replace('.', ',');
@@ -1051,6 +1055,11 @@ function onStart(_taistApi) {
     require("./xmlhttpproxy").registerHandlers( xmlhttphandlers );
 
     $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
+
+    $vm.units = {};
+    $client.from('Uom').load().forEach(function(uom){
+      $vm.units[uom.uuid] = uom.name;
+    })
 
     $api.companyData.setCompanyKey($vm.companyUuid);
 
