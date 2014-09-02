@@ -17,6 +17,7 @@ function parseOrderData(order){
         'Склад': '_store',
         'Договор': '_contract',
         'План. дата отгрузки': '_date',
+        'Проект': '_project',
       };
 
   for(i = 0, l = labels.length; i < l; i += 1) {

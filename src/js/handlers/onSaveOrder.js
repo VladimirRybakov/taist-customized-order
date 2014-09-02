@@ -41,7 +41,7 @@ module.exports = function() {
             accountUuid: m.accountUuid,
             changeMode: "NONE",
             goodUuid: m.goodUuid(),
-            quantity: parseInt(m._quantityPerPresent(), 10),
+            quantity: parseFloat(m._quantityPerPresent()),
             readMode: "ALL"
           });
         }

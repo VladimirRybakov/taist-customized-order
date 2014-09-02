@@ -388,6 +388,7 @@ function parseOrderData(order){
         'Склад': '_store',
         'Договор': '_contract',
         'План. дата отгрузки': '_date',
+        'Проект': '_project',
       };
 
   for(i = 0, l = labels.length; i < l; i += 1) {
@@ -789,7 +790,7 @@ module.exports = function() {
             accountUuid: m.accountUuid,
             changeMode: "NONE",
             goodUuid: m.goodUuid(),
-            quantity: parseInt(m._quantityPerPresent(), 10),
+            quantity: parseFloat(m._quantityPerPresent()),
             readMode: "ALL"
           });
         }
