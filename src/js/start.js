@@ -106,6 +106,8 @@ function onStart(_taistApi) {
 
       require('./utils').parseProcessingPlans(processingPlans);
 
+      $vm.processingPlans.sort(function(a, b){return a.name < b.name ? -1 : 1});
+
       $vm.baseProcessingPlans = ko.computed(function(){
         return ko.utils.arrayFilter($vm.processingPlans(), function(plan) {
           return plan.data.parentUuid === taistOptions.basePlanFolder;
