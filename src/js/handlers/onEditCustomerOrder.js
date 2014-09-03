@@ -6,15 +6,22 @@ var $api = require('../globals/api'),
 
 module.exports = function() {
   var i, l, order, positions,
-      uuid = location.hash.match(/id=(.+)/)[1],
+      matches = location.hash.match(/id=(.+)/),
+      uuid,
       $log = $api.log;
-
-  $log('onEditCustomerOrder', uuid);
 
   var goodsDOMNode = $dom.getGoodsNode();
   ko.cleanNode(goodsDOMNode);
   $(goodsDOMNode).hide();
   $('tbody tr', goodsDOMNode).not(':first').remove();
+
+  if(matches === null) {
+    $('body').removeClass('newOrderInterface');
+    return;
+  }
+
+  uuid = matches[1];
+  $log('onEditCustomerOrder', uuid);
 
   $api.companyData.get(uuid, function(error, taistOrderData) {
 

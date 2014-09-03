@@ -31,13 +31,16 @@ module.exports = function() {
 
         for(key in mapping) {
           val = $vm.selectedOrder()[key]();
-          if(val !== ''){
-            mapObject = mapping[key];
+          mapObject = mapping[key];
+          if(val !== '') {
             uuid = $client.from(mapObject.collection)
               .select({name: val})
               .load()[0].uuid;
             order[mapObject.saveAs] = uuid;
             $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
+          }
+          else {
+            delete(order[mapObject.saveAs])
           }
         }
 
