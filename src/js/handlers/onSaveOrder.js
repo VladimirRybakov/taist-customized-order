@@ -5,8 +5,7 @@ module.exports = function() {
   var $log = $api.log;
   $log('onSaveOrder');
 
-  var order = ko.mapping.toJS($vm.selectedOrder),
-      i, l,
+  var i, l,
       plan,
       m,
       materials = [],
@@ -14,7 +13,36 @@ module.exports = function() {
       templateUuid = $vm.selectedOrder()._template(),
 
       saveOrder = function(templateUuid){
+        require('../processors/parseOrderAttributes')($vm.selectedOrder());
+        var order = ko.mapping.toJS($vm.selectedOrder),
+            mapping = {
+              //'_company',
+              //'_customer',
+              '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
+              //'_store',
+              '_contract' : { collection: 'Contract', saveAs: 'contractUuid' },
+              //'_date',
+              '_project'  : { collection: 'Project', saveAs: 'projectUuid' },
+            },
+            key,
+            mapObject,
+            val,
+            uuid;
+
+        for(key in mapping) {
+          val = $vm.selectedOrder()[key]();
+          if(val !== ''){
+            mapObject = mapping[key];
+            uuid = $client.from(mapObject.collection)
+              .select({name: val})
+              .load()[0].uuid;
+            order[mapObject.saveAs] = uuid;
+            $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
+          }
+        }
+
         $log('#saveOrder', order);
+
         $client.save("moysklad.customerOrder", order, function(dummy, order){
           $log('Order saved');
           $api.companyData.set(order.uuid, {

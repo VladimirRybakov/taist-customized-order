@@ -4,34 +4,6 @@ var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state');
 
-function parseOrderData(order){
-  var labels  = $('.b-operation-form-top td.label'),
-      widgets = $('.b-operation-form-top td.widget'),
-      i, l,
-      label,
-      key,
-      mapping = {
-        'Организация': '_company',
-        'Контрагент': '_customer',
-        'Сотрудник': '_manager',
-        'Склад': '_store',
-        'Договор': '_contract',
-        'План. дата отгрузки': '_date',
-        'Проект': '_project',
-      };
-
-  for(i = 0, l = labels.length; i < l; i += 1) {
-    label = $(labels[i]).text();
-    key = mapping[label]
-    if(typeof key !== 'undefined') {
-      if(typeof order[key] != 'function') {
-        order[key] = ko.observable('');
-      }
-      order[key]( $('input:first', widgets[i]).val() );
-    }
-  }
-}
-
 module.exports = function() {
   var i, l, order, positions,
       uuid = location.hash.match(/id=(.+)/)[1],
@@ -79,7 +51,11 @@ module.exports = function() {
     $client.load('CustomerOrder', uuid, function(dummy, orderData){
 
       var good;
-      order = $.extend({description: ''}, orderData);
+      order = $.extend({
+        description: '',
+        _contract: ''
+      }, orderData);
+
       lazyLoader = $client.createLazyLoader();
       lazyLoader.attach(order, ['customerOrderPosition.good']);
       for(i = 0, l = order.customerOrderPosition.length; i < l; i += 1) {
@@ -185,7 +161,7 @@ module.exports = function() {
         return name;
       }, order);
 
-      parseOrderData(order);
+      require('../processors/parseOrderAttributes')(order);
 
       function redefineButtons(parent, id){
         var btn, div = $('#' + id);

@@ -29,7 +29,7 @@ var registerXMLHttpHandlers = function (handlers) {
                 handlers[handlerName](args, self.responseText);
               }
               else {
-                $api.log('REQUEST', service, method, self.responseText);
+                //$api.log('REQUEST', service, method, self.responseText);
               }
             }
           }
