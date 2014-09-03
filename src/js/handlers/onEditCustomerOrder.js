@@ -53,7 +53,6 @@ module.exports = function() {
       var good;
       order = $.extend({
         description: '',
-        _contract: ''
       }, orderData);
 
       lazyLoader = $client.createLazyLoader();
@@ -111,6 +110,7 @@ module.exports = function() {
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
+      order._project = ko.observable('');
 
       $vm.selectedOrder(order);
 
@@ -156,7 +156,7 @@ module.exports = function() {
         var name = ($vm.selectedOrder()._customName() !== ''
             ? $vm.selectedOrder()._customName()
             : $vm.basePlan().name)
-          + ' - ' + this._customer()
+          + ' - ' + this._project()
           + ' - ' + this._presentsCount() + 'шт.';
         return name;
       }, order);
