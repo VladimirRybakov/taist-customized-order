@@ -62,6 +62,14 @@ function onStart(_taistApi) {
       $vm.units[uom.uuid] = uom.name;
     })
 
+    $vm.states = {};
+    $client.from('Workflow')
+      .select({code: 'CustomerOrder'})
+      .load()[0].state.forEach(function(state){
+        $vm.states[state.name] = state.uuid;
+      })
+
+
     $api.companyData.setCompanyKey($vm.companyUuid);
 
     $api.companyData.get('taistOptions', function(error, taistOptions){

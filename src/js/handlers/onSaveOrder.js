@@ -44,6 +44,8 @@ module.exports = function() {
           }
         }
 
+        order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
+
         $log('#saveOrder', order);
 
         $client.save("moysklad.customerOrder", order, function(dummy, order){

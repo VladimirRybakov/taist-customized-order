@@ -21,7 +21,7 @@ module.exports = function (order){
     label = $(labels[i]).text();
     key = mapping[label]
     if(typeof key !== 'undefined') {
-      if(typeof order[key] != 'function') {
+      if(typeof order[key] !== 'function') {
         order[key] = ko.observable('');
       }
       val = $('input:first', widgets[i]).val();
@@ -29,4 +29,10 @@ module.exports = function (order){
       order[key](val);
     }
   }
+
+  val = $('.state-panel').text();
+  if(typeof order._state !== 'function') {
+    order._state = ko.observable('');
+  }
+  order._state(val);
 }

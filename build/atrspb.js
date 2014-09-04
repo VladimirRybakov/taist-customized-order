@@ -778,6 +778,8 @@ module.exports = function() {
           }
         }
 
+        order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
+
         $log('#saveOrder', order);
 
         $client.save("moysklad.customerOrder", order, function(dummy, order){
@@ -1002,7 +1004,7 @@ module.exports = function (order){
     label = $(labels[i]).text();
     key = mapping[label]
     if(typeof key !== 'undefined') {
-      if(typeof order[key] != 'function') {
+      if(typeof order[key] !== 'function') {
         order[key] = ko.observable('');
       }
       val = $('input:first', widgets[i]).val();
@@ -1010,6 +1012,12 @@ module.exports = function (order){
       order[key](val);
     }
   }
+
+  val = $('.state-panel').text();
+  if(typeof order._state !== 'function') {
+    order._state = ko.observable('');
+  }
+  order._state(val);
 }
 
 },{"../globals/api":4}],22:[function(require,module,exports){
@@ -1108,6 +1116,14 @@ function onStart(_taistApi) {
     $client.from('Uom').load().forEach(function(uom){
       $vm.units[uom.uuid] = uom.name;
     })
+
+    $vm.states = {};
+    $client.from('Workflow')
+      .select({code: 'CustomerOrder'})
+      .load()[0].state.forEach(function(state){
+        $vm.states[state.name] = state.uuid;
+      })
+
 
     $api.companyData.setCompanyKey($vm.companyUuid);
 
