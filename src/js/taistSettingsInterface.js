@@ -1,5 +1,6 @@
-var $api = require('./globals/api');
-var $client = require('./globals/client');
+var $api = require('./globals/api'),
+    $client = require('./globals/client'),
+    $vm = require('./globals/vm');
 
 module.exports = {
   create: function (taistOptions) {
@@ -29,6 +30,10 @@ module.exports = {
       $vm.baseProcessingPlans().forEach(function(plan){
         processingPlans.push(plan.data);
       })
+
+      if(processingPlans.length === 0) {
+        processingPlans = undefined;
+      }
 
       $api.companyData.set('taistOptions', {
         basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
@@ -91,6 +96,15 @@ module.exports = {
           return plan.uuid == taistOptions.orderPlanFolder;
       })
     ).extend({ rateLimit: 50 });
+
+    $("<div>").appendTo(div);
+    $("<button>")
+      .text("Очистить список шалбонов")
+      .click(function(){
+        $vm.processingPlans.removeAll();
+        saveTaistOptions();
+      })
+      .appendTo(div);
 
     $("<div>")
       .text("Папка для производных технологических карт")
