@@ -39,6 +39,11 @@ module.exports = {
         processingPlans:    processingPlans,
         processingPlansFolder: $vm.processingPlanFolders(),
 
+        // moyskladClientUser: $vm.moyskladClientUser(),
+        // moyskladClientPass: $vm.moyskladClientPass(),
+      }, function(){});
+
+      $api.userData.set('taistOptions', {
         moyskladClientUser: $vm.moyskladClientUser(),
         moyskladClientPass: $vm.moyskladClientPass(),
       }, function(){});
@@ -136,7 +141,6 @@ module.exports = {
     $vm.selectedWarehouse.subscribe(saveTaistOptions);
     $vm.selectedCompany.subscribe(saveTaistOptions);
 
-    $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
     $('<div>')
       .text('Имя пользователя')
       .appendTo(div);
@@ -145,7 +149,6 @@ module.exports = {
       .css({ width: 400 })
       .appendTo(div);
 
-    $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
     $('<div>')
       .text('Пароль')
       .appendTo(div);
