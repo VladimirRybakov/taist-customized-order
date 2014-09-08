@@ -112,6 +112,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   if(typeof taistOptions.processingPlans === 'undefined') {
     processingPlans = $client.from('ProcessingPlan').load();
+    require('./utils').saveTaistOptions();    
   } else {
     processingPlans = taistOptions.processingPlans;
   }

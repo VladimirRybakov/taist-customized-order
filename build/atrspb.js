@@ -1221,6 +1221,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   if(typeof taistOptions.processingPlans === 'undefined') {
     processingPlans = $client.from('ProcessingPlan').load();
+    require('./utils').saveTaistOptions();    
   } else {
     processingPlans = taistOptions.processingPlans;
   }
@@ -1327,7 +1328,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":24,"./taistSettingsInterface":25,"./utils":26,"./xmlhttphandlers":27,"./xmlhttpproxy":28}],24:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":24,"./taistSettingsInterface":25,"./utils":26,"./xmlhttphandlers":29,"./xmlhttpproxy":30}],24:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1370,32 +1371,7 @@ module.exports = {
     }
 
     function saveTaistOptions(){
-      var processingPlans = [];
-      $vm.baseProcessingPlans().forEach(function(plan){
-        processingPlans.push(plan.data);
-      })
-
-      if(processingPlans.length === 0) {
-        processingPlans = undefined;
-      }
-
-      $api.companyData.set('taistOptions', {
-        basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
-        orderPlanFolder:    ($vm.orderPlanFolder()    || {}).uuid,
-        selectedWarehouse:  ($vm.selectedWarehouse()  || {}).uuid,
-        selectedCompany:    ($vm.selectedCompany()    || {}).uuid,
-
-        processingPlans:    processingPlans,
-        processingPlansFolder: $vm.processingPlanFolders(),
-
-        // moyskladClientUser: $vm.moyskladClientUser(),
-        // moyskladClientPass: $vm.moyskladClientPass(),
-      }, function(){});
-
-      $api.userData.set('taistOptions', {
-        moyskladClientUser: $vm.moyskladClientUser(),
-        moyskladClientPass: $vm.moyskladClientPass(),
-      }, function(){});
+      require('./utils').saveTaistOptions();
     }
 
     var div = $('<div>')
@@ -1524,40 +1500,77 @@ module.exports = {
 
 }
 
-},{"./globals/api":4,"./globals/client":6,"./globals/vm":8}],26:[function(require,module,exports){
-var $vm = require('./globals/vm');
-
+},{"./globals/api":4,"./globals/client":6,"./globals/vm":8,"./utils":26}],26:[function(require,module,exports){
 module.exports = {
-  parseProcessingPlans: function(plans) {
-    var i, l, j, k,
-        plan;
+  parseProcessingPlans: require('./utils/parseProcessingPlans'),
+  saveTaistOptions: require('./utils/saveTaistOptions'),
+}
 
-    for(i = 0, l = plans.length; i < l; i += 1) {
-      plan = plans[i];
+},{"./utils/parseProcessingPlans":27,"./utils/saveTaistOptions":28}],27:[function(require,module,exports){
+var $vm = require('../globals/vm');
 
-      if(plan.material) {
-        var materials = {};
+module.exports = function(plans) {
+  var i, l, j, k,
+      plan;
 
-        for(j = 0, k = plan.material.length; j < k; j += 1 ) {
-          materials[plan.material[j].goodUuid] = plan.material[j].quantity;
-        }
+  for(i = 0, l = plans.length; i < l; i += 1) {
+    plan = plans[i];
 
-        $vm.processingPlans.remove(function(item) {
-          return item.uuid === plan.uuid
-        });
+    if(plan.material) {
+      var materials = {};
 
-        $vm.processingPlans.push({
-          uuid: plan.uuid,
-          name: plan.name,
-          data: plan,
-          materials: materials,
-        });
+      for(j = 0, k = plan.material.length; j < k; j += 1 ) {
+        materials[plan.material[j].goodUuid] = plan.material[j].quantity;
       }
+
+      $vm.processingPlans.remove(function(item) {
+        return item.uuid === plan.uuid
+      });
+
+      $vm.processingPlans.push({
+        uuid: plan.uuid,
+        name: plan.name,
+        data: plan,
+        materials: materials,
+      });
     }
   }
 }
 
-},{"./globals/vm":8}],27:[function(require,module,exports){
+},{"../globals/vm":8}],28:[function(require,module,exports){
+var $api = require('../globals/api'),
+    $vm = require('../globals/vm');
+
+module.exports = function() {
+  var processingPlans = [];
+  $vm.baseProcessingPlans().forEach(function(plan){
+    processingPlans.push(plan.data);
+  })
+
+  if(processingPlans.length === 0) {
+    processingPlans = undefined;
+  }
+
+  $api.companyData.set('taistOptions', {
+    basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
+    orderPlanFolder:    ($vm.orderPlanFolder()    || {}).uuid,
+    selectedWarehouse:  ($vm.selectedWarehouse()  || {}).uuid,
+    selectedCompany:    ($vm.selectedCompany()    || {}).uuid,
+
+    processingPlans:    processingPlans,
+    processingPlansFolder: $vm.processingPlanFolders(),
+
+    // moyskladClientUser: $vm.moyskladClientUser(),
+    // moyskladClientPass: $vm.moyskladClientPass(),
+  }, function(){});
+
+  $api.userData.set('taistOptions', {
+    moyskladClientUser: $vm.moyskladClientUser(),
+    moyskladClientPass: $vm.moyskladClientPass(),
+  }, function(){});
+}
+
+},{"../globals/api":4,"../globals/vm":8}],29:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $api    = require('./globals/api'),
     $client = require('./globals/client'),
@@ -1671,7 +1684,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":18,"./state":24}],28:[function(require,module,exports){
+},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":18,"./state":24}],30:[function(require,module,exports){
 var $api = require("./globals/api");
 
 var registerXMLHttpHandlers = function (handlers) {
