@@ -1,5 +1,6 @@
 var $api = require('../globals/api'),
-    $client = require('../globals/client');
+    $client = require('../globals/client'),
+    $vm = require('../globals/vm');
 
 module.exports = function() {
   var $log = $api.log;
@@ -11,9 +12,7 @@ module.exports = function() {
       materials = [],
       products = [],
       templateUuid = $vm.selectedOrder()._template(),
-
       saveOrder = function(templateUuid){
-        require('../processors/parseOrderAttributes')($vm.selectedOrder());
         var order = ko.mapping.toJS($vm.selectedOrder),
             mapping = {
               //'_company',
@@ -123,6 +122,8 @@ module.exports = function() {
         }
         return materials;
       };
+
+  require('../processors/parseOrderAttributes')($vm.selectedOrder());
 
   if($vm.selectedOrder()._customer() == '') {
     alert('Выберите контрагента перед сохранением заказа');

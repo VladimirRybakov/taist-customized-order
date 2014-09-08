@@ -734,7 +734,8 @@ module.exports = function(doesUserWantToReserve){
 
 },{"../globals/vm":8,"../handlers":9}],17:[function(require,module,exports){
 var $api = require('../globals/api'),
-    $client = require('../globals/client');
+    $client = require('../globals/client'),
+    $vm = require('../globals/vm');
 
 module.exports = function() {
   var $log = $api.log;
@@ -746,9 +747,7 @@ module.exports = function() {
       materials = [],
       products = [],
       templateUuid = $vm.selectedOrder()._template(),
-
       saveOrder = function(templateUuid){
-        require('../processors/parseOrderAttributes')($vm.selectedOrder());
         var order = ko.mapping.toJS($vm.selectedOrder),
             mapping = {
               //'_company',
@@ -859,6 +858,8 @@ module.exports = function() {
         return materials;
       };
 
+  require('../processors/parseOrderAttributes')($vm.selectedOrder());
+
   if($vm.selectedOrder()._customer() == '') {
     alert('Выберите контрагента перед сохранением заказа');
     return false;
@@ -903,7 +904,7 @@ module.exports = function() {
   }
 };
 
-},{"../globals/api":4,"../globals/client":6,"../processors/parseOrderAttributes":21,"../utils":26}],18:[function(require,module,exports){
+},{"../globals/api":4,"../globals/client":6,"../globals/vm":8,"../processors/parseOrderAttributes":21,"../utils":26}],18:[function(require,module,exports){
 module.exports = {
   createCustomerOrderPosition: require('./processors/createCustomerOrderPosition'),
   createSumObject: require('./processors/createSumObject'),
