@@ -3,6 +3,8 @@ var $app    = require('./globals/app'),
     $client = require('./globals/client'),
     STATE   = require('./state');
 
+
+
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
     // $api.log('CommonService.getItemTO', requestData, responseText);
@@ -15,18 +17,21 @@ module.exports = {
       return false;
     }
 
-    var matches = responseText.match(/"Good","([^"]+)","(([^"]|\\\")+?)","([^"]+)"\]/);
+    var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/
+    var matches = responseText.match(pattern);
+
     if(matches) {
-      // $api.log('MATCHED GOOD', matches);
+      $api.log('CommonService.getItemTO', 'Good Found', matches[2]);
+
       $app.changeState(STATE.ORDER.newGoodSelected, {
-        uuid: matches[4],
-        name: matches[2],
+        uuid: matches[2],
+        name: $client.from(matches[1]).select({uuid: matches[2]}).load()[0].name,
+        type: matches[1]
       });
     }
   },
 
   'ConsignmentService.getGoodConsignmentList': function(requestData, responseText){
-
   },
 
   'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
@@ -37,11 +42,12 @@ module.exports = {
     }
 
     $api.log('New position', state.data);
-    $client.load('Good', state.data.uuid, function(dummy, good){
+    $client.load(state.data.type, state.data.uuid, function(dummy, good){
 
       if(!$vm.goods[good.uuid]) {
         $vm.goods[good.uuid] = {
-          name: ko.observable(good.name)
+          name: ko.observable(good.name),
+          unit: ko.observable($vm.units[good.uomUuid]),
         };
       }
 
