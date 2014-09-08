@@ -981,33 +981,42 @@ module.exports = function (options) {
 }
 
 },{}],21:[function(require,module,exports){
-var $api = require('../globals/api');
+var $api = require('../globals/api'),
+    $vm = require('../globals/vm');
 
 module.exports = function (order){
-  var labels  = $('.b-operation-form-top td.label'),
-      widgets = $('.b-operation-form-top td.widget'),
+  var labels  = $('.b-operation-form-top td.label,  .b-operation-form-bottom td.legend'),
+      widgets = $('.b-operation-form-top td.widget, .b-operation-form-bottom td.widget'),
       i, l,
       label,
       key,
+      input,
       val,
+      attrs = $vm.orderAttributes,
       mapping = {
-        'Организация'         : '_company',
-        'Контрагент'          : '_customer',
-        'Сотрудник'           : '_employee',
-        'Склад'               : '_store',
-        'Договор'             : '_contract',
-        'План. дата отгрузки' : '_date',
-        'Проект'              : '_project',
+        'Организация'             : '_company',
+        'Контрагент'              : '_customer',
+        'Сотрудник'               : '_employee',
+        'Склад'                   : '_store',
+        'Договор'                 : '_contract',
+        'План. дата отгрузки'     : '_date',
+        'Проект'                  : '_project',
       };
+
+  for(i = 0, l = attrs.length; i < l; i += 1) {
+    mapping[attrs[i].name] = '$' + attrs[i].uuid;
+  }
 
   for(i = 0, l = labels.length; i < l; i += 1) {
     label = $(labels[i]).text();
+    $api.log($(labels[i]).text());
     key = mapping[label]
     if(typeof key !== 'undefined') {
       if(typeof order[key] !== 'function') {
         order[key] = ko.observable('');
       }
-      val = $('input:first', widgets[i]).val();
+      input = $('textarea:first,input:first', widgets[i]);
+      val = input.attr('type') == 'checkbox' ? input[0].checked : input.val();
       $api.log('order attributes', key, val);
       order[key](val);
     }
@@ -1020,7 +1029,7 @@ module.exports = function (order){
   order._state(val);
 }
 
-},{"../globals/api":4}],22:[function(require,module,exports){
+},{"../globals/api":4,"../globals/vm":8}],22:[function(require,module,exports){
 var $api = require('./globals/api'),
     queue = [],
     isInProgress = false;
@@ -1124,6 +1133,30 @@ function onStart(_taistApi) {
         $vm.states[state.name] = state.uuid;
       })
 
+    $vm.attrDicts = {};
+    $vm.orderAttributes = $client
+      .from('embeddedEntityMetadata')
+      .select({name: 'CustomerOrder'})
+      .load()[0].attributeMetadata
+      .map(function(attr) {
+        if(attr.dictionaryMetadataUuid) {
+            $vm.attrDicts[attr.dictionaryMetadataUuid] = {}
+            $client
+              .from('customEntity')
+              .select({entityMetadataUuid: attr.dictionaryMetadataUuid})
+              .load().forEach(function(entity){
+                $vm.attrDicts[attr.dictionaryMetadataUuid][entity.name] = entity.uuid;
+              });
+        }
+
+        return {
+          attrType: attr.attrType,
+          uuid: attr.uuid,
+          name: attr.name,
+          entityMetadataUuid: attr.entityMetadataUuid,
+          dictionaryMetadataUuid: attr.dictionaryMetadataUuid,
+        }
+      });
 
     $api.companyData.setCompanyKey($vm.companyUuid);
 
