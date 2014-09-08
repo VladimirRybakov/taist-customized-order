@@ -498,6 +498,7 @@ module.exports = function() {
       for(i = 0, l = positions.length; i < l; i +=1){
         positions[i]._quantity = ko.computed(function(){
           var quantity = this._quantityPerPresent() * order._presentsCount();
+          quantity = Math.round(quantity * 1000000)/1000000;
           this.quantity(quantity);
           return quantity;
         }, positions[i]);
@@ -1617,6 +1618,7 @@ module.exports = {
       var order = $vm.selectedOrder();
       position._quantity = ko.computed(function(){
         var quantity = this._quantityPerPresent() * order._presentsCount();
+        quantity = Math.round(quantity * 1000000)/1000000;
         this.quantity(quantity);
         return quantity;
       }, position);
