@@ -121,7 +121,7 @@ module.exports = {
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
-      { title: 'Цена', bind: 'text', var: '_price', cls: 'tar' },
+      { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
       // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },

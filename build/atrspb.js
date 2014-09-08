@@ -133,7 +133,7 @@ module.exports = {
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
-      { title: 'Цена', bind: 'text', var: '_price', cls: 'tar' },
+      { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
       // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
@@ -983,9 +983,15 @@ module.exports = function (options) {
   koData._name = $vm.goods[goodUuid].name;
   koData._unit = $vm.goods[goodUuid].unit;
 
-  koData._price = ko.computed(function(){
-    return (this.price.sum()/100).toFixed(2).replace('.', ',');
-  }, koData);
+  koData._price = ko.computed({
+    read: function () {
+      return (this.price.sum()/100).toFixed(2); //.replace('.', ',');
+    },
+    write: function (value) {
+      this.price.sum(Math.round(value * 100));
+    },
+    owner: koData
+  });
 
   koData._vat = ko.computed(function(){
     var vat = (this.quantity() * this.price.sum() / 100 * this.vat() / (100 + this.vat()));

@@ -107,3 +107,7 @@
   display: inline-block;
   width: 200px;
 }
+
+.tar.w80 input {
+  width: 80px;
+}
