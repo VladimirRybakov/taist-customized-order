@@ -24,9 +24,10 @@ module.exports = function (order){
     mapping[attrs[i].name] = '$' + attrs[i].uuid;
   }
 
+  $api.log(mapping);
+
   for(i = 0, l = labels.length; i < l; i += 1) {
     label = $(labels[i]).text();
-    $api.log($(labels[i]).text());
     key = mapping[label]
     if(typeof key !== 'undefined') {
       if(typeof order[key] !== 'function') {
@@ -34,7 +35,7 @@ module.exports = function (order){
       }
       input = $('textarea:first,input:first', widgets[i]);
       val = input.attr('type') == 'checkbox' ? input[0].checked : input.val();
-      $api.log('order attributes', key, val);
+      // $api.log('order attributes', key, val);
       order[key](val);
     }
   }

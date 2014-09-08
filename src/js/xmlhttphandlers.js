@@ -5,7 +5,7 @@ var $app    = require('./globals/app'),
 
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
-    $api.log('CommonService.getItemTO', requestData, responseText);
+    // $api.log('CommonService.getItemTO', requestData, responseText);
     var state = $app.getLastState();
     if(!state
       ||
@@ -14,11 +14,10 @@ module.exports = {
     {
       return false;
     }
-    // "Good","lb__fRJLif2eCLCrJe-xb1","Свечка \"Шишка\"","630da863-02d6-11e4-3af0-002590a28eca"
 
     var matches = responseText.match(/"Good","([^"]+)","(([^"]|\\\")+?)","([^"]+)"\]/);
     if(matches) {
-      $api.log('MATCHED GOOD', matches);
+      // $api.log('MATCHED GOOD', matches);
       $app.changeState(STATE.ORDER.newGoodSelected, {
         uuid: matches[4],
         name: matches[2],
@@ -31,7 +30,7 @@ module.exports = {
   },
 
   'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
-    $api.log(requestData, responseText);
+    // $api.log(requestData, responseText);
     var state = $app.getLastState();
     if(!state || state.name !== STATE.ORDER.newGoodSelected) {
       return false;
@@ -71,17 +70,17 @@ module.exports = {
         return quantity;
       }, position);
 
-      $api.log(position);
+      // $api.log(position);
       order.customerOrderPosition.push(position);
     });
   },
 
   'TagService.getTags': function(requestData, responseText){
-    $api.log(requestData, responseText);
+    // $api.log(requestData, responseText);
   },
 
   'ContractService.getContracts': function(requestData, responseText){
-    $api.log(requestData, responseText);
+    // $api.log(requestData, responseText);
     var state = $app.getFirstState();
     if(!state || state.name !== STATE.APP.orderOpened) {
       return false;
@@ -97,7 +96,7 @@ module.exports = {
             order.sourceAccountUuid = company.accountUuid;
             order.sourceAgentUuid   = company.uuid;
             order._customer(company.name);
-            $api.log(company);
+            // $api.log(company);
           }
         }
       });
