@@ -117,7 +117,7 @@ module.exports = function() {
             changeMode: "NONE",
             goodUuid: m.goodUuid(),
             quantity: parseFloat(m._quantityPerPresent()),
-            readMode: "ALL"
+            readMode: "ALL",
           });
         }
         return materials;

@@ -76,6 +76,9 @@ module.exports = function (options) {
     },
     write: function (value) {
       this.price.sum(Math.round(value * 100));
+      this.price.sumInCurrency(Math.round(value * 100));
+      this.basePrice.sum(Math.round(value * 100));
+      this.basePrice.sumInCurrency(Math.round(value * 100));
     },
     owner: koData
   });
