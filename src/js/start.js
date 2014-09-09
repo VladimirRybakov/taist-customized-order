@@ -56,30 +56,32 @@ function setupDicts() {
       $vm.states[state.name] = state.uuid;
     })
 
-  $vm.attrDicts = {};
-  $vm.orderAttributes = $client
-    .from('embeddedEntityMetadata')
-    .select({name: 'CustomerOrder'})
-    .load()[0].attributeMetadata
-    .map(function(attr) {
-      if(attr.dictionaryMetadataUuid) {
-          $vm.attrDicts[attr.dictionaryMetadataUuid] = {}
-          $client
-            .from('customEntity')
-            .select({entityMetadataUuid: attr.dictionaryMetadataUuid})
-            .load().forEach(function(entity){
-              $vm.attrDicts[attr.dictionaryMetadataUuid][entity.name] = entity.uuid;
-            });
-      }
+  setTimeout(function() {
+    $vm.attrDicts = {};
+    $vm.orderAttributes = $client
+      .from('embeddedEntityMetadata')
+      .select({name: 'CustomerOrder'})
+      .load()[0].attributeMetadata
+      .map(function(attr) {
+        if(attr.dictionaryMetadataUuid) {
+            $vm.attrDicts[attr.dictionaryMetadataUuid] = {}
+            $client
+              .from('customEntity')
+              .select({entityMetadataUuid: attr.dictionaryMetadataUuid})
+              .load().forEach(function(entity){
+                $vm.attrDicts[attr.dictionaryMetadataUuid][entity.name] = entity.uuid;
+              });
+        }
 
-      return {
-        attrType: attr.attrType,
-        uuid: attr.uuid,
-        name: attr.name,
-        entityMetadataUuid: attr.entityMetadataUuid,
-        dictionaryMetadataUuid: attr.dictionaryMetadataUuid,
-      }
-    });
+        return {
+          attrType: attr.attrType,
+          uuid: attr.uuid,
+          name: attr.name,
+          entityMetadataUuid: attr.entityMetadataUuid,
+          dictionaryMetadataUuid: attr.dictionaryMetadataUuid,
+        }
+      });
+    }, 200);
 }
 
 function onCompanyDataLoaded(error, taistOptions) {
