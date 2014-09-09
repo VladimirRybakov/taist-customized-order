@@ -446,7 +446,7 @@ module.exports = function() {
         }
       }
 
-      $vm.customerOrders[uuid] = ko.mapping.fromJS(orderData, {
+      $vm.customerOrders[uuid] = ko.mapping.fromJS(order, {
         sum: {
           create: require('../processors').createSumObject
         },
