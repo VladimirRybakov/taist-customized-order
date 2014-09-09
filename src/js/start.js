@@ -112,7 +112,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   if(typeof taistOptions.processingPlans === 'undefined') {
     processingPlans = $client.from('ProcessingPlan').load();
-    require('./utils').saveTaistOptions();    
+    require('./utils').saveTaistOptions();
   } else {
     processingPlans = taistOptions.processingPlans;
   }
@@ -197,10 +197,6 @@ function onStart(_taistApi) {
     var xmlhttphandlers = require("./xmlhttphandlers");
     require("./xmlhttpproxy").registerHandlers( xmlhttphandlers );
 
-    setupDicts();
-
-    $api.companyData.setCompanyKey($vm.companyUuid);
-
     $api.userData.get('taistOptions', function(error, taistOptions){
       taistOptions || (taistOptions = {});
 
@@ -211,6 +207,9 @@ function onStart(_taistApi) {
 
       $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
       $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
+
+      setupDicts();
+      $api.companyData.setCompanyKey($vm.companyUuid);
 
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
     });

@@ -17,8 +17,8 @@ module.exports = {
       return false;
     }
 
-    var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/
-    var matches = responseText.match(pattern);
+    var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/,
+        matches = responseText.match(pattern);
 
     if(matches) {
       $api.log('CommonService.getItemTO', 'Good Found', matches[2]);
@@ -79,6 +79,7 @@ module.exports = {
 
       // $api.log(position);
       order.customerOrderPosition.push(position);
+      $app.changeState(STATE.ORDER.newGoodWaited, {});
     });
   },
 

@@ -967,6 +967,13 @@ module.exports = function (options) {
       });
     },
     res: function(dummy, data){
+      data[0] || (data[0] = {
+        quantity: 0,
+        stock: 0,
+        reserve: 0,
+        inTransit: 0,
+      });
+
       koData._available(
         data[0].quantity
       );
@@ -1231,7 +1238,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   if(typeof taistOptions.processingPlans === 'undefined') {
     processingPlans = $client.from('ProcessingPlan').load();
-    require('./utils').saveTaistOptions();    
+    require('./utils').saveTaistOptions();
   } else {
     processingPlans = taistOptions.processingPlans;
   }
@@ -1316,10 +1323,6 @@ function onStart(_taistApi) {
     var xmlhttphandlers = require("./xmlhttphandlers");
     require("./xmlhttpproxy").registerHandlers( xmlhttphandlers );
 
-    setupDicts();
-
-    $api.companyData.setCompanyKey($vm.companyUuid);
-
     $api.userData.get('taistOptions', function(error, taistOptions){
       taistOptions || (taistOptions = {});
 
@@ -1330,6 +1333,9 @@ function onStart(_taistApi) {
 
       $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
       $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
+
+      setupDicts();
+      $api.companyData.setCompanyKey($vm.companyUuid);
 
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
     });
@@ -1600,8 +1606,8 @@ module.exports = {
       return false;
     }
 
-    var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/
-    var matches = responseText.match(pattern);
+    var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/,
+        matches = responseText.match(pattern);
 
     if(matches) {
       $api.log('CommonService.getItemTO', 'Good Found', matches[2]);
@@ -1662,6 +1668,7 @@ module.exports = {
 
       // $api.log(position);
       order.customerOrderPosition.push(position);
+      $app.changeState(STATE.ORDER.newGoodWaited, {});
     });
   },
 

@@ -54,6 +54,13 @@ module.exports = function (options) {
       });
     },
     res: function(dummy, data){
+      data[0] || (data[0] = {
+        quantity: 0,
+        stock: 0,
+        reserve: 0,
+        inTransit: 0,
+      });
+
       koData._available(
         data[0].quantity
       );
