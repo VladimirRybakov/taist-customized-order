@@ -1598,8 +1598,8 @@ var $app    = require('./globals/app'),
 
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
-    // $api.log('CommonService.getItemTO', requestData, responseText);
-    var state = $app.getLastState();
+    $api.log('CommonService.getItemTO', requestData, responseText);
+    var state = $app.getLastState(), tmp;
     if(!state
       ||
         state.name !== STATE.ORDER.newGoodWaited
@@ -1610,6 +1610,16 @@ module.exports = {
 
     var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/,
         matches = responseText.match(pattern);
+
+    if(!matches) {
+      pattern = /"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})","[^"]+","(Good)"/,
+      matches = responseText.match(pattern);
+      if(matches) {
+        tmp = matches[2];
+        matches[2] = matches[1];
+        matches[1] = tmp;
+      }
+    }
 
     if(matches) {
       $api.log('CommonService.getItemTO', 'Good Found', matches[2]);
