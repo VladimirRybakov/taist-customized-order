@@ -99,6 +99,7 @@ module.exports = function() {
             baseTemplate: $vm.basePlan().data.uuid,
             orderTemplate: templateUuid,
             presentsCount: $vm.selectedOrder()._presentsCount(),
+            sortOrder: require('../utils').getPositionsOrder(),
           }, function(error){
             location.reload();
             //location.hash = '#customerorder/edit?id=' + order.uuid;

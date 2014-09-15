@@ -122,6 +122,12 @@ module.exports = function() {
       $vm.selectedOrder(order);
 
       positions = order.customerOrderPosition();
+      positions.sort(function(a, b) {
+        function getIndex(o) {
+          return (taistOrderData.sortOrder || []).indexOf(o.uuid)
+        };
+        return getIndex(a) <= getIndex(b) ? -1 : 1;
+      });
 
       $api.log('POSITIONS', positions.length);
       for(i = 0, l = positions.length; i < l; i +=1){

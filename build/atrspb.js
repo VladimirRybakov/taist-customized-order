@@ -494,6 +494,12 @@ module.exports = function() {
       $vm.selectedOrder(order);
 
       positions = order.customerOrderPosition();
+      positions.sort(function(a, b) {
+        function getIndex(o) {
+          return (taistOrderData.sortOrder || []).indexOf(o.uuid)
+        };
+        return getIndex(a) <= getIndex(b) ? -1 : 1;
+      });
 
       $api.log('POSITIONS', positions.length);
       for(i = 0, l = positions.length; i < l; i +=1){
@@ -843,6 +849,7 @@ module.exports = function() {
             baseTemplate: $vm.basePlan().data.uuid,
             orderTemplate: templateUuid,
             presentsCount: $vm.selectedOrder()._presentsCount(),
+            sortOrder: require('../utils').getPositionsOrder(),
           }, function(error){
             location.reload();
             //location.hash = '#customerorder/edit?id=' + order.uuid;
@@ -1531,6 +1538,14 @@ module.exports = {
 module.exports = {
   parseProcessingPlans: require('./utils/parseProcessingPlans'),
   saveTaistOptions: require('./utils/saveTaistOptions'),
+  getPositionsOrder: function(){
+    return $('tr', '.taist-table')
+      .not(':first')
+      .toArray()
+      .map(function(i) {
+        return ko.dataFor(i).uuid
+      });
+  },
 }
 
 },{"./utils/parseProcessingPlans":27,"./utils/saveTaistOptions":28}],27:[function(require,module,exports){
