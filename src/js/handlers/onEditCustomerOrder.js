@@ -203,6 +203,13 @@ module.exports = function() {
       //   redefineButtons(elem, 'onSaveOrderPanel');
       // });
 
+      $('.taist-table', goodsDOMNode).sortable({
+        containerSelector: 'table',
+        itemPath: '> tbody',
+        itemSelector: 'tr',
+        placeholder: '<tr class="placeholder">'
+      });
+
       $api.wait.elementRender('.all-goods-table', function(){
         $log('applyBindings for customerOrder');
 

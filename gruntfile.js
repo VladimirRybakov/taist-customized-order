@@ -19,7 +19,7 @@ module.exports = function (grunt) {
 
             atrspb: {
                 src: ['src/js/atrspb.js'],
-                dest: 'build/atrspb.js',
+                dest: 'build/.addon.js',
                 options: {
                     external: ['moysklad-client', 'xmldom'],
                     alias: [
@@ -32,12 +32,23 @@ module.exports = function (grunt) {
                     }
                 }
             }
-        }
+        },
+
+        concat: {
+          atrspb: {
+            src: [
+              'build/.addon.js',
+              'src/lib/jquery-sortable.js',
+            ],
+            dest: 'build/atrspb.js',
+          }
+        },
 
     });
 
     grunt.registerTask('default', [
-        'browserify:atrspb'
+        'browserify:atrspb',
+        'concat:atrspb'
     ]);
 
 };
