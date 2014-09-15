@@ -495,6 +495,7 @@ module.exports = function() {
 
       positions = order.customerOrderPosition();
 
+      $api.log('POSITIONS', positions.length);
       for(i = 0, l = positions.length; i < l; i +=1){
         positions[i]._quantity = ko.computed(function(){
           var quantity = this._quantityPerPresent() * order._presentsCount();
@@ -570,78 +571,79 @@ module.exports = function() {
         }
       }
 
-      // $api.wait.elementRender('.b-fixed-panel.b-fixed-panel-up.b-fixed-panel-up-last', function(elem){
-      //   $log('PANEL')
-      //   redefineButtons(elem, 'onSaveOrderPanel');
-      // });
+      /* Hotfix for order reloading */
+      // setTimeout(function() {
 
-      $('.taist-table', goodsDOMNode).sortable({
-        containerSelector: 'table',
-        itemPath: '> tbody',
-        itemSelector: 'tr',
-        placeholder: '<tr class="placeholder">'
-      });
-
-      $api.wait.elementRender('.all-goods-table', function(){
-        $log('applyBindings for customerOrder');
+        $api.wait.elementRender('.all-goods-table', function(){
+          $log('applyBindings for customerOrder');
 
 
-        var originalGoodsTable = $('.all-goods-table');
+          var originalGoodsTable = $('.all-goods-table');
 
-        var btn,
-            div = $('#onSaveOrder');
+          var btn,
+              div = $('#onSaveOrder');
 
-        if(div.size() === 0) {
+          if(div.size() === 0) {
 
-          redefineButtons('.b-editor-toolbar', 'onSaveOrder');
+            redefineButtons('.b-editor-toolbar', 'onSaveOrder');
 
-          var buttons = $('[role=button]', '.all-goods-table-buttons'),
-              hiddenButtons = [
-                'по штрихкоду',
-                'из остатков',
-              ];
+            var buttons = $('[role=button]', '.all-goods-table-buttons'),
+                hiddenButtons = [
+                  'по штрихкоду',
+                  'из остатков',
+                ];
 
-          for(i = 0, l = buttons.size(); i < l; i += 1) {
-            btn = $(buttons[i]);
-            if(hiddenButtons.indexOf(btn.text()) > -1) {
-              btn.css({
-                width: btn.width(),
-                border: 'none'
-              });
-              btn.children().hide();
+            for(i = 0, l = buttons.size(); i < l; i += 1) {
+              btn = $(buttons[i]);
+              if(hiddenButtons.indexOf(btn.text()) > -1) {
+                btn.css({
+                  width: btn.width(),
+                  border: 'none'
+                });
+                btn.children().hide();
+              }
             }
+
+            buttons
+              .removeClass('b-popup-button-disabled')
+              .click(function(event){
+                var buttonName = $(event.target).text(),
+                    selector,
+                    element;
+
+                $log(buttonName);
+                switch(buttonName){
+                  case 'Добавить позицию':
+                    $app.changeState(STATE.ORDER.newGoodWaited);
+                    break;
+                  case 'Зарезервировать':
+                    require('../handlers').onReserve(true);
+                    break;
+                  case 'Очистить резерв':
+                    require('../handlers').onReserve(false);
+                    break;
+                  case 'Удалить':
+                    require('../handlers').onDelete();
+                    break;
+                }
+            });
           }
 
-          buttons
-            .removeClass('b-popup-button-disabled')
-            .click(function(event){
-              var buttonName = $(event.target).text(),
-                  selector,
-                  element;
+          $api.log('APPLY BINDINGS');
+          ko.applyBindings($vm, goodsDOMNode);
+          $(goodsDOMNode)
+            .appendTo( originalGoodsTable.parent() )
+            .show();
+        });
 
-              $log(buttonName);
-              switch(buttonName){
-                case 'Добавить позицию':
-                  $app.changeState(STATE.ORDER.newGoodWaited);
-                  break;
-                case 'Зарезервировать':
-                  require('../handlers').onReserve(true);
-                  break;
-                case 'Очистить резерв':
-                  require('../handlers').onReserve(false);
-                  break;
-                case 'Удалить':
-                  require('../handlers').onDelete();
-                  break;
-              }
-          });
-        }
+        $('.taist-table', goodsDOMNode).sortable({
+          containerSelector: 'table',
+          itemPath: '> tbody',
+          itemSelector: 'tr',
+          placeholder: '<tr class="placeholder">'
+        });
 
-        ko.applyBindings($vm, goodsDOMNode);
-        $(goodsDOMNode)
-          .appendTo( originalGoodsTable.parent() )
-          .show();
-      });
+      // }, 100);
 
     });
   });
@@ -1314,7 +1316,7 @@ function onCompanyDataLoaded(error, taistOptions) {
   $dom.setGoodsNode(goodsDOMNode[0]);
 
   $api.hash.onChange(handlers.onChangeHash);
-  handlers.onChangeHash(location.hash);
+  //handlers.onChangeHash(location.hash);
 }
 
 function onStart(_taistApi) {

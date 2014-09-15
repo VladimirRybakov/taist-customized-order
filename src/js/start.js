@@ -181,7 +181,7 @@ function onCompanyDataLoaded(error, taistOptions) {
   $dom.setGoodsNode(goodsDOMNode[0]);
 
   $api.hash.onChange(handlers.onChangeHash);
-  handlers.onChangeHash(location.hash);
+  //handlers.onChangeHash(location.hash);
 }
 
 function onStart(_taistApi) {
