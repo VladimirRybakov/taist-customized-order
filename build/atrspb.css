@@ -112,6 +112,13 @@
   width: 80px;
 }
 
+.dragged {
+  position: absolute;
+  top: 0;
+  opacity: 0.5;
+  z-index: 2000;
+}
+
 .taist-table tr.placeholder {
   display: block;
   background: red;
