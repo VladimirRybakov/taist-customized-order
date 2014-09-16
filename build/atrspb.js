@@ -126,6 +126,7 @@ module.exports = {
     }
 
     [
+      { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
@@ -646,7 +647,8 @@ module.exports = function() {
           containerSelector: 'table',
           itemPath: '> tbody',
           itemSelector: 'tr',
-          placeholder: '<tr class="placeholder">'
+          placeholder: '<tr class="placeholder">',
+          handle: 'td.handle',
         });
 
       // }, 100);
@@ -677,7 +679,7 @@ module.exports = function() {
 
       $client.load('Good', uuid, function(dummy, good){
         positions.push({
-          vat: 18,
+          vat: good.vat,
           goodUuid: good.uuid,
           quantity: quantities[good.uuid],
           discount: 0,
@@ -936,32 +938,32 @@ var $api = require('../globals/api'),
     $queue = require('../requestQueue');
 
 module.exports = function (options) {
-  if(!options.data.vat) {
+  if(typeof options.data.vat !== 'number') {
     options.data.vat = 18;
   }
 
   var $log = $api.log,
       koData = ko.mapping.fromJS(options.data, {
-      basePrice: require('../processors').createSumObject,
-      price: require('../processors').createSumObject,
-      copy: [
-        'TYPE_NAME',
-        'accountId',
-        'accountUuid',
-        '//basePrice{}',
-        'changeMode',
-        'consignmentUuid',
-        '//discount',
-        '//goodUuid',
-        '//price{}',
-        '//quantity',
-        'readMode',
-        '//reserve',
-        'uuid',
-        '//vat',
-      ]
-    }),
-    goodUuid = koData.goodUuid();
+        basePrice: require('../processors').createSumObject,
+        price: require('../processors').createSumObject,
+        copy: [
+          'TYPE_NAME',
+          'accountId',
+          'accountUuid',
+          '//basePrice{}',
+          'changeMode',
+          'consignmentUuid',
+          '//discount',
+          '//goodUuid',
+          '//price{}',
+          '//quantity',
+          'readMode',
+          '//reserve',
+          'uuid',
+          '//vat',
+        ]
+      }),
+      goodUuid = koData.goodUuid();
 
   if(!$vm.goods[goodUuid]) {
     $vm.goods[goodUuid] = {
@@ -1453,7 +1455,7 @@ module.exports = {
 
     $("<div>").appendTo(div);
     $("<button>")
-      .text("Очистить список шалбонов")
+      .text("Очистить список шаблонов")
       .click(function(){
         $vm.processingPlans.removeAll();
         saveTaistOptions();
@@ -1678,7 +1680,7 @@ module.exports = {
 
       var position = require('./processors').createCustomerOrderPosition({
         data: {
-          vat: 18,
+          vat: good.vat,
           goodUuid: good.uuid,
           quantity: 1,
           discount: 0,

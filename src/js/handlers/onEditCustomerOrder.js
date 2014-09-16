@@ -274,7 +274,8 @@ module.exports = function() {
           containerSelector: 'table',
           itemPath: '> tbody',
           itemSelector: 'tr',
-          placeholder: '<tr class="placeholder">'
+          placeholder: '<tr class="placeholder">',
+          handle: 'td.handle',
         });
 
       // }, 100);

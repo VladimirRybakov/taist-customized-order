@@ -19,7 +19,7 @@ module.exports = function() {
 
       $client.load('Good', uuid, function(dummy, good){
         positions.push({
-          vat: 18,
+          vat: good.vat,
           goodUuid: good.uuid,
           quantity: quantities[good.uuid],
           discount: 0,

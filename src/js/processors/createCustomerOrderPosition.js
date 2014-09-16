@@ -7,32 +7,32 @@ var $api = require('../globals/api'),
     $queue = require('../requestQueue');
 
 module.exports = function (options) {
-  if(!options.data.vat) {
+  if(typeof options.data.vat !== 'number') {
     options.data.vat = 18;
   }
 
   var $log = $api.log,
       koData = ko.mapping.fromJS(options.data, {
-      basePrice: require('../processors').createSumObject,
-      price: require('../processors').createSumObject,
-      copy: [
-        'TYPE_NAME',
-        'accountId',
-        'accountUuid',
-        '//basePrice{}',
-        'changeMode',
-        'consignmentUuid',
-        '//discount',
-        '//goodUuid',
-        '//price{}',
-        '//quantity',
-        'readMode',
-        '//reserve',
-        'uuid',
-        '//vat',
-      ]
-    }),
-    goodUuid = koData.goodUuid();
+        basePrice: require('../processors').createSumObject,
+        price: require('../processors').createSumObject,
+        copy: [
+          'TYPE_NAME',
+          'accountId',
+          'accountUuid',
+          '//basePrice{}',
+          'changeMode',
+          'consignmentUuid',
+          '//discount',
+          '//goodUuid',
+          '//price{}',
+          '//quantity',
+          'readMode',
+          '//reserve',
+          'uuid',
+          '//vat',
+        ]
+      }),
+      goodUuid = koData.goodUuid();
 
   if(!$vm.goods[goodUuid]) {
     $vm.goods[goodUuid] = {

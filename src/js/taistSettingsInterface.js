@@ -74,7 +74,7 @@ module.exports = {
 
     $("<div>").appendTo(div);
     $("<button>")
-      .text("Очистить список шалбонов")
+      .text("Очистить список шаблонов")
       .click(function(){
         $vm.processingPlans.removeAll();
         saveTaistOptions();
