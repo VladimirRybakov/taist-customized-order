@@ -9,6 +9,16 @@ module.exports = {
         trbody = $('<tr>').appendTo(tbody);
 
     div = $('<div>')
+      .css({
+        position: 'absolute',
+        left: 600,
+      })
+      .text('Расчет себестоимости')
+      .appendTo(container);
+
+    require('./primeCostInterface').create(div);
+
+    div = $('<div>')
       .attr('data-bind', 'if: basePlan() !== null')
       .appendTo(container);
     $('<span class="w200">')
@@ -153,6 +163,7 @@ module.exports = {
         item.custom(elem);
       }
     })
+
     table.appendTo(container);
 
     div = $('<div>').appendTo(container);

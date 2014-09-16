@@ -119,8 +119,6 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
-      $vm.selectedOrder(order);
-
       positions = order.customerOrderPosition();
       positions.sort(function(a, b) {
         function getIndex(o) {
@@ -149,6 +147,10 @@ module.exports = function() {
         return sum;
       }, order);
 
+      order._pricePerPresent = ko.computed(function(){
+        return this._total() / this._presentsCount();
+      }, order);
+
       order._sTotal = ko.computed(function(){
         return this._total().toFixed(2).replace('.', ',');
       }, order);
@@ -166,6 +168,8 @@ module.exports = function() {
       }, order);
 
       order._customer = ko.observable('');
+
+      $vm.selectedOrder(order);
 
       order._name = ko.computed(function(){
         var name = ($vm.selectedOrder()._customName() !== ''

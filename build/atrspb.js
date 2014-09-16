@@ -9,7 +9,7 @@ var addonEntry = {
 
 module.exports = addonEntry;
 
-},{"./start":23}],3:[function(require,module,exports){
+},{"./start":25}],3:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var div,
@@ -19,6 +19,16 @@ module.exports = {
         trhead = $('<tr>').appendTo(thead),
         tbody  = $('<tbody data-bind="foreach: selectedOrder().customerOrderPosition()">').appendTo(table),
         trbody = $('<tr>').appendTo(tbody);
+
+    div = $('<div>')
+      .css({
+        position: 'absolute',
+        left: 600,
+      })
+      .text('Расчет себестоимости')
+      .appendTo(container);
+
+    require('./primeCostInterface').create(div);
 
     div = $('<div>')
       .attr('data-bind', 'if: basePlan() !== null')
@@ -165,6 +175,7 @@ module.exports = {
         item.custom(elem);
       }
     })
+
     table.appendTo(container);
 
     div = $('<div>').appendTo(container);
@@ -185,7 +196,7 @@ module.exports = {
   }
 }
 
-},{}],4:[function(require,module,exports){
+},{"./primeCostInterface":18}],4:[function(require,module,exports){
 module.exports = {};
 
 },{}],5:[function(require,module,exports){
@@ -279,7 +290,7 @@ module.exports = function() {
   }
 }
 
-},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":24}],11:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":26}],11:[function(require,module,exports){
 var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state')
@@ -333,7 +344,7 @@ module.exports = function(){
     });
 }
 
-},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":24}],12:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../handlers":9,"../state":26}],12:[function(require,module,exports){
 module.exports = function() {
   var $log = require('../globals/api').log;
 
@@ -492,8 +503,6 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
-      $vm.selectedOrder(order);
-
       positions = order.customerOrderPosition();
       positions.sort(function(a, b) {
         function getIndex(o) {
@@ -522,6 +531,10 @@ module.exports = function() {
         return sum;
       }, order);
 
+      order._pricePerPresent = ko.computed(function(){
+        return this._total() / this._presentsCount();
+      }, order);
+
       order._sTotal = ko.computed(function(){
         return this._total().toFixed(2).replace('.', ',');
       }, order);
@@ -539,6 +552,8 @@ module.exports = function() {
       }, order);
 
       order._customer = ko.observable('');
+
+      $vm.selectedOrder(order);
 
       order._name = ko.computed(function(){
         var name = ($vm.selectedOrder()._customName() !== ''
@@ -657,7 +672,7 @@ module.exports = function() {
   });
 }
 
-},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../handlers":9,"../processors":18,"../processors/parseOrderAttributes":21,"../state":24,"../utils":26}],15:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../handlers":9,"../processors":19,"../processors/parseOrderAttributes":23,"../state":26,"../utils":28}],15:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
@@ -922,13 +937,21 @@ module.exports = function() {
   }
 };
 
-},{"../globals/api":4,"../globals/client":6,"../globals/vm":8,"../processors/parseOrderAttributes":21,"../utils":26}],18:[function(require,module,exports){
+},{"../globals/api":4,"../globals/client":6,"../globals/vm":8,"../processors/parseOrderAttributes":23,"../utils":28}],18:[function(require,module,exports){
+module.exports = {
+  create: function(container){
+    
+  }
+}
+
+},{}],19:[function(require,module,exports){
 module.exports = {
   createCustomerOrderPosition: require('./processors/createCustomerOrderPosition'),
   createSumObject: require('./processors/createSumObject'),
+  createPrimeCost: require('./processors/createPrimeCost'),
 }
 
-},{"./processors/createCustomerOrderPosition":19,"./processors/createSumObject":20}],19:[function(require,module,exports){
+},{"./processors/createCustomerOrderPosition":20,"./processors/createPrimeCost":21,"./processors/createSumObject":22}],20:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -1049,7 +1072,48 @@ module.exports = function (options) {
   return koData;
 }
 
-},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../processors":18,"../requestQueue":22,"../state":24}],20:[function(require,module,exports){
+},{"../globals/api":4,"../globals/app":5,"../globals/client":6,"../globals/dom":7,"../processors":19,"../requestQueue":24,"../state":26}],21:[function(require,module,exports){
+var $vm = require('../globals/vm');
+
+module.exports = function (options) {
+  var defaults = {
+    quantity: 30,
+    discount: 0,
+  };
+
+  $.extend(defaults, options);
+
+  var primeCost = ko.mapping.fromJS(defaults);
+
+  primeCost.cost = ko.computed(function(){
+    var order = $vm.selectedOrder();
+    if(!order || typeof order._pricePerPresent !== 'function') {
+      return 0;
+    }
+    return order._pricePerPresent() *
+      ( 1 - this.discount() / 100 ) *
+      ( 1 + $vm.primeCostInterest() ) *
+      ( 1 + $vm.primeCostTax() );
+  }, primeCost);
+
+  primeCost.income = ko.computed(function(){
+    if(!$vm.selectedOrder()) {
+      return 0;
+    }
+    return this.cost() * $vm.primeCostOutput() - $vm.selectedOrder()._pricePerPresent();
+  }, primeCost);
+
+  primeCost.total = ko.computed(function(){
+    if(!$vm.selectedOrder()) {
+      return 0;
+    }
+    return this.income() * $vm.selectedOrder()._presentsCount();
+  }, primeCost);
+
+  return primeCost;
+}
+
+},{"../globals/vm":8}],22:[function(require,module,exports){
 module.exports = function (options) {
   return ko.mapping.fromJS(
     options.data,
@@ -1059,7 +1123,7 @@ module.exports = function (options) {
   );
 }
 
-},{}],21:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1109,7 +1173,7 @@ module.exports = function (order){
   order._state(val);
 }
 
-},{"../globals/api":4,"../globals/vm":8}],22:[function(require,module,exports){
+},{"../globals/api":4,"../globals/vm":8}],24:[function(require,module,exports){
 var $api = require('./globals/api'),
     queue = [],
     isInProgress = false;
@@ -1141,7 +1205,7 @@ module.exports = {
   }
 }
 
-},{"./globals/api":4}],23:[function(require,module,exports){
+},{"./globals/api":4}],25:[function(require,module,exports){
 var $api = require('./globals/api')
   , $log
   , $client = require('./globals/client')
@@ -1304,6 +1368,14 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedOrder  = ko.observable(null);
   $vm.presentsCount  = ko.observable(1);
 
+  $vm.primeCostInterest = ko.observable(1.2);
+  $vm.primeCostTax = ko.observable(0.0262);
+  $vm.primeCostOutput = ko.observable(0.945);
+
+  $vm.primeCost = require('./processors').createPrimeCost({
+    quantity: 30
+  });
+
   $vm.selectedPositions = ko.computed(function(){
     var order = $vm.selectedOrder();
 
@@ -1364,7 +1436,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./state":24,"./taistSettingsInterface":25,"./utils":26,"./xmlhttphandlers":29,"./xmlhttpproxy":30}],24:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":31,"./xmlhttpproxy":32}],26:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1378,7 +1450,7 @@ module.exports = {
   },
 }
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var $api = require('./globals/api'),
     $client = require('./globals/client'),
     $vm = require('./globals/vm');
@@ -1536,7 +1608,7 @@ module.exports = {
 
 }
 
-},{"./globals/api":4,"./globals/client":6,"./globals/vm":8,"./utils":26}],26:[function(require,module,exports){
+},{"./globals/api":4,"./globals/client":6,"./globals/vm":8,"./utils":28}],28:[function(require,module,exports){
 module.exports = {
   parseProcessingPlans: require('./utils/parseProcessingPlans'),
   saveTaistOptions: require('./utils/saveTaistOptions'),
@@ -1550,7 +1622,7 @@ module.exports = {
   },
 }
 
-},{"./utils/parseProcessingPlans":27,"./utils/saveTaistOptions":28}],27:[function(require,module,exports){
+},{"./utils/parseProcessingPlans":29,"./utils/saveTaistOptions":30}],29:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(plans) {
@@ -1581,7 +1653,7 @@ module.exports = function(plans) {
   }
 }
 
-},{"../globals/vm":8}],28:[function(require,module,exports){
+},{"../globals/vm":8}],30:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1614,7 +1686,7 @@ module.exports = function() {
   }, function(){});
 }
 
-},{"../globals/api":4,"../globals/vm":8}],29:[function(require,module,exports){
+},{"../globals/api":4,"../globals/vm":8}],31:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $api    = require('./globals/api'),
     $client = require('./globals/client'),
@@ -1739,7 +1811,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":18,"./state":24}],30:[function(require,module,exports){
+},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":19,"./state":26}],32:[function(require,module,exports){
 var $api = require("./globals/api");
 
 var registerXMLHttpHandlers = function (handlers) {

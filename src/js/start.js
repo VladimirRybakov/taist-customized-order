@@ -160,6 +160,14 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedOrder  = ko.observable(null);
   $vm.presentsCount  = ko.observable(1);
 
+  $vm.primeCostInterest = ko.observable(1.2);
+  $vm.primeCostTax = ko.observable(0.0262);
+  $vm.primeCostOutput = ko.observable(0.945);
+
+  $vm.primeCost = require('./processors').createPrimeCost({
+    quantity: 30
+  });
+
   $vm.selectedPositions = ko.computed(function(){
     var order = $vm.selectedOrder();
 
