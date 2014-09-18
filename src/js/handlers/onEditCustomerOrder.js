@@ -14,6 +14,7 @@ module.exports = function() {
   ko.cleanNode(goodsDOMNode);
   $(goodsDOMNode).hide();
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
+  $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');

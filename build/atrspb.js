@@ -25,64 +25,56 @@ module.exports = {
 
     require('./primeCostInterface').create(div);
 
-    div = $('<div>')
-      .attr('data-bind', 'if: basePlan() !== null')
-      .appendTo(container);
-    $('<span class="w200">')
-      .text('Базовая технологическая карта')
-      .appendTo(div);
-    $('<span>')
-      .addClass('ml20 bold')
-      .attr('data-bind', 'text: basePlan().name')
-      .appendTo(div);
+    orderFields = [
+      {
+        divBind: 'if: basePlan() !== null',
+        name: 'Базовая технологическая карта',
+        cls: 'ml20 bold',
+        bind: 'text: basePlan().name',
+      },
 
-    div = $('<div>')
-      .appendTo(container);
-    $('<span class="w200">')
-      .text('Название заказа')
-      .appendTo(div);
-    $('<span>')
-      .addClass('ml20 bold')
-      .attr('data-bind', 'text: selectedOrder()._name')
-      .appendTo(div);
+      { name: 'Название заказа', cls: 'ml20 bold', bind: 'text: selectedOrder()._name' },
 
-    div = $('<div>')
-      .appendTo(container);
-    $('<span class="w200">')
-      .html('&nbsp;')
-      .appendTo(div);
-    $('<input>')
-      .attr('data-bind', 'value: selectedOrder()._customName')
-      .css({ width: 300, marginLeft: 20})
-      .appendTo(div);
+      {
+        name: '&nbsp;', cls: '', elem: 'input',
+        bind: 'value: selectedOrder()._customName',
+        css: { width: 300, marginLeft: 20}
+      },
 
-    div = $('<div>').appendTo(container);
-    $('<span class="w200">')
-      .text('Количество подарков')
-      .appendTo(div);
-    $('<input>')
-      .addClass('tar')
-      .attr('data-bind', 'value: selectedOrder()._presentsCount')
-      .css({ width: 40, marginLeft: 20})
-      .appendTo(div);
+      {
+        name: 'Количество подарков', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder()._presentsCount',
+        css: { width: 40, marginLeft: 20}
+      },
 
-    div = $('<div>').appendTo(container);
-    $('<span class="w200">')
-      .text('Итого:')
-      .appendTo(div);
-    $('<span>')
-      .addClass('ml20 bold fs125')
-      .attr('data-bind', 'text: selectedOrder()._sTotal')
-      .appendTo(div);
+      { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
+      { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
+      // { name: '', cls: '', bind: '' },
+      // { name: '', cls: '', bind: '' },
+      // { name: '', cls: '', bind: '' },
+    ]
 
-    div = $('<div>').appendTo(container);
-    $('<span class="w200">')
-      .text('НДС:')
-      .appendTo(div);
-    $('<span>')
-      .addClass('ml20')
-      .attr('data-bind', 'text: selectedOrder()._sVat')
-      .appendTo(div);
+    orderFields.map(function(field){
+      var div = $('<div>');
+
+      if(field.divBind) {
+        div.attr('data-bind', field.divBind);
+      }
+
+      $('<span>').addClass('w200').html(field.name).appendTo(div)
+
+      var elem = field.elem || 'span';
+      var node = $('<' + elem + '>')
+        .addClass(field.cls)
+        .attr('data-bind', field.bind)
+        .appendTo(div)
+
+      if(field.css){
+        node.css(field.css);
+      }
+
+      div.appendTo(container)
+    });
 
     function modifyFieldAvailability(elem) {
       var div,
@@ -373,6 +365,7 @@ module.exports = function() {
   ko.cleanNode(goodsDOMNode);
   $(goodsDOMNode).hide();
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
+  $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
@@ -920,7 +913,7 @@ module.exports = function() {
 },{"../globals/api":4,"../globals/client":6,"../globals/vm":8,"../processors/parseOrderAttributes":23,"../utils":28}],18:[function(require,module,exports){
 module.exports = {
   create: function(container){
-    var table = $('<table class="taistTable">'),
+    var table = $('<table class="taistTable primeCost">'),
         primeCostFields = [
           { title: 'Количество', bind: 'value', var: 'quantity', cls: 'tar' },
           { title: 'Скидка', bind: 'value', var: 'discount', cls: 'tar' },

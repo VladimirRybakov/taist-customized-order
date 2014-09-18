@@ -1,6 +1,6 @@
 module.exports = {
   create: function(container){
-    var table = $('<table class="taistTable">'),
+    var table = $('<table class="taistTable primeCost">'),
         primeCostFields = [
           { title: 'Количество', bind: 'value', var: 'quantity', cls: 'tar' },
           { title: 'Скидка', bind: 'value', var: 'discount', cls: 'tar' },
