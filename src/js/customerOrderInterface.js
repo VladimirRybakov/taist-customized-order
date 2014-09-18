@@ -1,12 +1,7 @@
 module.exports = {
   create: function(container){
     var div,
-        table  = $('<table>')
-          .addClass('taist-table'),
-        thead  = $('<thead>').appendTo(table),
-        trhead = $('<tr>').appendTo(thead),
-        tbody  = $('<tbody data-bind="foreach: selectedOrder().customerOrderPosition()">').appendTo(table),
-        trbody = $('<tr>').appendTo(tbody);
+        table  = $('<table>').addClass('taist-table');
 
     div = $('<div>')
       .css({
@@ -123,7 +118,7 @@ module.exports = {
       span.attr('data-bind', bind + ', click: ' + show.toString());
     }
 
-    [
+    var orderPositionsTable = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
@@ -138,31 +133,11 @@ module.exports = {
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
       { title: '', bind: 'text', var: "'x'", cls: 'removePosition', click: '_onRemove'},
-    ].map(function(item){
-      $('<td>').text(item.title).appendTo(trhead);
-      var elem,
-          td = $('<td>')
-            .addClass(item.cls || '')
-            .addClass(item.var)
-            .appendTo(trbody),
-          bindValue = item.bind + ":" + item.var;
+    ];
 
-      if(item.click) {
-        bindValue += ', click: ' + item.click;
-      }
-
-      elem = $(item.bind == 'text' ? '<span>' : '<input>')
-        .attr("data-bind", bindValue)
-        .appendTo(td);
-
-      if(item.bind == 'checked') {
-        elem.attr('type', 'checkbox');
-      }
-
-      if(typeof item.custom === 'function') {
-        item.custom(elem);
-      }
-    })
+    require('./utils').createBindedTable(
+      table, orderPositionsTable, "selectedOrder().customerOrderPosition()"
+    );
 
     table.appendTo(container);
 

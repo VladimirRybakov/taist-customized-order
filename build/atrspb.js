@@ -13,12 +13,7 @@ module.exports = addonEntry;
 module.exports = {
   create: function(container){
     var div,
-        table  = $('<table>')
-          .addClass('taist-table'),
-        thead  = $('<thead>').appendTo(table),
-        trhead = $('<tr>').appendTo(thead),
-        tbody  = $('<tbody data-bind="foreach: selectedOrder().customerOrderPosition()">').appendTo(table),
-        trbody = $('<tr>').appendTo(tbody);
+        table  = $('<table>').addClass('taist-table');
 
     div = $('<div>')
       .css({
@@ -135,7 +130,7 @@ module.exports = {
       span.attr('data-bind', bind + ', click: ' + show.toString());
     }
 
-    [
+    var orderPositionsTable = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
@@ -150,31 +145,11 @@ module.exports = {
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
       { title: '', bind: 'text', var: "'x'", cls: 'removePosition', click: '_onRemove'},
-    ].map(function(item){
-      $('<td>').text(item.title).appendTo(trhead);
-      var elem,
-          td = $('<td>')
-            .addClass(item.cls || '')
-            .addClass(item.var)
-            .appendTo(trbody),
-          bindValue = item.bind + ":" + item.var;
+    ];
 
-      if(item.click) {
-        bindValue += ', click: ' + item.click;
-      }
-
-      elem = $(item.bind == 'text' ? '<span>' : '<input>')
-        .attr("data-bind", bindValue)
-        .appendTo(td);
-
-      if(item.bind == 'checked') {
-        elem.attr('type', 'checkbox');
-      }
-
-      if(typeof item.custom === 'function') {
-        item.custom(elem);
-      }
-    })
+    require('./utils').createBindedTable(
+      table, orderPositionsTable, "selectedOrder().customerOrderPosition()"
+    );
 
     table.appendTo(container);
 
@@ -196,7 +171,7 @@ module.exports = {
   }
 }
 
-},{"./primeCostInterface":18}],4:[function(require,module,exports){
+},{"./primeCostInterface":18,"./utils":28}],4:[function(require,module,exports){
 module.exports = {};
 
 },{}],5:[function(require,module,exports){
@@ -1436,7 +1411,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":31,"./xmlhttpproxy":32}],26:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":33,"./xmlhttpproxy":34}],26:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1612,17 +1587,55 @@ module.exports = {
 module.exports = {
   parseProcessingPlans: require('./utils/parseProcessingPlans'),
   saveTaistOptions: require('./utils/saveTaistOptions'),
-  getPositionsOrder: function(){
-    return $('tr', '.taist-table')
-      .not(':first')
-      .toArray()
-      .map(function(i) {
-        return ko.dataFor(i).uuid
-      });
-  },
+  createBindedTable: require('./utils/createBindedTable'),
+  getPositionsOrder: require('./utils/getPositionsOrder'),
 }
 
-},{"./utils/parseProcessingPlans":29,"./utils/saveTaistOptions":30}],29:[function(require,module,exports){
+},{"./utils/createBindedTable":29,"./utils/getPositionsOrder":30,"./utils/parseProcessingPlans":31,"./utils/saveTaistOptions":32}],29:[function(require,module,exports){
+module.exports = function(table, fields, collectionName) {
+  var thead  = $('<thead>').appendTo(table),
+  trhead = $('<tr>').appendTo(thead),
+  tbody  = $('<tbody data-bind="foreach: ' + collectionName + '">').appendTo(table),
+  trbody = $('<tr>').appendTo(tbody);
+
+  fields.map(function(item){
+    $('<td>').text(item.title).appendTo(trhead);
+    var elem,
+        td = $('<td>')
+          .addClass(item.cls || '')
+          .addClass(item.var)
+          .appendTo(trbody),
+        bindValue = item.bind + ":" + item.var;
+
+    if(item.click) {
+      bindValue += ', click: ' + item.click;
+    }
+
+    elem = $(item.bind == 'text' ? '<span>' : '<input>')
+      .attr("data-bind", bindValue)
+      .appendTo(td);
+
+    if(item.bind == 'checked') {
+      elem.attr('type', 'checkbox');
+    }
+
+    if(typeof item.custom === 'function') {
+      item.custom(elem);
+    }
+  });
+}
+
+},{}],30:[function(require,module,exports){
+module.exports = function() {
+  return $('tr', '.taist-table')
+    .not(':first')
+    .toArray()
+    .map(function(i) {
+      return ko.dataFor(i).uuid
+    });
+}
+
+},{}],31:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(plans) {
@@ -1653,7 +1666,7 @@ module.exports = function(plans) {
   }
 }
 
-},{"../globals/vm":8}],30:[function(require,module,exports){
+},{"../globals/vm":8}],32:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1686,7 +1699,7 @@ module.exports = function() {
   }, function(){});
 }
 
-},{"../globals/api":4,"../globals/vm":8}],31:[function(require,module,exports){
+},{"../globals/api":4,"../globals/vm":8}],33:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $api    = require('./globals/api'),
     $client = require('./globals/client'),
@@ -1811,7 +1824,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":19,"./state":26}],32:[function(require,module,exports){
+},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":19,"./state":26}],34:[function(require,module,exports){
 var $api = require("./globals/api");
 
 var registerXMLHttpHandlers = function (handlers) {
