@@ -1,8 +1,8 @@
 module.exports = function(table, fields, collectionName) {
   var thead  = $('<thead>').appendTo(table),
-  trhead = $('<tr>').appendTo(thead),
-  tbody  = $('<tbody data-bind="foreach: ' + collectionName + '">').appendTo(table),
-  trbody = $('<tr>').appendTo(tbody);
+      trhead = $('<tr>').appendTo(thead),
+      tbody  = $('<tbody data-bind="foreach: ' + collectionName + '">').appendTo(table),
+      trbody = $('<tr>').appendTo(tbody);
 
   fields.map(function(item){
     $('<td>').text(item.title).appendTo(trhead);

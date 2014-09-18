@@ -1,37 +1,35 @@
 .taist-table {
   width: 100%;
+  margin-top: 100px;
 }
 
-.taist-table {
-}
-
-.taist-table tr {
+.taist-table tr, .taistTaist tr {
   border-bottom: 1px solid silver;
 }
 
-.taist-table thead tr {
+.taist-table thead tr, .taistTable thead tr {
   border-bottom: 1px solid black;
 }
 
-.taist-table thead td {
+.taist-table thead td, .taistTable thead td {
   color: #aaa;
 }
 
-.taist-table td {
+.taist-table td, .taistTable td {
   padding: 8px;
   font-size: 1rem;
 }
 
-.taist-table thead td {
+.taist-table thead td, .taistTable thead td {
   text-align: center;
+}
+
+.taist-table td.tar, .taistTable td.tar {
+  width: 0;
 }
 
 .taist-table td.vat:after {
   content: "%";
-}
-
-.taist-table td.tar {
-  width: 0;
 }
 
 .tar {

@@ -118,7 +118,7 @@ module.exports = {
       span.attr('data-bind', bind + ', click: ' + show.toString());
     }
 
-    var orderPositionsTable = [
+    var orderPositionsField = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
@@ -136,7 +136,7 @@ module.exports = {
     ];
 
     require('./utils').createBindedTable(
-      table, orderPositionsTable, "selectedOrder().customerOrderPosition()"
+      table, orderPositionsField, "selectedOrder().customerOrderPosition()"
     );
 
     table.appendTo(container);

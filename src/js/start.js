@@ -164,9 +164,19 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostTax = ko.observable(0.0262);
   $vm.primeCostOutput = ko.observable(0.945);
 
-  $vm.primeCost = require('./processors').createPrimeCost({
-    quantity: 30
-  });
+  $vm.primeCost = ko.observableArray([]);
+
+  var createPrimeCost = require('./processors').createPrimeCost;
+  $vm.primeCost.push( createPrimeCost({ quantity: 30 }) );
+  $vm.primeCost.push( createPrimeCost({ quantity: 100, discount: 7 }) );
+  $vm.primeCost.push( createPrimeCost({ quantity: 200, discount: 10 }) );
+  $vm.primeCost.push( createPrimeCost({ quantity: 500, discount: 13 }) );
+
+  var primeCostForPresentsCount = createPrimeCost({ quantity: 1, discount: 0 });
+  $vm.primeCost.push(primeCostForPresentsCount);
+  $vm.presentsCount.subscribe(function(){
+    primeCostForPresentsCount.quantity( $vm.presentsCount() );
+  })
 
   $vm.selectedPositions = ko.computed(function(){
     var order = $vm.selectedOrder();

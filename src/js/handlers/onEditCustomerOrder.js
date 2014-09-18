@@ -13,7 +13,7 @@ module.exports = function() {
   var goodsDOMNode = $dom.getGoodsNode();
   ko.cleanNode(goodsDOMNode);
   $(goodsDOMNode).hide();
-  $('tbody tr', goodsDOMNode).not(':first').remove();
+  $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
@@ -118,6 +118,11 @@ module.exports = function() {
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
+
+      $vm.presentsCount(order._presentsCount());
+      order._presentsCount.subscribe(function(){
+        $vm.presentsCount(order._presentsCount());
+      });
 
       positions = order.customerOrderPosition();
       positions.sort(function(a, b) {

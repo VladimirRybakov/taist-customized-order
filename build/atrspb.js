@@ -130,7 +130,7 @@ module.exports = {
       span.attr('data-bind', bind + ', click: ' + show.toString());
     }
 
-    var orderPositionsTable = [
+    var orderPositionsField = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name' },
@@ -148,7 +148,7 @@ module.exports = {
     ];
 
     require('./utils').createBindedTable(
-      table, orderPositionsTable, "selectedOrder().customerOrderPosition()"
+      table, orderPositionsField, "selectedOrder().customerOrderPosition()"
     );
 
     table.appendTo(container);
@@ -372,7 +372,7 @@ module.exports = function() {
   var goodsDOMNode = $dom.getGoodsNode();
   ko.cleanNode(goodsDOMNode);
   $(goodsDOMNode).hide();
-  $('tbody tr', goodsDOMNode).not(':first').remove();
+  $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
@@ -477,6 +477,11 @@ module.exports = function() {
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
+
+      $vm.presentsCount(order._presentsCount());
+      order._presentsCount.subscribe(function(){
+        $vm.presentsCount(order._presentsCount());
+      });
 
       positions = order.customerOrderPosition();
       positions.sort(function(a, b) {
@@ -915,11 +920,24 @@ module.exports = function() {
 },{"../globals/api":4,"../globals/client":6,"../globals/vm":8,"../processors/parseOrderAttributes":23,"../utils":28}],18:[function(require,module,exports){
 module.exports = {
   create: function(container){
-    
+    var table = $('<table class="taistTable">'),
+        primeCostFields = [
+          { title: 'Количество', bind: 'value', var: 'quantity', cls: 'tar' },
+          { title: 'Скидка', bind: 'value', var: 'discount', cls: 'tar' },
+          { title: 'Цена', bind: 'text', var: 'cost', cls: 'tar' },
+          { title: 'Заработок', bind: 'text', var: 'income', cls: 'tar' },
+          { title: 'Маржа', bind: 'text', var: 'total', cls: 'tar' },
+        ];
+
+    require('./utils').createBindedTable(
+      table, primeCostFields, "primeCost()"
+    );
+
+    table.appendTo(container);
   }
 }
 
-},{}],19:[function(require,module,exports){
+},{"./utils":28}],19:[function(require,module,exports){
 module.exports = {
   createCustomerOrderPosition: require('./processors/createCustomerOrderPosition'),
   createSumObject: require('./processors/createSumObject'),
@@ -1060,29 +1078,35 @@ module.exports = function (options) {
 
   var primeCost = ko.mapping.fromJS(defaults);
 
+  function round(n) {
+    return Math.round(n * 100) / 100;
+  }
+
   primeCost.cost = ko.computed(function(){
     var order = $vm.selectedOrder();
     if(!order || typeof order._pricePerPresent !== 'function') {
       return 0;
     }
-    return order._pricePerPresent() *
+    return round ( order._pricePerPresent() *
       ( 1 - this.discount() / 100 ) *
       ( 1 + $vm.primeCostInterest() ) *
-      ( 1 + $vm.primeCostTax() );
+      ( 1 + $vm.primeCostTax() ) );
   }, primeCost);
 
   primeCost.income = ko.computed(function(){
     if(!$vm.selectedOrder()) {
       return 0;
     }
-    return this.cost() * $vm.primeCostOutput() - $vm.selectedOrder()._pricePerPresent();
+    return round (
+      this.cost() * $vm.primeCostOutput() - $vm.selectedOrder()._pricePerPresent()
+    );
   }, primeCost);
 
   primeCost.total = ko.computed(function(){
     if(!$vm.selectedOrder()) {
       return 0;
     }
-    return this.income() * $vm.selectedOrder()._presentsCount();
+    return round ( this.income() * this.quantity() );
   }, primeCost);
 
   return primeCost;
@@ -1347,9 +1371,19 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostTax = ko.observable(0.0262);
   $vm.primeCostOutput = ko.observable(0.945);
 
-  $vm.primeCost = require('./processors').createPrimeCost({
-    quantity: 30
-  });
+  $vm.primeCost = ko.observableArray([]);
+
+  var createPrimeCost = require('./processors').createPrimeCost;
+  $vm.primeCost.push( createPrimeCost({ quantity: 30 }) );
+  $vm.primeCost.push( createPrimeCost({ quantity: 100, discount: 7 }) );
+  $vm.primeCost.push( createPrimeCost({ quantity: 200, discount: 10 }) );
+  $vm.primeCost.push( createPrimeCost({ quantity: 500, discount: 13 }) );
+
+  var primeCostForPresentsCount = createPrimeCost({ quantity: 1, discount: 0 });
+  $vm.primeCost.push(primeCostForPresentsCount);
+  $vm.presentsCount.subscribe(function(){
+    primeCostForPresentsCount.quantity( $vm.presentsCount() );
+  })
 
   $vm.selectedPositions = ko.computed(function(){
     var order = $vm.selectedOrder();
@@ -1594,9 +1628,9 @@ module.exports = {
 },{"./utils/createBindedTable":29,"./utils/getPositionsOrder":30,"./utils/parseProcessingPlans":31,"./utils/saveTaistOptions":32}],29:[function(require,module,exports){
 module.exports = function(table, fields, collectionName) {
   var thead  = $('<thead>').appendTo(table),
-  trhead = $('<tr>').appendTo(thead),
-  tbody  = $('<tbody data-bind="foreach: ' + collectionName + '">').appendTo(table),
-  trbody = $('<tr>').appendTo(tbody);
+      trhead = $('<tr>').appendTo(thead),
+      tbody  = $('<tbody data-bind="foreach: ' + collectionName + '">').appendTo(table),
+      trbody = $('<tr>').appendTo(tbody);
 
   fields.map(function(item){
     $('<td>').text(item.title).appendTo(trhead);
