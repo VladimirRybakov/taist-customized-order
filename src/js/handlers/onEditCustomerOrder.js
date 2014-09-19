@@ -120,6 +120,11 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
+      [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+          param = 'primeCost' + param;
+          order[param] = ko.observable( taistOrderData[param] || $vm[param]() )
+      });
+
       $vm.presentsCount(order._presentsCount());
       order._presentsCount.subscribe(function(){
         $vm.presentsCount(order._presentsCount());
@@ -217,12 +222,11 @@ module.exports = function() {
 
       /* Hotfix for order reloading */
       // setTimeout(function() {
-
-        $api.wait.elementRender('.all-goods-table', function(){
+        var selector = '.tutorial-step-inline-editor'
+        $api.wait.elementRender(selector, function(){
           $log('applyBindings for customerOrder');
 
-
-          var originalGoodsTable = $('.all-goods-table');
+          var originalGoodsTable = $(selector);
 
           var btn,
               div = $('#onSaveOrder');
@@ -231,6 +235,7 @@ module.exports = function() {
 
             redefineButtons('.b-editor-toolbar', 'onSaveOrder');
 
+            $('.all-goods-table-buttons').show();
             var buttons = $('[role=button]', '.all-goods-table-buttons'),
                 hiddenButtons = [
                   'по штрихкоду',
@@ -276,7 +281,7 @@ module.exports = function() {
           $api.log('APPLY BINDINGS');
           ko.applyBindings($vm, goodsDOMNode);
           $(goodsDOMNode)
-            .appendTo( originalGoodsTable.parent() )
+            .insertAfter( originalGoodsTable )
             .show();
         });
 

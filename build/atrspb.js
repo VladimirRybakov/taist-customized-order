@@ -44,13 +44,40 @@ module.exports = {
       {
         name: 'Количество подарков', cls: 'tar', elem: 'input',
         bind: 'value: selectedOrder()._presentsCount',
-        css: { width: 40, marginLeft: 20}
+        css: { width: 60, marginLeft: 20}
       },
 
       { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
       { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
-      // { name: '', cls: '', bind: '' },
-      // { name: '', cls: '', bind: '' },
+
+      { name: '', cls: '', bind: '' },
+
+      {
+        name: 'Процент', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostInterest',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Налог', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostTax',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Выдача', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostOutput',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Транспортная упаковка', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostPackage',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Риски (% от суммы)', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostRisk',
+        css: { width: 60, marginLeft: 20}
+      },
+
       // { name: '', cls: '', bind: '' },
     ]
 
@@ -145,11 +172,16 @@ module.exports = {
 
     table.appendTo(container);
 
-    div = $('<div>').appendTo(container);
+    div = $('<div>')
+      .css({
+        position: 'relative',
+      })
+      .appendTo(container);
+
     $('<div>')
       .text('Комментарий к заказу:')
       .css({
-        margin: 12
+        margin: 12,
       })
       .appendTo(div);
     $('<textarea>')
@@ -471,6 +503,11 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
+      [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+          param = 'primeCost' + param;
+          order[param] = ko.observable( taistOrderData[param] || $vm[param]() )
+      });
+
       $vm.presentsCount(order._presentsCount());
       order._presentsCount.subscribe(function(){
         $vm.presentsCount(order._presentsCount());
@@ -568,12 +605,11 @@ module.exports = function() {
 
       /* Hotfix for order reloading */
       // setTimeout(function() {
-
-        $api.wait.elementRender('.all-goods-table', function(){
+        var selector = '.tutorial-step-inline-editor'
+        $api.wait.elementRender(selector, function(){
           $log('applyBindings for customerOrder');
 
-
-          var originalGoodsTable = $('.all-goods-table');
+          var originalGoodsTable = $(selector);
 
           var btn,
               div = $('#onSaveOrder');
@@ -582,6 +618,7 @@ module.exports = function() {
 
             redefineButtons('.b-editor-toolbar', 'onSaveOrder');
 
+            $('.all-goods-table-buttons').show();
             var buttons = $('[role=button]', '.all-goods-table-buttons'),
                 hiddenButtons = [
                   'по штрихкоду',
@@ -627,7 +664,7 @@ module.exports = function() {
           $api.log('APPLY BINDINGS');
           ko.applyBindings($vm, goodsDOMNode);
           $(goodsDOMNode)
-            .appendTo( originalGoodsTable.parent() )
+            .insertAfter( originalGoodsTable )
             .show();
         });
 
@@ -1075,23 +1112,33 @@ module.exports = function (options) {
     return Math.round(n * 100) / 100;
   }
 
-  primeCost.cost = ko.computed(function(){
+  primeCost.costWithPackage = ko.computed(function(){
     var order = $vm.selectedOrder();
-    if(!order || typeof order._pricePerPresent !== 'function') {
+    if(!order) {
       return 0;
     }
-    return round ( order._pricePerPresent() *
+    return parseInt(order._pricePerPresent(), 10) + parseInt(order.primeCostPackage(), 10);
+  });
+
+  primeCost.cost = ko.computed(function(){
+    var order = $vm.selectedOrder();
+    if(!order) {
+      return 0;
+    }
+    return round ( this.costWithPackage() *
+      ( 1 + order.primeCostRisk() / 100 ) *
       ( 1 - this.discount() / 100 ) *
-      ( 1 + $vm.primeCostInterest() ) *
-      ( 1 + $vm.primeCostTax() ) );
+      ( 1 + order.primeCostInterest() ) *
+      ( 1 + order.primeCostTax() ) );
   }, primeCost);
 
   primeCost.income = ko.computed(function(){
-    if(!$vm.selectedOrder()) {
+    var order = $vm.selectedOrder();
+    if(!order) {
       return 0;
     }
     return round (
-      this.cost() * $vm.primeCostOutput() - $vm.selectedOrder()._pricePerPresent()
+      this.cost() * order.primeCostOutput() - this.costWithPackage()
     );
   }, primeCost);
 
@@ -1363,6 +1410,8 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostInterest = ko.observable(1.2);
   $vm.primeCostTax = ko.observable(0.0262);
   $vm.primeCostOutput = ko.observable(0.945);
+  $vm.primeCostPackage = ko.observable(10);
+  $vm.primeCostRisk = ko.observable(5);
 
   $vm.primeCost = ko.observableArray([]);
 

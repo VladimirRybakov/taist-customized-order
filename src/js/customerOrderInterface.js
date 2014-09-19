@@ -32,13 +32,40 @@ module.exports = {
       {
         name: 'Количество подарков', cls: 'tar', elem: 'input',
         bind: 'value: selectedOrder()._presentsCount',
-        css: { width: 40, marginLeft: 20}
+        css: { width: 60, marginLeft: 20}
       },
 
       { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
       { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
-      // { name: '', cls: '', bind: '' },
-      // { name: '', cls: '', bind: '' },
+
+      { name: '', cls: '', bind: '' },
+
+      {
+        name: 'Процент', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostInterest',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Налог', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostTax',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Выдача', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostOutput',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Транспортная упаковка', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostPackage',
+        css: { width: 60, marginLeft: 20}
+      },
+      {
+        name: 'Риски (% от суммы)', cls: 'tar', elem: 'input',
+        bind: 'value: selectedOrder().primeCostRisk',
+        css: { width: 60, marginLeft: 20}
+      },
+
       // { name: '', cls: '', bind: '' },
     ]
 
@@ -133,11 +160,16 @@ module.exports = {
 
     table.appendTo(container);
 
-    div = $('<div>').appendTo(container);
+    div = $('<div>')
+      .css({
+        position: 'relative',
+      })
+      .appendTo(container);
+
     $('<div>')
       .text('Комментарий к заказу:')
       .css({
-        margin: 12
+        margin: 12,
       })
       .appendTo(div);
     $('<textarea>')

@@ -1,6 +1,5 @@
 .taist-table {
   width: 100%;
-  margin-top: 100px;
 }
 
 .taist-table tr, .taistTable tr {
@@ -93,6 +92,9 @@
 }
 
 .newOrderInterface .all-goods-table,
+.newOrderInterface .tutorial-step-inline-editor,
+.newOrderInterface .b-delivery-footer,
+.newOrderInterface .b-delivery-actionbar,
 .newOrderInterface .totals-delivery {
   display: none;
 }

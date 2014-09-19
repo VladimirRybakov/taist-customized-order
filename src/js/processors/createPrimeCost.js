@@ -14,23 +14,33 @@ module.exports = function (options) {
     return Math.round(n * 100) / 100;
   }
 
-  primeCost.cost = ko.computed(function(){
+  primeCost.costWithPackage = ko.computed(function(){
     var order = $vm.selectedOrder();
-    if(!order || typeof order._pricePerPresent !== 'function') {
+    if(!order) {
       return 0;
     }
-    return round ( order._pricePerPresent() *
+    return parseInt(order._pricePerPresent(), 10) + parseInt(order.primeCostPackage(), 10);
+  });
+
+  primeCost.cost = ko.computed(function(){
+    var order = $vm.selectedOrder();
+    if(!order) {
+      return 0;
+    }
+    return round ( this.costWithPackage() *
+      ( 1 + order.primeCostRisk() / 100 ) *
       ( 1 - this.discount() / 100 ) *
-      ( 1 + $vm.primeCostInterest() ) *
-      ( 1 + $vm.primeCostTax() ) );
+      ( 1 + order.primeCostInterest() ) *
+      ( 1 + order.primeCostTax() ) );
   }, primeCost);
 
   primeCost.income = ko.computed(function(){
-    if(!$vm.selectedOrder()) {
+    var order = $vm.selectedOrder();
+    if(!order) {
       return 0;
     }
     return round (
-      this.cost() * $vm.primeCostOutput() - $vm.selectedOrder()._pricePerPresent()
+      this.cost() * order.primeCostOutput() - this.costWithPackage()
     );
   }, primeCost);
 

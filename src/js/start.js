@@ -163,6 +163,8 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostInterest = ko.observable(1.2);
   $vm.primeCostTax = ko.observable(0.0262);
   $vm.primeCostOutput = ko.observable(0.945);
+  $vm.primeCostPackage = ko.observable(10);
+  $vm.primeCostRisk = ko.observable(5);
 
   $vm.primeCost = ko.observableArray([]);
 
