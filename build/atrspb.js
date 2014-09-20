@@ -865,21 +865,25 @@ module.exports = function() {
 
         order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
 
-        $log('#saveOrder', order);
-
         $client.save("moysklad.customerOrder", order, function(dummy, order){
-          $log('Order saved');
-          $api.companyData.set(order.uuid, {
-            uuid: order.uuid,
-            name: $vm.selectedOrder()._name(),
-            customName: $vm.selectedOrder()._customName(),
-            baseTemplate: $vm.basePlan().data.uuid,
-            orderTemplate: templateUuid,
-            presentsCount: $vm.selectedOrder()._presentsCount(),
-            sortOrder: require('../utils').getPositionsOrder(),
-          }, function(error){
+          var vmOrder = $vm.selectedOrder(),
+              data = {
+                uuid: order.uuid,
+                name: vmOrder._name(),
+                customName: vmOrder._customName(),
+                baseTemplate: $vm.basePlan().data.uuid,
+                orderTemplate: templateUuid,
+                presentsCount: vmOrder._presentsCount(),
+                sortOrder: require('../utils').getPositionsOrder(),
+              };
+
+          [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+              param = 'primeCost' + param;
+              data[param] = parseFloat( vmOrder[param]() );
+          });
+
+          $api.companyData.set(order.uuid, data, function(error){
             location.reload();
-            //location.hash = '#customerorder/edit?id=' + order.uuid;
           })
         });
       },
@@ -954,9 +958,9 @@ module.exports = {
         primeCostFields = [
           { title: 'Количество', bind: 'value', var: 'quantity', cls: 'tar' },
           { title: 'Скидка', bind: 'value', var: 'discount', cls: 'tar' },
-          { title: 'Цена', bind: 'text', var: 'cost', cls: 'tar' },
-          { title: 'Заработок', bind: 'text', var: 'income', cls: 'tar' },
-          { title: 'Маржа', bind: 'text', var: 'total', cls: 'tar' },
+          { title: 'Цена', bind: 'text', var: '_cost', cls: 'tar' },
+          { title: 'Заработок', bind: 'text', var: '_income', cls: 'tar' },
+          { title: 'Маржа', bind: 'text', var: '_total', cls: 'tar' },
         ];
 
     require('./utils').createBindedTable(
@@ -1117,7 +1121,7 @@ module.exports = function (options) {
     if(!order) {
       return 0;
     }
-    return parseInt(order._pricePerPresent(), 10) + parseInt(order.primeCostPackage(), 10);
+    return parseFloat(order._pricePerPresent()) + parseFloat(order.primeCostPackage());
   });
 
   primeCost.cost = ko.computed(function(){
@@ -1128,8 +1132,8 @@ module.exports = function (options) {
     return round ( this.costWithPackage() *
       ( 1 + order.primeCostRisk() / 100 ) *
       ( 1 - this.discount() / 100 ) *
-      ( 1 + order.primeCostInterest() ) *
-      ( 1 + order.primeCostTax() ) );
+      ( 1 + 1 * order.primeCostInterest() ) *
+      ( 1 + 1 * order.primeCostTax() ) );
   }, primeCost);
 
   primeCost.income = ko.computed(function(){
@@ -1148,6 +1152,12 @@ module.exports = function (options) {
     }
     return round ( this.income() * this.quantity() );
   }, primeCost);
+
+  ['cost', 'income', 'total'].forEach(function(param){
+    primeCost['_' + param] = ko.computed(function(){
+      return this[param]().toFixed(2).replace('.', ',');
+    }, primeCost);
+  });
 
   return primeCost;
 }

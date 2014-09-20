@@ -19,7 +19,7 @@ module.exports = function (options) {
     if(!order) {
       return 0;
     }
-    return parseInt(order._pricePerPresent(), 10) + parseInt(order.primeCostPackage(), 10);
+    return parseFloat(order._pricePerPresent()) + parseFloat(order.primeCostPackage());
   });
 
   primeCost.cost = ko.computed(function(){
@@ -30,8 +30,8 @@ module.exports = function (options) {
     return round ( this.costWithPackage() *
       ( 1 + order.primeCostRisk() / 100 ) *
       ( 1 - this.discount() / 100 ) *
-      ( 1 + order.primeCostInterest() ) *
-      ( 1 + order.primeCostTax() ) );
+      ( 1 + 1 * order.primeCostInterest() ) *
+      ( 1 + 1 * order.primeCostTax() ) );
   }, primeCost);
 
   primeCost.income = ko.computed(function(){
@@ -50,6 +50,12 @@ module.exports = function (options) {
     }
     return round ( this.income() * this.quantity() );
   }, primeCost);
+
+  ['cost', 'income', 'total'].forEach(function(param){
+    primeCost['_' + param] = ko.computed(function(){
+      return this[param]().toFixed(2).replace('.', ',');
+    }, primeCost);
+  });
 
   return primeCost;
 }
