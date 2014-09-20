@@ -129,6 +129,12 @@ function onCompanyDataLoaded(error, taistOptions) {
     });
   }).extend({ rateLimit: 1 });
 
+  $vm.primeCostInterest = ko.observable(taistOptions.primeCostInterest || 1.2);
+  $vm.primeCostTax = ko.observable(taistOptions.primeCostTax || 0.0262);
+  $vm.primeCostOutput = ko.observable(taistOptions.primeCostOutput || 0.945);
+  $vm.primeCostPackage = ko.observable(taistOptions.primeCostPackage || 10);
+  $vm.primeCostRisk = ko.observable(taistOptions.primeCostRisk || 5);
+
   var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
   settingsDiv.appendTo($div);
   ko.applyBindings($vm, $div[0]);
@@ -159,12 +165,6 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.customerOrders = {};
   $vm.selectedOrder  = ko.observable(null);
   $vm.presentsCount  = ko.observable(1);
-
-  $vm.primeCostInterest = ko.observable(1.2);
-  $vm.primeCostTax = ko.observable(0.0262);
-  $vm.primeCostOutput = ko.observable(0.945);
-  $vm.primeCostPackage = ko.observable(10);
-  $vm.primeCostRisk = ko.observable(5);
 
   $vm.primeCost = ko.observableArray([]);
 

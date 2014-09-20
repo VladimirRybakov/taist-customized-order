@@ -25,10 +25,6 @@ module.exports = {
       return result;
     }
 
-    function saveTaistOptions(){
-      require('./utils').saveTaistOptions();
-    }
-
     var div = $('<div>')
           .css({
             position: 'absolute',
@@ -41,7 +37,6 @@ module.exports = {
           })
           .addClass('taist-options')
           .html("<h2>Настройки</h2>");
-          // .appendTo(td);
 
     if(typeof taistOptions.processingPlansFolder === 'undefined') {
       var processingPlanFolders = $client.from('ProcessingPlanFolder').load();
@@ -125,30 +120,46 @@ module.exports = {
       .css({ width: 400 })
       .appendTo(div);
 
-    $vm.basePlanFolder.subscribe(saveTaistOptions);
-    $vm.orderPlanFolder.subscribe(saveTaistOptions);
-    $vm.selectedWarehouse.subscribe(saveTaistOptions);
-    $vm.selectedCompany.subscribe(saveTaistOptions);
+    [
+      { name: 'Interest', desc: 'Процент'},
+      { name: 'Tax', desc: 'Налог'},
+      { name: 'Output', desc: 'Выдача'},
+      { name: 'Package', desc: 'Транспортная упаковка'},
+      { name: 'Risk', desc: 'Риск (% от стоимости)'},
+    ].forEach(function(param){
+        var name = 'primeCost' + param.name,
+            desc = 'Себестоимость. ' + param.desc;
+
+        $('<div>').text(desc).appendTo(div);
+        $('<input>')
+          .attr('data-bind', 'value: ' + name)
+          .css({ width: 400, textAlign: 'right' })
+          .appendTo(div);
+    });
 
     $('<div>')
-      .text('Имя пользователя')
+      .text('Имя пользователя / Пароль')
       .appendTo(div);
     $('<input>')
       .attr('data-bind', 'value: moyskladClientUser')
-      .css({ width: 400 })
+      .css({ width: 190 })
       .appendTo(div);
 
-    $('<div>')
-      .text('Пароль')
-      .appendTo(div);
     $('<input>')
       .attr('data-bind', 'value: moyskladClientPass')
       .attr('type', 'password')
-      .css({ width: 400 })
+      .css({ marginLeft: 20, width: 190 })
       .appendTo(div);
 
-    $vm.moyskladClientUser.subscribe(saveTaistOptions);
-    $vm.moyskladClientPass.subscribe(saveTaistOptions);
+    $vm.saveTaistOptions = function() {
+      require('./utils').saveTaistOptions();
+    }
+
+    $("<div>").appendTo(div);
+    $('<button>')
+      .text("Сохранить настройки")
+      .attr('data-bind', 'click: saveTaistOptions')
+      .appendTo(div);
 
     return div;
   }

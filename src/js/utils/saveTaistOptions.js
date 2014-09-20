@@ -12,16 +12,19 @@ module.exports = function() {
   }
 
   $api.companyData.set('taistOptions', {
-    basePlanFolder:     ($vm.basePlanFolder()     || {}).uuid,
-    orderPlanFolder:    ($vm.orderPlanFolder()    || {}).uuid,
-    selectedWarehouse:  ($vm.selectedWarehouse()  || {}).uuid,
-    selectedCompany:    ($vm.selectedCompany()    || {}).uuid,
+    basePlanFolder: ($vm.basePlanFolder()     || {}).uuid,
+    orderPlanFolder: ($vm.orderPlanFolder()    || {}).uuid,
+    selectedWarehouse: ($vm.selectedWarehouse()  || {}).uuid,
+    selectedCompany: ($vm.selectedCompany()    || {}).uuid,
 
-    processingPlans:    processingPlans,
+    processingPlans: processingPlans,
     processingPlansFolder: $vm.processingPlanFolders(),
 
-    // moyskladClientUser: $vm.moyskladClientUser(),
-    // moyskladClientPass: $vm.moyskladClientPass(),
+    primeCostInterest: $vm.primeCostInterest(),
+    primeCostTax: $vm.primeCostTax(),
+    primeCostOutput: $vm.primeCostOutput(),
+    primeCostPackage: $vm.primeCostPackage(),
+    primeCostRisk: $vm.primeCostRisk(),
   }, function(){});
 
   $api.userData.set('taistOptions', {
