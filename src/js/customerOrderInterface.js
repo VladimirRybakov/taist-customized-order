@@ -38,6 +38,8 @@ module.exports = {
       { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
       { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
 
+      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
+
       { name: '', cls: '', bind: '' },
 
       {
@@ -147,7 +149,6 @@ module.exports = {
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
       { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
-      // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },

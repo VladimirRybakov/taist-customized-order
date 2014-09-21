@@ -166,6 +166,12 @@ module.exports = function() {
         return this._total().toFixed(2).replace('.', ',');
       }, order);
 
+      order._sTotalWithPackageAndRisks = ko.computed(function(){
+        return ( (this._total() + parseFloat(this.primeCostPackage()) ) *
+          ( 1 + parseFloat(this.primeCostRisk()) / 100) 
+        ).toFixed(2).replace('.', ',');
+      }, order);
+
       order._vat = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){

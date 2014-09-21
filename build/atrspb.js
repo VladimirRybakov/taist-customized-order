@@ -50,6 +50,8 @@ module.exports = {
       { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
       { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
 
+      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
+
       { name: '', cls: '', bind: '' },
 
       {
@@ -547,6 +549,12 @@ module.exports = function() {
 
       order._sTotal = ko.computed(function(){
         return this._total().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._sTotalWithPackageAndRisks = ko.computed(function(){
+        return ( (this._total() + parseFloat(this.primeCostPackage()) ) *
+          ( 1 + parseFloat(this.primeCostRisk()) / 100) 
+        ).toFixed(2).replace('.', ',');
       }, order);
 
       order._vat = ko.computed(function(){
