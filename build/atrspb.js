@@ -112,16 +112,16 @@ module.exports = {
       container.css({position: 'relative'});
 
       hide = function() {
-        console.log('HIDE');
         $('.availabilityInfo').hide();
         return false;
       }
 
       show = function(data, event) {
-        console.log('SHOW');
         $('.availabilityInfo').hide();
         $('.availabilityInfo', $(event.target).parent()).show();
       }
+
+      container.attr('data-bind', 'css: _availabilityColor');
 
       div = $('<div>')
         .addClass('availabilityInfo')
@@ -161,7 +161,6 @@ module.exports = {
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
       { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
-      // { title: 'Скидка, %', bind: 'text', var: 'discount', cls: 'tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
@@ -553,7 +552,7 @@ module.exports = function() {
 
       order._sTotalWithPackageAndRisks = ko.computed(function(){
         return ( (this._total() + parseFloat(this.primeCostPackage()) ) *
-          ( 1 + parseFloat(this.primeCostRisk()) / 100) 
+          ( 1 + parseFloat(this.primeCostRisk()) / 100)
         ).toFixed(2).replace('.', ',');
       }, order);
 
@@ -1030,7 +1029,7 @@ module.exports = function (options) {
     };
   }
 
-  koData._available = ko.observable('');
+  koData._available = ko.observable(0);
   koData._availableInfo = ko.observable('');
   koData._isSelected = ko.observable(false);
 
@@ -1062,6 +1061,10 @@ module.exports = function (options) {
       );
     }
   });
+
+  koData._availabilityColor = ko.computed(function(){
+    return this.quantity() > this._available() ? 'red' : 'green';
+  }, koData);
 
   koData._name = $vm.goods[goodUuid].name;
   koData._unit = $vm.goods[goodUuid].unit;

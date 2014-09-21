@@ -41,7 +41,7 @@ module.exports = function (options) {
     };
   }
 
-  koData._available = ko.observable('');
+  koData._available = ko.observable(0);
   koData._availableInfo = ko.observable('');
   koData._isSelected = ko.observable(false);
 
@@ -73,6 +73,10 @@ module.exports = function (options) {
       );
     }
   });
+
+  koData._availabilityColor = ko.computed(function(){
+    return this.quantity() > this._available() ? 'red' : 'green';
+  }, koData);
 
   koData._name = $vm.goods[goodUuid].name;
   koData._unit = $vm.goods[goodUuid].unit;

@@ -100,16 +100,16 @@ module.exports = {
       container.css({position: 'relative'});
 
       hide = function() {
-        console.log('HIDE');
         $('.availabilityInfo').hide();
         return false;
       }
 
       show = function(data, event) {
-        console.log('SHOW');
         $('.availabilityInfo').hide();
         $('.availabilityInfo', $(event.target).parent()).show();
       }
+
+      container.attr('data-bind', 'css: _availabilityColor');
 
       div = $('<div>')
         .addClass('availabilityInfo')

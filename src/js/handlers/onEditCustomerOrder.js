@@ -168,7 +168,7 @@ module.exports = function() {
 
       order._sTotalWithPackageAndRisks = ko.computed(function(){
         return ( (this._total() + parseFloat(this.primeCostPackage()) ) *
-          ( 1 + parseFloat(this.primeCostRisk()) / 100) 
+          ( 1 + parseFloat(this.primeCostRisk()) / 100)
         ).toFixed(2).replace('.', ',');
       }, order);
 
