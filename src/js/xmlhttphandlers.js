@@ -104,10 +104,15 @@ module.exports = {
       return false;
     }
 
-    var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+    var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g,
         matches = requestData.match(pattern);
     if(matches) {
-      $client.load('Company', matches[0], function(dummy, company){
+      var i = 0;
+      while(matches[i] == 'e15a38f1-cd54-11e2-42ae-001b21d91495') {
+        i++;
+      }
+
+      $client.load('Company', matches[i], function(dummy, company){
         if(company) {
           var order = $vm.selectedOrder();
           if(order) {

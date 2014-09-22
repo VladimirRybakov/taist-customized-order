@@ -18,7 +18,8 @@ module.exports = function (order){
         'Договор'                 : '_contract',
         'План. дата отгрузки'     : '_date',
         'Проект'                  : '_project',
-      };
+      },
+      props = {};
 
   for(i = 0, l = attrs.length; i < l; i += 1) {
     mapping[attrs[i].name] = '$' + attrs[i].uuid;
@@ -35,10 +36,11 @@ module.exports = function (order){
       }
       input = $('textarea:first,input:first', widgets[i]);
       val = input.attr('type') == 'checkbox' ? input[0].checked : input.val();
-      // $api.log('order attributes', key, val);
       order[key](val);
+      props[label] = val;
     }
   }
+  $api.log('OrderProperties', props);
 
   val = $('.state-panel').text();
   if(typeof order._state !== 'function') {

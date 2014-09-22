@@ -234,6 +234,8 @@ function onStart(_taistApi) {
       $api.companyData.setCompanyKey($vm.companyUuid);
 
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
+
+      // $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
     });
   });
 }

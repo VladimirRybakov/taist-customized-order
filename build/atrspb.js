@@ -1204,7 +1204,8 @@ module.exports = function (order){
         'Договор'                 : '_contract',
         'План. дата отгрузки'     : '_date',
         'Проект'                  : '_project',
-      };
+      },
+      props = {};
 
   for(i = 0, l = attrs.length; i < l; i += 1) {
     mapping[attrs[i].name] = '$' + attrs[i].uuid;
@@ -1221,10 +1222,11 @@ module.exports = function (order){
       }
       input = $('textarea:first,input:first', widgets[i]);
       val = input.attr('type') == 'checkbox' ? input[0].checked : input.val();
-      // $api.log('order attributes', key, val);
       order[key](val);
+      props[label] = val;
     }
   }
+  $api.log('OrderProperties', props);
 
   val = $('.state-panel').text();
   if(typeof order._state !== 'function') {
@@ -1502,6 +1504,8 @@ function onStart(_taistApi) {
       $api.companyData.setCompanyKey($vm.companyUuid);
 
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
+
+      // $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
     });
   });
 }
@@ -1917,10 +1921,15 @@ module.exports = {
       return false;
     }
 
-    var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+    var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g,
         matches = requestData.match(pattern);
     if(matches) {
-      $client.load('Company', matches[0], function(dummy, company){
+      var i = 0;
+      while(matches[i] == 'e15a38f1-cd54-11e2-42ae-001b21d91495') {
+        i++;
+      }
+
+      $client.load('Company', matches[i], function(dummy, company){
         if(company) {
           var order = $vm.selectedOrder();
           if(order) {
