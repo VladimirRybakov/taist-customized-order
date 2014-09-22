@@ -68,6 +68,14 @@ module.exports = function() {
               });
               break;
 
+            case 'LONG':
+              order.attribute.push({
+                TYPE_NAME: "moysklad.operationAttributeValue",
+                metadataUuid: uuid,
+                longValue: parseInt(attrValue, 10),
+              });
+              break;
+
             case 'BOOLEAN':
               order.attribute.push({
                 TYPE_NAME: "moysklad.operationAttributeValue",
