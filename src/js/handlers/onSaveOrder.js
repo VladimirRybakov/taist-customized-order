@@ -135,6 +135,8 @@ module.exports = function() {
     return false;
   }
 
+  $('#site').hide();
+  $('#loading').show();
   plan = $.extend(true, {}, $vm.selectedPlan().data);
   plan.name = $vm.selectedOrder()._name();
   plan.parentUuid = $vm.orderPlanFolder().uuid;
