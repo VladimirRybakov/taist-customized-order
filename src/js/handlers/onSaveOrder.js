@@ -30,17 +30,23 @@ module.exports = function() {
 
         for(key in mapping) {
           val = $vm.selectedOrder()[key]();
+          if(key == '_project'){
+            val = val.replace(/\s+\[.+?\]/, '');
+          }
           mapObject = mapping[key];
+
           if(val !== '') {
-            uuid = $client.from(mapObject.collection)
+            uuid = ($client.from(mapObject.collection)
               .select({name: val})
-              .load()[0].uuid;
-            order[mapObject.saveAs] = uuid;
-            $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
+              .load()[0] || {}).uuid;
+            if(uuid) {
+              order[mapObject.saveAs] = uuid;
+              $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
+              continue;
+            }
           }
-          else {
-            delete(order[mapObject.saveAs])
-          }
+
+          delete(order[mapObject.saveAs])
         }
 
         var attrs = $vm.orderAttributes,
@@ -74,7 +80,7 @@ module.exports = function() {
                   TYPE_NAME: "moysklad.operationAttributeValue",
                   metadataUuid: uuid,
                   longValue: parseInt(attrValue || 0, 10),
-                });                
+                });
               }
               break;
 

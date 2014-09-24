@@ -1,5 +1,4 @@
 var $api = require('./globals/api')
-  , $log
   , $client = require('./globals/client')
   , $vm = require('./globals/vm')
   , $div
@@ -35,7 +34,7 @@ function waitForKnockout(count, callback){
     script = document.createElement('script');
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js";
     document.head.appendChild(script);
-    waitForObject(20, ko, 'mapping', function(){
+    waitForObject(100, ko, 'mapping', function(){
       callback();
     });
   });
@@ -214,10 +213,10 @@ function onStart(_taistApi) {
   $.extend($api, _taistApi);
   window.$api = $api;
 
-  $log = $api.log;
-  $log('onStart');
+  $api.log('onStart');
 
-  waitForKnockout(20, function(){
+  waitForKnockout(100, function(){
+    $api.log('knockout loaded');
 
     $.extend($client, window.require('moysklad-client').createClient());
 
@@ -235,7 +234,12 @@ function onStart(_taistApi) {
       $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
       $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
 
-      $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
+      $vm.companyUuid = $api.localStorage.get('companyUuid');
+      if(!$vm.companyUuid) {
+        $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
+        $api.localStorage.set('companyUuid', $vm.companyUuid);
+      }
+
       $api.companyData.setCompanyKey($vm.companyUuid);
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 
