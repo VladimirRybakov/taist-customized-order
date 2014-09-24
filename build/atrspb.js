@@ -1356,12 +1356,19 @@ function setupDicts(taistOptions) {
       .load()[0].attributeMetadata
       .map(function(attr) {
         if(attr.dictionaryMetadataUuid) {
-            $vm.attrDicts[attr.dictionaryMetadataUuid] = {}
-            $client
-              .from('customEntity')
-              .select({entityMetadataUuid: attr.dictionaryMetadataUuid})
-              .load().forEach(function(entity){
-                $vm.attrDicts[attr.dictionaryMetadataUuid][entity.name] = entity.uuid;
+
+            $vm.attrDicts[attr.dictionaryMetadataUuid] = require('./utils').
+              getFromLocalStorage(attr.dictionaryMetadataUuid, function(key){
+                var result = {};
+
+                $client
+                  .from('customEntity')
+                  .select({entityMetadataUuid: key})
+                  .load().forEach(function(entity){
+                    result[entity.name] = entity.uuid;
+                  });
+
+                return result;
               });
         }
 
@@ -1543,7 +1550,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./processors/parseOrderAttributes":23,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":33,"./xmlhttpproxy":34}],26:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./processors/parseOrderAttributes":23,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":35,"./xmlhttpproxy":36}],26:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1632,6 +1639,7 @@ module.exports = {
       .text("Очистить список шаблонов")
       .click(function(){
         $vm.processingPlans.removeAll();
+        require('./utils').resetLocalStorage();
         require('./utils').saveTaistOptions();
       })
       .appendTo(div);
@@ -1732,9 +1740,11 @@ module.exports = {
   saveTaistOptions: require('./utils/saveTaistOptions'),
   createBindedTable: require('./utils/createBindedTable'),
   getPositionsOrder: require('./utils/getPositionsOrder'),
+  getFromLocalStorage: require('./utils/getFromLocalStorage'),
+  resetLocalStorage: require('./utils/resetLocalStorage'),
 }
 
-},{"./utils/createBindedTable":29,"./utils/getPositionsOrder":30,"./utils/parseProcessingPlans":31,"./utils/saveTaistOptions":32}],29:[function(require,module,exports){
+},{"./utils/createBindedTable":29,"./utils/getFromLocalStorage":30,"./utils/getPositionsOrder":31,"./utils/parseProcessingPlans":32,"./utils/resetLocalStorage":33,"./utils/saveTaistOptions":34}],29:[function(require,module,exports){
 module.exports = function(table, fields, collectionName) {
   var thead  = $('<thead>').appendTo(table),
       trhead = $('<tr>').appendTo(thead),
@@ -1769,6 +1779,19 @@ module.exports = function(table, fields, collectionName) {
 }
 
 },{}],30:[function(require,module,exports){
+var $api = require('../globals/api'),
+    $vm = require('../globals/vm');
+
+module.exports = function(key, callback) {
+  var storedData = $api.localStorage.get($vm.companyUuid) || {};
+  if(!storedData[key]) {
+    storedData[key] = callback(key);
+    $api.localStorage.set($vm.companyUuid, storedData);
+  }
+  return storedData[key];
+}
+
+},{"../globals/api":4,"../globals/vm":8}],31:[function(require,module,exports){
 module.exports = function() {
   return $('tr', '.taist-table')
     .not(':first')
@@ -1778,7 +1801,7 @@ module.exports = function() {
     });
 }
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(plans) {
@@ -1809,7 +1832,15 @@ module.exports = function(plans) {
   }
 }
 
-},{"../globals/vm":8}],32:[function(require,module,exports){
+},{"../globals/vm":8}],33:[function(require,module,exports){
+var $api = require('../globals/api'),
+    $vm = require('../globals/vm');
+
+module.exports = function() {
+  $api.localStorage.set($vm.companyUuid, null);
+}
+
+},{"../globals/api":4,"../globals/vm":8}],34:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1845,7 +1876,7 @@ module.exports = function() {
   }, function(){});
 }
 
-},{"../globals/api":4,"../globals/vm":8}],33:[function(require,module,exports){
+},{"../globals/api":4,"../globals/vm":8}],35:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $api    = require('./globals/api'),
     $client = require('./globals/client'),
@@ -1975,7 +2006,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":19,"./state":26}],34:[function(require,module,exports){
+},{"./globals/api":4,"./globals/app":5,"./globals/client":6,"./processors":19,"./state":26}],36:[function(require,module,exports){
 var $api = require("./globals/api");
 
 var registerXMLHttpHandlers = function (handlers) {

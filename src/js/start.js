@@ -62,12 +62,19 @@ function setupDicts(taistOptions) {
       .load()[0].attributeMetadata
       .map(function(attr) {
         if(attr.dictionaryMetadataUuid) {
-            $vm.attrDicts[attr.dictionaryMetadataUuid] = {}
-            $client
-              .from('customEntity')
-              .select({entityMetadataUuid: attr.dictionaryMetadataUuid})
-              .load().forEach(function(entity){
-                $vm.attrDicts[attr.dictionaryMetadataUuid][entity.name] = entity.uuid;
+
+            $vm.attrDicts[attr.dictionaryMetadataUuid] = require('./utils').
+              getFromLocalStorage(attr.dictionaryMetadataUuid, function(key){
+                var result = {};
+
+                $client
+                  .from('customEntity')
+                  .select({entityMetadataUuid: key})
+                  .load().forEach(function(entity){
+                    result[entity.name] = entity.uuid;
+                  });
+
+                return result;
               });
         }
 

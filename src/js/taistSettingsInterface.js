@@ -72,6 +72,7 @@ module.exports = {
       .text("Очистить список шаблонов")
       .click(function(){
         $vm.processingPlans.removeAll();
+        require('./utils').resetLocalStorage();
         require('./utils').saveTaistOptions();
       })
       .appendTo(div);
