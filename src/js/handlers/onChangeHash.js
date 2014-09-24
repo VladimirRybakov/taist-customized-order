@@ -12,16 +12,16 @@ module.exports = function() {
 
   $app.resetState();
 
-  if(/#customerorder(\?global_stateFilter.+)?$/.test(hash)){
+  if(/#customerorder(\?global_stateFilter.+)?$/.test(hash)) {
     $('#onCustomerOrder').show();
     return require('../handlers').onCustomerOrder();
   }
-  else{
+  else {
     $('#onCustomerOrder').hide();
   }
 
   if(/#customerorder\/edit/.test(hash)){
-
+    $api.log('###', 'onEditCustomerOrder');
     $app.changeState(STATE.APP.orderOpened);
     $('body').addClass('newOrderInterface');
     if(isCancelled) {
@@ -31,7 +31,8 @@ module.exports = function() {
       return require('../handlers').onEditCustomerOrder();
     }
   }
-  else{
+  else {
+    $api.log('###', 'simpleInterface');
     $('body').removeClass('newOrderInterface');
   }
 }

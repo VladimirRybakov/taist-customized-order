@@ -230,6 +230,11 @@ module.exports = function() {
       // setTimeout(function() {
         var selector = '.tutorial-step-inline-editor'
         $api.wait.elementRender(selector, function(){
+          if(!/#customerorder\/edit/.test(location.hash)){
+            $log('avoid to re:applyBindings');
+            return;
+          }
+
           $log('applyBindings for customerOrder');
 
           var originalGoodsTable = $(selector);

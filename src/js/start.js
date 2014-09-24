@@ -201,7 +201,6 @@ function onCompanyDataLoaded(error, taistOptions) {
   $dom.setGoodsNode(goodsDOMNode[0]);
 
   $api.hash.onChange(handlers.onChangeHash);
-  //handlers.onChangeHash(location.hash);
 
   if(shouldSaveOptions) {
     require('./utils').saveTaistOptions();
