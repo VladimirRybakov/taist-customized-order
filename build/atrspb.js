@@ -266,7 +266,7 @@ module.exports = function() {
 
   $app.resetState();
 
-  if(/#customerorder$/.test(hash)){
+  if(/#customerorder(\?global_stateFilter.+)?$/.test(hash)){
     $('#onCustomerOrder').show();
     return require('../handlers').onCustomerOrder();
   }
