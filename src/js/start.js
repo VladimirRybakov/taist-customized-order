@@ -41,8 +41,7 @@ function waitForKnockout(count, callback){
   });
 }
 
-function setupDicts() {
-  $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
+function setupDicts(taistOptions) {
 
   $vm.units = {};
   $client.from('Uom').load().forEach(function(uom){
@@ -87,6 +86,8 @@ function setupDicts() {
 function onCompanyDataLoaded(error, taistOptions) {
   taistOptions || (taistOptions = {});
 
+  setupDicts(taistOptions);
+
   $div = $('<div id="taist">')
     .css({display: 'none'})
     .prependTo('body');
@@ -110,11 +111,11 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedPlan = ko.observable(null);
   $vm.basePlan = ko.observable(null);
 
-  var processingPlans;
+  var processingPlans, shouldSaveOptions = false;
 
   if(typeof taistOptions.processingPlans === 'undefined') {
     processingPlans = $client.from('ProcessingPlan').load();
-    require('./utils').saveTaistOptions();
+    shouldSaveOptions = true;
   } else {
     processingPlans = taistOptions.processingPlans;
   }
@@ -202,6 +203,10 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $api.hash.onChange(handlers.onChangeHash);
   //handlers.onChangeHash(location.hash);
+
+  if(shouldSaveOptions) {
+    require('./utils').saveTaistOptions();
+  }
 }
 
 function onStart(_taistApi) {
@@ -230,12 +235,11 @@ function onStart(_taistApi) {
       $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
       $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
 
-      setupDicts();
+      $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
       $api.companyData.setCompanyKey($vm.companyUuid);
-
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 
-      // $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
+      $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
     });
   });
 }

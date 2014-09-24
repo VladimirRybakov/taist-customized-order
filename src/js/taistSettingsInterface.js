@@ -72,7 +72,7 @@ module.exports = {
       .text("Очистить список шаблонов")
       .click(function(){
         $vm.processingPlans.removeAll();
-        saveTaistOptions();
+        require('./utils').saveTaistOptions();
       })
       .appendTo(div);
 

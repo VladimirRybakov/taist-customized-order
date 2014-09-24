@@ -853,11 +853,13 @@ module.exports = function() {
               break;
 
             case 'LONG':
-              order.attribute.push({
-                TYPE_NAME: "moysklad.operationAttributeValue",
-                metadataUuid: uuid,
-                longValue: parseInt(attrValue, 10),
-              });
+              if(attrValue) {
+                order.attribute.push({
+                  TYPE_NAME: "moysklad.operationAttributeValue",
+                  metadataUuid: uuid,
+                  longValue: parseInt(attrValue || 0, 10),
+                });                
+              }
               break;
 
             case 'BOOLEAN':
@@ -1321,8 +1323,7 @@ function waitForKnockout(count, callback){
   });
 }
 
-function setupDicts() {
-  $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
+function setupDicts(taistOptions) {
 
   $vm.units = {};
   $client.from('Uom').load().forEach(function(uom){
@@ -1367,6 +1368,8 @@ function setupDicts() {
 function onCompanyDataLoaded(error, taistOptions) {
   taistOptions || (taistOptions = {});
 
+  setupDicts(taistOptions);
+
   $div = $('<div id="taist">')
     .css({display: 'none'})
     .prependTo('body');
@@ -1390,11 +1393,11 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedPlan = ko.observable(null);
   $vm.basePlan = ko.observable(null);
 
-  var processingPlans;
+  var processingPlans, shouldSaveOptions = false;
 
   if(typeof taistOptions.processingPlans === 'undefined') {
     processingPlans = $client.from('ProcessingPlan').load();
-    require('./utils').saveTaistOptions();
+    shouldSaveOptions = true;
   } else {
     processingPlans = taistOptions.processingPlans;
   }
@@ -1482,6 +1485,10 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $api.hash.onChange(handlers.onChangeHash);
   //handlers.onChangeHash(location.hash);
+
+  if(shouldSaveOptions) {
+    require('./utils').saveTaistOptions();
+  }
 }
 
 function onStart(_taistApi) {
@@ -1510,19 +1517,18 @@ function onStart(_taistApi) {
       $vm.moyskladClientUser = ko.observable(taistOptions.moyskladClientUser || '');
       $vm.moyskladClientPass = ko.observable(taistOptions.moyskladClientPass || '');
 
-      setupDicts();
+      $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
       $api.companyData.setCompanyKey($vm.companyUuid);
-
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 
-      // $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
+      $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
     });
   });
 }
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":33,"./xmlhttpproxy":34}],26:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":4,"./globals/app":5,"./globals/client":6,"./globals/dom":7,"./globals/vm":8,"./handlers":9,"./processors":19,"./processors/parseOrderAttributes":23,"./state":26,"./taistSettingsInterface":27,"./utils":28,"./xmlhttphandlers":33,"./xmlhttpproxy":34}],26:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1611,7 +1617,7 @@ module.exports = {
       .text("Очистить список шаблонов")
       .click(function(){
         $vm.processingPlans.removeAll();
-        saveTaistOptions();
+        require('./utils').saveTaistOptions();
       })
       .appendTo(div);
 
