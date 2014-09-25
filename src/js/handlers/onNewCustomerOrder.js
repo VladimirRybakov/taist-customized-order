@@ -47,7 +47,8 @@ module.exports = function() {
             targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
             moment: new Date(),
             // name: new Date().getTime().toString(),
-            customerOrderPosition: positions
+            customerOrderPosition: positions,
+            employeeUuid: $vm.employeeUuid,
           }
 
           $client.save("moysklad.customerOrder", order, function(dummy, order){

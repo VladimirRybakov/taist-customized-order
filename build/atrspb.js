@@ -745,7 +745,8 @@ module.exports = function() {
             targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
             moment: new Date(),
             // name: new Date().getTime().toString(),
-            customerOrderPosition: positions
+            customerOrderPosition: positions,
+            employeeUuid: $vm.employeeUuid,
           }
 
           $client.save("moysklad.customerOrder", order, function(dummy, order){
@@ -1536,8 +1537,14 @@ function onStart(_taistApi) {
 
       $vm.companyUuid = $api.localStorage.get('companyUuid');
       if(!$vm.companyUuid) {
-        $vm.companyUuid = $client.from('MyCompany').load()[0].uuid;
+        $vm.companyUuid = ($client.from('MyCompany').load()[0] || {}).uuid;
         $api.localStorage.set('companyUuid', $vm.companyUuid);
+      }
+
+      $vm.employeeUuid = $api.localStorage.get('employeeUuid');
+      if(!$vm.employeeUuid) {
+        $vm.employeeUuid = ($client.from('Employee').select( { name: ($('.full-name').text() || '') } ).load()[0] || {}).uuid;
+        $api.localStorage.set('employeeUuid', $vm.employeeUuid || '');
       }
 
       $api.companyData.setCompanyKey($vm.companyUuid);
