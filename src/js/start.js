@@ -98,7 +98,9 @@ function onCompanyDataLoaded(error, taistOptions) {
     .css({display: 'none'})
     .prependTo('body');
 
-  var div = $('<div id = "taist_processingPlans">');
+  var div;
+
+  div = $('<div id = "taist_processingPlans">');
   $("<select>")
     .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
     .css({ width: 400 })
@@ -112,10 +114,25 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div.appendTo($div);
 
+  div = $('<div id = "taist_basePlanForOrder">');
+  $("<select>")
+    .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlanForOrder")
+    .css({ width: 400 })
+    .appendTo(div);
+
+  $("<button>")
+    .text('Добавить позиции из шаблона')
+    .css({ marginLeft: 20, width: 200 })
+    .click(require('./handlers').onSelectBasePlanForCustomerOrder)
+    .appendTo(div);
+
+  div.appendTo($div);
+
   $vm.processingPlans = ko.observableArray([]).extend({ rateLimit: 50 });
 
   $vm.selectedPlan = ko.observable(null);
   $vm.basePlan = ko.observable(null);
+  $vm.basePlanForOrder = ko.observable(null);
 
   var processingPlans, shouldSaveOptions = false;
 

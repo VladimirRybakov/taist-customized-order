@@ -9,7 +9,7 @@ var addonEntry = {
 
 module.exports = addonEntry;
 
-},{"./start":27}],3:[function(require,module,exports){
+},{"./start":28}],3:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var div,
@@ -196,7 +196,7 @@ module.exports = {
   }
 }
 
-},{"./primeCostInterface":20,"./utils":30}],4:[function(require,module,exports){
+},{"./primeCostInterface":21,"./utils":31}],4:[function(require,module,exports){
 module.exports = {
   getProcessingPlanGoods: require('./dataProvider/getProcessingPlanGoods'),
 }
@@ -210,7 +210,6 @@ module.exports = function(uuid){
       i, l,
       goods = [];
 
-  uuid = $vm.basePlan().uuid;
   plan = $client.from('ProcessingPlan').select({ uuid: uuid }).load()[0];
   if(plan) {
     lazyLoader = $client.createLazyLoader();
@@ -275,9 +274,10 @@ module.exports = {
   onReserve: require('./handlers/onReserve'),
   onChangesDialog: require('./handlers/onChangesDialog'),
   onDelete: require('./handlers/onDelete'),
+  onSelectBasePlanForCustomerOrder: require('./handlers/onSelectBasePlanForCustomerOrder'),
 }
 
-},{"./handlers/onChangeHash":12,"./handlers/onChangesDialog":13,"./handlers/onCustomerOrder":14,"./handlers/onDelete":15,"./handlers/onEditCustomerOrder":16,"./handlers/onNewCustomerOrder":17,"./handlers/onReserve":18,"./handlers/onSaveOrder":19}],12:[function(require,module,exports){
+},{"./handlers/onChangeHash":12,"./handlers/onChangesDialog":13,"./handlers/onCustomerOrder":14,"./handlers/onDelete":15,"./handlers/onEditCustomerOrder":16,"./handlers/onNewCustomerOrder":17,"./handlers/onReserve":18,"./handlers/onSaveOrder":19,"./handlers/onSelectBasePlanForCustomerOrder":20}],12:[function(require,module,exports){
 var $app = require('../globals/app'),
     $api = require('../globals/api'),
     STATE = require('../state');
@@ -289,6 +289,8 @@ module.exports = function() {
   if($app.getFirstState() && $('.b-lognex-dialog-box.b-message-box').size() > 0) {
     return require('../handlers').onChangesDialog()
   }
+
+  $('#taist_basePlanForOrder').hide();
 
   $app.resetState();
 
@@ -315,7 +317,7 @@ module.exports = function() {
   }
 }
 
-},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":28}],13:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":29}],13:[function(require,module,exports){
 var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state')
@@ -369,7 +371,7 @@ module.exports = function(){
     });
 }
 
-},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":28}],14:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":29}],14:[function(require,module,exports){
 module.exports = function() {
   var $log = require('../globals/api').log;
 
@@ -424,6 +426,8 @@ module.exports = function() {
   $(goodsDOMNode).hide();
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
+
+  $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
@@ -720,7 +724,7 @@ module.exports = function() {
   });
 }
 
-},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../handlers":11,"../processors":21,"../processors/parseOrderAttributes":25,"../state":28,"../utils":30}],17:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../handlers":11,"../processors":22,"../processors/parseOrderAttributes":26,"../state":29,"../utils":31}],17:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
@@ -1011,7 +1015,17 @@ module.exports = function() {
   }
 };
 
-},{"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors/parseOrderAttributes":25,"../utils":30}],20:[function(require,module,exports){
+},{"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors/parseOrderAttributes":26,"../utils":31}],20:[function(require,module,exports){
+var $vm     = require('../globals/vm'),
+    $api    = require('../globals/api'),
+    $client = require('../globals/client');
+
+module.exports = function(){
+  var goods = require('../dataProvider').getProcessingPlanGoods($vm.basePlanForOrder().uuid);
+  $api.log(goods);
+}
+
+},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10}],21:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var table = $('<table class="taistTable primeCost">'),
@@ -1031,14 +1045,14 @@ module.exports = {
   }
 }
 
-},{"./utils":30}],21:[function(require,module,exports){
+},{"./utils":31}],22:[function(require,module,exports){
 module.exports = {
   createCustomerOrderPosition: require('./processors/createCustomerOrderPosition'),
   createSumObject: require('./processors/createSumObject'),
   createPrimeCost: require('./processors/createPrimeCost'),
 }
 
-},{"./processors/createCustomerOrderPosition":22,"./processors/createPrimeCost":23,"./processors/createSumObject":24}],22:[function(require,module,exports){
+},{"./processors/createCustomerOrderPosition":23,"./processors/createPrimeCost":24,"./processors/createSumObject":25}],23:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -1163,7 +1177,7 @@ module.exports = function (options) {
   return koData;
 }
 
-},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../processors":21,"../requestQueue":26,"../state":28}],23:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../processors":22,"../requestQueue":27,"../state":29}],24:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function (options) {
@@ -1226,7 +1240,7 @@ module.exports = function (options) {
   return primeCost;
 }
 
-},{"../globals/vm":10}],24:[function(require,module,exports){
+},{"../globals/vm":10}],25:[function(require,module,exports){
 module.exports = function (options) {
   return ko.mapping.fromJS(
     options.data,
@@ -1236,7 +1250,7 @@ module.exports = function (options) {
   );
 }
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1288,7 +1302,7 @@ module.exports = function (order){
   order._state(val);
 }
 
-},{"../globals/api":6,"../globals/vm":10}],26:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],27:[function(require,module,exports){
 var $api = require('./globals/api'),
     queue = [],
     isInProgress = false;
@@ -1320,7 +1334,7 @@ module.exports = {
   }
 }
 
-},{"./globals/api":6}],27:[function(require,module,exports){
+},{"./globals/api":6}],28:[function(require,module,exports){
 var $api = require('./globals/api')
   , $client = require('./globals/client')
   , $vm = require('./globals/vm')
@@ -1421,7 +1435,9 @@ function onCompanyDataLoaded(error, taistOptions) {
     .css({display: 'none'})
     .prependTo('body');
 
-  var div = $('<div id = "taist_processingPlans">');
+  var div;
+
+  div = $('<div id = "taist_processingPlans">');
   $("<select>")
     .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
     .css({ width: 400 })
@@ -1435,10 +1451,25 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div.appendTo($div);
 
+  div = $('<div id = "taist_basePlanForOrder">');
+  $("<select>")
+    .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlanForOrder")
+    .css({ width: 400 })
+    .appendTo(div);
+
+  $("<button>")
+    .text('Добавить позиции из шаблона')
+    .css({ marginLeft: 20, width: 200 })
+    .click(require('./handlers').onSelectBasePlanForCustomerOrder)
+    .appendTo(div);
+
+  div.appendTo($div);
+
   $vm.processingPlans = ko.observableArray([]).extend({ rateLimit: 50 });
 
   $vm.selectedPlan = ko.observable(null);
   $vm.basePlan = ko.observable(null);
+  $vm.basePlanForOrder = ko.observable(null);
 
   var processingPlans, shouldSaveOptions = false;
 
@@ -1585,7 +1616,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":6,"./globals/app":7,"./globals/client":8,"./globals/dom":9,"./globals/vm":10,"./handlers":11,"./processors":21,"./processors/parseOrderAttributes":25,"./state":28,"./taistSettingsInterface":29,"./utils":30,"./xmlhttphandlers":37,"./xmlhttpproxy":38}],28:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":6,"./globals/app":7,"./globals/client":8,"./globals/dom":9,"./globals/vm":10,"./handlers":11,"./processors":22,"./processors/parseOrderAttributes":26,"./state":29,"./taistSettingsInterface":30,"./utils":31,"./xmlhttphandlers":38,"./xmlhttpproxy":39}],29:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1599,7 +1630,7 @@ module.exports = {
   },
 }
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 var $api = require('./globals/api'),
     $client = require('./globals/client'),
     $vm = require('./globals/vm');
@@ -1769,7 +1800,7 @@ module.exports = {
 
 }
 
-},{"./globals/api":6,"./globals/client":8,"./globals/vm":10,"./utils":30}],30:[function(require,module,exports){
+},{"./globals/api":6,"./globals/client":8,"./globals/vm":10,"./utils":31}],31:[function(require,module,exports){
 module.exports = {
   parseProcessingPlans: require('./utils/parseProcessingPlans'),
   saveTaistOptions: require('./utils/saveTaistOptions'),
@@ -1779,7 +1810,7 @@ module.exports = {
   resetLocalStorage: require('./utils/resetLocalStorage'),
 }
 
-},{"./utils/createBindedTable":31,"./utils/getFromLocalStorage":32,"./utils/getPositionsOrder":33,"./utils/parseProcessingPlans":34,"./utils/resetLocalStorage":35,"./utils/saveTaistOptions":36}],31:[function(require,module,exports){
+},{"./utils/createBindedTable":32,"./utils/getFromLocalStorage":33,"./utils/getPositionsOrder":34,"./utils/parseProcessingPlans":35,"./utils/resetLocalStorage":36,"./utils/saveTaistOptions":37}],32:[function(require,module,exports){
 module.exports = function(table, fields, collectionName) {
   var thead  = $('<thead>').appendTo(table),
       trhead = $('<tr>').appendTo(thead),
@@ -1813,7 +1844,7 @@ module.exports = function(table, fields, collectionName) {
   });
 }
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1826,7 +1857,7 @@ module.exports = function(key, callback) {
   return storedData[key];
 }
 
-},{"../globals/api":6,"../globals/vm":10}],33:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],34:[function(require,module,exports){
 module.exports = function() {
   return $('tr', '.taist-table')
     .not(':first')
@@ -1836,7 +1867,7 @@ module.exports = function() {
     });
 }
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(plans) {
@@ -1867,7 +1898,7 @@ module.exports = function(plans) {
   }
 }
 
-},{"../globals/vm":10}],35:[function(require,module,exports){
+},{"../globals/vm":10}],36:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1875,7 +1906,7 @@ module.exports = function() {
   $api.localStorage.set($vm.companyUuid, null);
 }
 
-},{"../globals/api":6,"../globals/vm":10}],36:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],37:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1911,7 +1942,7 @@ module.exports = function() {
   }, function(){});
 }
 
-},{"../globals/api":6,"../globals/vm":10}],37:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],38:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $api    = require('./globals/api'),
     $client = require('./globals/client'),
@@ -2041,7 +2072,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":6,"./globals/app":7,"./globals/client":8,"./processors":21,"./state":28}],38:[function(require,module,exports){
+},{"./globals/api":6,"./globals/app":7,"./globals/client":8,"./processors":22,"./state":29}],39:[function(require,module,exports){
 var $api = require("./globals/api");
 
 var registerXMLHttpHandlers = function (handlers) {

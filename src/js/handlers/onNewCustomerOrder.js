@@ -15,13 +15,13 @@ module.exports = function() {
 
   var ts = new Date().getTime()
 
+  goods = require('../dataProvider').getProcessingPlanGoods( $vm.basePlan().uuid );
+  $api.log(goods);
+
   for(i = 0; i < posinionsQuantity; i++) {
     uuid = materials[i].goodUuid;
     quantities[uuid] = materials[i].quantity
   }
-
-  goods = require('../dataProvider').getProcessingPlanGoods( $vm.basePlan().uuid );
-  $api.log(goods);
 
   for( i = 0, l = goods.length; i < l; i+= 1 ) {
     good = goods[i];

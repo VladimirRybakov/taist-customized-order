@@ -16,6 +16,8 @@ module.exports = function() {
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
+  $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
+
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
     return;

@@ -10,6 +10,8 @@ module.exports = function() {
     return require('../handlers').onChangesDialog()
   }
 
+  $('#taist_basePlanForOrder').hide();
+
   $app.resetState();
 
   if(/#customerorder(\?global_stateFilter.+)?$/.test(hash)) {

@@ -6,7 +6,6 @@ module.exports = function(uuid){
       i, l,
       goods = [];
 
-  uuid = $vm.basePlan().uuid;
   plan = $client.from('ProcessingPlan').select({ uuid: uuid }).load()[0];
   if(plan) {
     lazyLoader = $client.createLazyLoader();
