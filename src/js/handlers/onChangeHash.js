@@ -21,7 +21,6 @@ module.exports = function() {
   }
 
   if(/#customerorder\/edit/.test(hash)){
-    $api.log('###', 'onEditCustomerOrder');
     $app.changeState(STATE.APP.orderOpened);
     $('body').addClass('newOrderInterface');
     if(isCancelled) {
@@ -32,7 +31,6 @@ module.exports = function() {
     }
   }
   else {
-    $api.log('###', 'simpleInterface');
     $('body').removeClass('newOrderInterface');
   }
 }
