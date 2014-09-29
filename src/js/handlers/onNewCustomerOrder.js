@@ -6,44 +6,16 @@ module.exports = function() {
   $api.log('onNewCustomerOrder', $vm.basePlan());
 
   var i, l,
-      materials = $vm.basePlan().data.material,
-      posinionsQuantity = materials.length,
       uuid,
-      quantities = {},
-      goods, good;
-      positions = []
+      goods,
+      positions;
 
   var ts = new Date().getTime()
 
   goods = require('../dataProvider').getProcessingPlanGoods( $vm.basePlan().uuid );
   $api.log(goods);
 
-  for(i = 0; i < posinionsQuantity; i++) {
-    uuid = materials[i].goodUuid;
-    quantities[uuid] = materials[i].quantity
-  }
-
-  for( i = 0, l = goods.length; i < l; i+= 1 ) {
-    good = goods[i];
-
-    positions.push({
-      vat: good.vat,
-      goodUuid: good.uuid,
-      quantity: quantities[good.uuid],
-      discount: 0,
-      reserve: 0,
-      basePrice: {
-        sum: good.salePrice,
-        sumInCurrency: good.salePrice
-      },
-      price: {
-        sum: good.salePrice,
-        sumInCurrency: good.salePrice
-      },
-    });
-
-  }
-
+  positions = require('../processors').createPositionsByGoods( goods, $vm.basePlan().materials );
   $api.log(positions);
 
   var order = {
