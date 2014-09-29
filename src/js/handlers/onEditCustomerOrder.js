@@ -16,12 +16,16 @@ module.exports = function() {
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
-  $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
+  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
+    $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
+  });
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
     return;
   }
+
+  $('#taist_basePlanForOrder').hide();
 
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);

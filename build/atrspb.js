@@ -427,12 +427,16 @@ module.exports = function() {
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
-  $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
+  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
+    $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
+  });
 
   if(matches === null) {
     $('body').removeClass('newOrderInterface');
     return;
   }
+
+  $('#taist_basePlanForOrder').hide();
 
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);
@@ -993,11 +997,49 @@ var $vm     = require('../globals/vm'),
     $client = require('../globals/client');
 
 module.exports = function(){
+  var i, l, pos;
+
   var goods = require('../dataProvider').getProcessingPlanGoods($vm.basePlanForOrder().uuid);
   $api.log(goods);
+
+  var positions = require('../processors').createPositionsByGoods(goods, $vm.basePlanForOrder().materials);
+  $api.log(positions);
+
+  // $vm.selectedPlan($vm.basePlanForOrder());
+  // for(i = 0, l = positions.length; i < l; i += 1) {
+  //   pos = require('../processors').createCustomerOrderPosition({data: positions[i]});
+  //   $api.log(pos);
+  // }
+  var uuid = location.hash.match(/id=(.+)/)[1];
+
+  var order = $client.from('CustomerOrder').select({uuid: uuid}).load()[0];
+
+  if(!order.customerOrderPosition){
+    order.customerOrderPosition = [];
+  }
+
+  for(i = 0, l = positions.length; i < l; i += 1) {
+    order.customerOrderPosition.push(positions[i]);
+  }
+
+  $api.log(order);
+
+  //TODO Should be refactored
+  $client.save("moysklad.customerOrder", order, function(dummy, order){
+    $api.companyData.set(order.uuid, {
+      uuid: order.uuid,
+      name: '',
+      customName: '',
+      baseTemplate: $vm.basePlanForOrder().data.uuid,
+      orderTemplate: '',
+      presentsCount: 10,
+    }, function(error){
+      location.reload();
+    })
+  });
 }
 
-},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10}],21:[function(require,module,exports){
+},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors":22}],21:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var table = $('<table class="taistTable primeCost">'),

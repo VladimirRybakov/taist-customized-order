@@ -103,7 +103,8 @@
 .newOrderInterface .tutorial-step-inline-editor,
 .newOrderInterface .b-delivery-footer,
 .newOrderInterface .b-delivery-actionbar,
-.newOrderInterface .totals-delivery {
+.newOrderInterface .totals-delivery,
+.newOrderInterface #taist_basePlanForOrder {
   display: none;
 }
 
