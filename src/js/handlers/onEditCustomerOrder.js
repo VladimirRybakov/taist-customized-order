@@ -25,7 +25,9 @@ module.exports = function() {
     return;
   }
 
-  $('#taist_basePlanForOrder').hide();
+  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
+    $('#taist_basePlanForOrder').hide();
+  });
 
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);

@@ -1,6 +1,4 @@
-function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"atrspb":[function(require,module,exports){
-module.exports=require('x7s1YF');
-},{}],"x7s1YF":[function(require,module,exports){
+function init(){var require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"U+ghpQ":[function(require,module,exports){
 var addonEntry = {
   start: function(_taistApi, entryPoint) {
     require('./start')(_taistApi);
@@ -9,7 +7,9 @@ var addonEntry = {
 
 module.exports = addonEntry;
 
-},{"./start":29}],3:[function(require,module,exports){
+},{"./start":29}],"atrspb":[function(require,module,exports){
+module.exports=require('U+ghpQ');
+},{}],3:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var div,
@@ -436,7 +436,9 @@ module.exports = function() {
     return;
   }
 
-  $('#taist_basePlanForOrder').hide();
+  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
+    $('#taist_basePlanForOrder').hide();
+  });
 
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);
@@ -2163,7 +2165,7 @@ module.exports = {
   registerHandlers: registerXMLHttpHandlers
 };
 
-},{"./globals/api":6}]},{},["x7s1YF"]);return require("atrspb")};
+},{"./globals/api":6}]},{},["U+ghpQ"]);return require("atrspb")};
 /* ===================================================
  *  jquery-sortable.js v0.9.12
  *  http://johnny.github.com/jquery-sortable/
