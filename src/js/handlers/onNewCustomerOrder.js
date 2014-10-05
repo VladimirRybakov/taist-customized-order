@@ -3,7 +3,7 @@ var $vm     = require('../globals/vm'),
     $client = require('../globals/client');
 
 module.exports = function() {
-  $api.log('onNewCustomerOrder', $vm.basePlan());
+  $api.log('onNewCustomerOrder', $vm.selectedBasePlan());
 
   var i, l,
       uuid,
@@ -12,10 +12,10 @@ module.exports = function() {
 
   var ts = new Date().getTime()
 
-  goods = require('../dataProvider').getProcessingPlanGoods( $vm.basePlan().uuid );
+  goods = require('../dataProvider').getProcessingPlanGoods( $vm.selectedBasePlan().uuid );
   $api.log(goods);
 
-  positions = require('../processors').createPositionsByGoods( goods, $vm.basePlan().materials );
+  positions = require('../processors').createPositionsByGoods( goods, $vm.selectedBasePlan().materials );
   $api.log(positions);
 
   var order = {

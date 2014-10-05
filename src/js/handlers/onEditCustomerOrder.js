@@ -233,8 +233,6 @@ module.exports = function() {
         return name;
       }, order);
 
-      require('../processors/parseOrderAttributes')(order);
-
       function redefineButtons(parent, id){
         var btn, div = $('#' + id);
 
@@ -327,6 +325,7 @@ module.exports = function() {
 
           $api.log('APPLY BINDINGS');
           ko.applyBindings($vm, goodsDOMNode);
+          require('../processors/parseOrderAttributes')($vm.selectedOrder());
           $(goodsDOMNode)
             .insertAfter( originalGoodsTable )
             .show();
