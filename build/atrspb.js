@@ -294,7 +294,7 @@ module.exports = function() {
 
   $app.resetState();
 
-  if(/#customerorder(\?global_[a-z]+Filter.+)?$/.test(hash)) {
+  if(/#customerorder(\?global_[a-zA-Z]+Filter.+)?$/.test(hash)) {
     $('#onCustomerOrder').show();
     return require('../handlers').onCustomerOrder();
   }
