@@ -102,7 +102,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div = $('<div id = "taist_processingPlans">');
   $("<select>")
-    .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
+    .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: selectedBasePlan")
     .css({ width: 400 })
     .appendTo(div);
 
@@ -132,6 +132,12 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $vm.selectedPlan = ko.observable(null);
   $vm.basePlan = ko.observable(null);
+  $vm.selectedBasePlan = ko.observable(null);
+
+  $vm.basePlan.subscribe(function(){
+    $api.log($vm.basePlan());
+  });
+
   $vm.basePlanForOrder = ko.observable(null);
 
   var processingPlans, shouldSaveOptions = false;

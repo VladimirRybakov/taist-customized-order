@@ -32,6 +32,7 @@ module.exports = function(){
 
   //TODO Should be refactored
   $client.save("moysklad.customerOrder", order, function(dummy, order){
+    $api.log($vm.basePlanForOrder().data.uuid);
     $api.companyData.set(order.uuid, {
       uuid: order.uuid,
       name: '',

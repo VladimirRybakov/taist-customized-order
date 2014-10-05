@@ -4,6 +4,30 @@ var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state');
 
+var elementsCallbacks = [];
+
+function runListener(){
+  var i, elem;
+
+  for(i in elementsCallbacks) {
+    elem = $(i);
+    if(elem.size() > 0) {
+      elementsCallbacks[i]();
+      delete elementsCallbacks[i];
+    }
+  }
+
+  for(i in elementsCallbacks) {
+    setTimeout(runListener, 200);
+    return;
+  }
+}
+
+function waitForElement(selector, callback) {
+  elementsCallbacks[selector] = callback;
+  runListener();
+}
+
 module.exports = function() {
   var i, l, order, positions,
       matches = location.hash.match(/id=(.+)/),
@@ -16,7 +40,8 @@ module.exports = function() {
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
-  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
+  waitForElement('.tutorial-step-inline-editor', function() {
+    $api.log('SHOW SELECTOR');
     $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
   });
 
@@ -24,10 +49,6 @@ module.exports = function() {
     $('body').removeClass('newOrderInterface');
     return;
   }
-
-  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
-    $('#taist_basePlanForOrder').hide();
-  });
 
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);
@@ -39,17 +60,25 @@ module.exports = function() {
       return;
     }
 
+    waitForElement('.tutorial-step-inline-editor', function() {
+      $api.log('HIDE SELECTOR');
+      $('#taist_basePlanForOrder').hide();
+    });
+
     var processingPlans = $client.from('ProcessingPlan')
       .select( { uuid: (taistOrderData.orderTemplate || taistOrderData.baseTemplate) } )
       .load();
 
     require('../utils').parseProcessingPlans(processingPlans);
 
-    $vm.basePlan(
-      ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
-        return plan.uuid == taistOrderData.baseTemplate;
-      })
-    );
+    var base;
+    base = ko.utils.arrayFirst($vm.baseProcessingPlans(), function(plan) {
+      return plan.uuid == taistOrderData.baseTemplate;
+    });
+
+    // $api.log(base);
+
+    $vm.basePlan(base);
 
     var selected = ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
       return plan.uuid == (taistOrderData.orderTemplate || taistOrderData.baseTemplate);
@@ -61,8 +90,6 @@ module.exports = function() {
     }
 
     $vm.selectedPlan(selected || $vm.basePlan());
-
-    $log($vm.basePlan(), $vm.selectedPlan());
 
     $client.load('CustomerOrder', uuid, function(dummy, orderData){
 

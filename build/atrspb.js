@@ -415,6 +415,30 @@ var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state');
 
+var elementsCallbacks = [];
+
+function runListener(){
+  var i, elem;
+
+  for(i in elementsCallbacks) {
+    elem = $(i);
+    if(elem.size() > 0) {
+      elementsCallbacks[i]();
+      delete elementsCallbacks[i];
+    }
+  }
+
+  for(i in elementsCallbacks) {
+    setTimeout(runListener, 200);
+    return;
+  }
+}
+
+function waitForElement(selector, callback) {
+  elementsCallbacks[selector] = callback;
+  runListener();
+}
+
 module.exports = function() {
   var i, l, order, positions,
       matches = location.hash.match(/id=(.+)/),
@@ -427,7 +451,8 @@ module.exports = function() {
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
-  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
+  waitForElement('.tutorial-step-inline-editor', function() {
+    $api.log('SHOW SELECTOR');
     $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
   });
 
@@ -435,10 +460,6 @@ module.exports = function() {
     $('body').removeClass('newOrderInterface');
     return;
   }
-
-  $api.wait.elementRender('.tutorial-step-inline-editor', function() {
-    $('#taist_basePlanForOrder').hide();
-  });
 
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);
@@ -450,17 +471,25 @@ module.exports = function() {
       return;
     }
 
+    waitForElement('.tutorial-step-inline-editor', function() {
+      $api.log('HIDE SELECTOR');
+      $('#taist_basePlanForOrder').hide();
+    });
+
     var processingPlans = $client.from('ProcessingPlan')
       .select( { uuid: (taistOrderData.orderTemplate || taistOrderData.baseTemplate) } )
       .load();
 
     require('../utils').parseProcessingPlans(processingPlans);
 
-    $vm.basePlan(
-      ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
-        return plan.uuid == taistOrderData.baseTemplate;
-      })
-    );
+    var base;
+    base = ko.utils.arrayFirst($vm.baseProcessingPlans(), function(plan) {
+      return plan.uuid == taistOrderData.baseTemplate;
+    });
+
+    // $api.log(base);
+
+    $vm.basePlan(base);
 
     var selected = ko.utils.arrayFirst($vm.processingPlans(), function(plan) {
       return plan.uuid == (taistOrderData.orderTemplate || taistOrderData.baseTemplate);
@@ -472,8 +501,6 @@ module.exports = function() {
     }
 
     $vm.selectedPlan(selected || $vm.basePlan());
-
-    $log($vm.basePlan(), $vm.selectedPlan());
 
     $client.load('CustomerOrder', uuid, function(dummy, orderData){
 
@@ -769,7 +796,7 @@ module.exports = function() {
       uuid: order.uuid,
       name: '',
       customName: '',
-      baseTemplate: $vm.basePlan().data.uuid,
+      baseTemplate: $vm.selectedBasePlan().data.uuid,
       orderTemplate: '',
       presentsCount: 10,
     }, function(error){
@@ -1028,6 +1055,7 @@ module.exports = function(){
 
   //TODO Should be refactored
   $client.save("moysklad.customerOrder", order, function(dummy, order){
+    $api.log($vm.basePlanForOrder().data.uuid);
     $api.companyData.set(order.uuid, {
       uuid: order.uuid,
       name: '',
@@ -1483,7 +1511,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div = $('<div id = "taist_processingPlans">');
   $("<select>")
-    .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlan")
+    .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: selectedBasePlan")
     .css({ width: 400 })
     .appendTo(div);
 
@@ -1513,6 +1541,12 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $vm.selectedPlan = ko.observable(null);
   $vm.basePlan = ko.observable(null);
+  $vm.selectedBasePlan = ko.observable(null);
+
+  $vm.basePlan.subscribe(function(){
+    $api.log($vm.basePlan());
+  });
+
   $vm.basePlanForOrder = ko.observable(null);
 
   var processingPlans, shouldSaveOptions = false;

@@ -36,7 +36,7 @@ module.exports = function() {
       uuid: order.uuid,
       name: '',
       customName: '',
-      baseTemplate: $vm.basePlan().data.uuid,
+      baseTemplate: $vm.selectedBasePlan().data.uuid,
       orderTemplate: '',
       presentsCount: 10,
     }, function(error){
