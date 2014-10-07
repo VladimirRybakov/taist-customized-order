@@ -40,7 +40,7 @@ module.exports = function (options) {
       return 0;
     }
     return round (
-      this.cost() * order.primeCostOutput() - this.costWithPackage()
+      this.cost() * order.primeCostOutput() - this.costWithPackage() * ( 1 + order.primeCostRisk() / 100 )
     );
   }, primeCost);
 
