@@ -152,9 +152,12 @@ module.exports = function() {
       order = $vm.customerOrders[uuid];
 
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
+      order._discount = ko.observable(taistOrderData.discount || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
+
+      $vm.primeCostDiscount(order._discount());
 
       [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
           param = 'primeCost' + param;

@@ -563,9 +563,12 @@ module.exports = function() {
       order = $vm.customerOrders[uuid];
 
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
+      order._discount = ko.observable(taistOrderData.discount || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
+
+      $vm.primeCostDiscount(order._discount());
 
       [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
           param = 'primeCost' + param;
@@ -940,6 +943,7 @@ module.exports = function() {
                 baseTemplate: $vm.basePlan().data.uuid,
                 orderTemplate: templateUuid,
                 presentsCount: vmOrder._presentsCount(),
+                discount: vmOrder._discount(),
                 sortOrder: require('../utils').getPositionsOrder(),
               };
 
@@ -1572,6 +1576,8 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostOutput = ko.observable(taistOptions.primeCostOutput || 0.945);
   $vm.primeCostPackage = ko.observable(taistOptions.primeCostPackage || 10);
   $vm.primeCostRisk = ko.observable(taistOptions.primeCostRisk || 5);
+  $vm.primeCostDiscount = ko.observable(taistOptions.primeCostDiscount || 0);
+
 
   var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
   settingsDiv.appendTo($div);
@@ -1612,10 +1618,21 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCost.push( createPrimeCost({ quantity: 200, discount: 10 }) );
   $vm.primeCost.push( createPrimeCost({ quantity: 500, discount: 13 }) );
 
-  var primeCostForPresentsCount = createPrimeCost({ quantity: 1, discount: 0 });
+  var primeCostForPresentsCount = createPrimeCost({ quantity: 1, discount: $vm.primeCostDiscount() });
   $vm.primeCost.push(primeCostForPresentsCount);
   $vm.presentsCount.subscribe(function(){
     primeCostForPresentsCount.quantity( $vm.presentsCount() );
+  })
+
+  $vm.primeCostDiscount.subscribe(function(val){
+    primeCostForPresentsCount.discount(val);
+  });
+
+  primeCostForPresentsCount.discount.subscribe(function(val){
+    var order = $vm.selectedOrder();
+    if(order !== null) {
+      order._discount(val);
+    }
   })
 
   $vm.selectedPositions = ko.computed(function(){

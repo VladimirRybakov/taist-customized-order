@@ -113,6 +113,7 @@ module.exports = function() {
                 baseTemplate: $vm.basePlan().data.uuid,
                 orderTemplate: templateUuid,
                 presentsCount: vmOrder._presentsCount(),
+                discount: vmOrder._discount(),
                 sortOrder: require('../utils').getPositionsOrder(),
               };
 
