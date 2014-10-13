@@ -4,30 +4,6 @@ var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state');
 
-var elementsCallbacks = [];
-
-function runListener(){
-  var i, elem;
-
-  for(i in elementsCallbacks) {
-    elem = $(i);
-    if(elem.size() > 0) {
-      elementsCallbacks[i]();
-      delete elementsCallbacks[i];
-    }
-  }
-
-  for(i in elementsCallbacks) {
-    setTimeout(runListener, 200);
-    return;
-  }
-}
-
-function waitForElement(selector, callback) {
-  elementsCallbacks[selector] = callback;
-  runListener();
-}
-
 module.exports = function() {
   var i, l, order, positions,
       matches = location.hash.match(/id=(.+)/),
@@ -40,7 +16,7 @@ module.exports = function() {
   $('.taist-table tbody tr', goodsDOMNode).not(':first').remove();
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
-  waitForElement('.tutorial-step-inline-editor', function() {
+  require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
     $api.log('SHOW SELECTOR');
     $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
   });
@@ -60,7 +36,7 @@ module.exports = function() {
       return;
     }
 
-    waitForElement('.tutorial-step-inline-editor', function() {
+    require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
       $api.log('HIDE SELECTOR');
       $('#taist_basePlanForOrder').hide();
     });

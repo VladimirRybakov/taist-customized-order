@@ -35,4 +35,8 @@ module.exports = function() {
   else {
     $('body').removeClass('newOrderInterface');
   }
+
+  if(/#processingplan\/edit/.test(hash)) {
+    return require('../handlers').onEditProcessingPlan();
+  }
 }

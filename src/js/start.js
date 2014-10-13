@@ -255,6 +255,16 @@ function extendApi() {
     $api.companyData.getPart('ordersList', uuid, callback);
   }
 
+  $api.getOrdersList = function(callback) {
+    $api.companyData.get('ordersList', function(error, data){
+      $api.log('data received from server');
+      callback(error, data);
+      $api.getOrdersList = function(callback) {
+        callback(error, data);
+      }
+    });
+  }
+
   $api.setOrder = function(uuid, data, callback) {
     $api.companyData.setPart('ordersList', uuid, data, callback);
   }

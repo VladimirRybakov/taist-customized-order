@@ -8,4 +8,5 @@ module.exports = {
   onChangesDialog: require('./handlers/onChangesDialog'),
   onDelete: require('./handlers/onDelete'),
   onSelectBasePlanForCustomerOrder: require('./handlers/onSelectBasePlanForCustomerOrder'),
+  onEditProcessingPlan: require('./handlers/onEditProcessingPlan'),
 }

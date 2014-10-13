@@ -5,4 +5,5 @@ module.exports = {
   getPositionsOrder: require('./utils/getPositionsOrder'),
   getFromLocalStorage: require('./utils/getFromLocalStorage'),
   resetLocalStorage: require('./utils/resetLocalStorage'),
+  waitForElement: require('./utils/waitForElement'),
 }
