@@ -464,7 +464,7 @@ module.exports = function() {
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);
 
-  $api.companyData.get(uuid, function(error, taistOrderData) {
+  $api.getOrder(uuid, function(error, taistOrderData) {
 
     if(typeof taistOrderData === 'undefined') {
       $('body').removeClass('newOrderInterface');
@@ -794,7 +794,7 @@ module.exports = function() {
   }
 
   $client.save("moysklad.customerOrder", order, function(dummy, order){
-    $api.companyData.set(order.uuid, {
+    $api.setOrder(order.uuid, {
       uuid: order.uuid,
       name: '',
       customName: '',
@@ -952,7 +952,7 @@ module.exports = function() {
               data[param] = parseFloat( vmOrder[param]() );
           });
 
-          $api.companyData.set(order.uuid, data, function(error){
+          $api.setOrder(order.uuid, data, function(error){
             location.reload();
           })
         });
@@ -1059,7 +1059,7 @@ module.exports = function(){
   //TODO Should be refactored
   $client.save("moysklad.customerOrder", order, function(dummy, order){
     $api.log($vm.basePlanForOrder().data.uuid);
-    $api.companyData.set(order.uuid, {
+    $api.setOrder(order.uuid, {
       uuid: order.uuid,
       name: '',
       customName: '',
@@ -1662,10 +1662,22 @@ function onCompanyDataLoaded(error, taistOptions) {
   }
 }
 
+function extendApi() {
+  $api.getOrder = function(uuid, callback) {
+    $api.companyData.get(uuid, callback);
+  }
+
+  $api.setOrder = function(uuid, data, callback) {
+    $api.companyData.set(uuid, data, callback);
+  }
+}
+
 function onStart(_taistApi) {
 
   $.extend($api, _taistApi);
   window.$api = $api;
+
+  extendApi();
 
   $api.log('onStart');
 

@@ -32,7 +32,7 @@ module.exports = function() {
   }
 
   $client.save("moysklad.customerOrder", order, function(dummy, order){
-    $api.companyData.set(order.uuid, {
+    $api.setOrder(order.uuid, {
       uuid: order.uuid,
       name: '',
       customName: '',

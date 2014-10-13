@@ -122,7 +122,7 @@ module.exports = function() {
               data[param] = parseFloat( vmOrder[param]() );
           });
 
-          $api.companyData.set(order.uuid, data, function(error){
+          $api.setOrder(order.uuid, data, function(error){
             location.reload();
           })
         });

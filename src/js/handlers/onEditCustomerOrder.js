@@ -53,7 +53,7 @@ module.exports = function() {
   uuid = matches[1];
   $log('onEditCustomerOrder', uuid);
 
-  $api.companyData.get(uuid, function(error, taistOrderData) {
+  $api.getOrder(uuid, function(error, taistOrderData) {
 
     if(typeof taistOrderData === 'undefined') {
       $('body').removeClass('newOrderInterface');
