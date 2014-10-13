@@ -252,11 +252,11 @@ function onCompanyDataLoaded(error, taistOptions) {
 
 function extendApi() {
   $api.getOrder = function(uuid, callback) {
-    $api.companyData.get(uuid, callback);
+    $api.companyData.getPart('ordersList', uuid, callback);
   }
 
   $api.setOrder = function(uuid, data, callback) {
-    $api.companyData.set(uuid, data, callback);
+    $api.companyData.setPart('ordersList', uuid, data, callback);
   }
 }
 
