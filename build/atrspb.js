@@ -452,6 +452,8 @@ module.exports = function() {
       return;
     }
 
+    $('.operationNamePanel td:last').hide();
+
     require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
       $api.log('HIDE SELECTOR');
       $('#taist_basePlanForOrder').hide();
@@ -882,7 +884,7 @@ module.exports = function() {
 
         for(key in mapping) {
           val = $vm.selectedOrder()[key]();
-          if(key == '_project'){
+          if(key == '_project' || key == '_contract'){
             val = val.replace(/\s+\[.+?\]/, '');
           }
           mapObject = mapping[key];

@@ -36,6 +36,8 @@ module.exports = function() {
       return;
     }
 
+    $('.operationNamePanel td:last').hide();
+
     require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
       $api.log('HIDE SELECTOR');
       $('#taist_basePlanForOrder').hide();

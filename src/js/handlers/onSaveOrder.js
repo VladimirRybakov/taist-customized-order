@@ -30,7 +30,7 @@ module.exports = function() {
 
         for(key in mapping) {
           val = $vm.selectedOrder()[key]();
-          if(key == '_project'){
+          if(key == '_project' || key == '_contract'){
             val = val.replace(/\s+\[.+?\]/, '');
           }
           mapObject = mapping[key];
