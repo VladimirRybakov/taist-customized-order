@@ -36,8 +36,6 @@ module.exports = function() {
       return;
     }
 
-    $('.operationNamePanel td:last').hide();
-
     require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
       $api.log('HIDE SELECTOR');
       $('#taist_basePlanForOrder').hide();
@@ -305,6 +303,8 @@ module.exports = function() {
           }
 
           $api.log('APPLY BINDINGS');
+          $('.operationNamePanel td:last').hide();
+
           ko.applyBindings($vm, goodsDOMNode);
           require('../processors/parseOrderAttributes')($vm.selectedOrder());
           $(goodsDOMNode)
