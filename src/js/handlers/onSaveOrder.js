@@ -165,7 +165,6 @@ module.exports = function() {
     delete(plan.uuid);
     delete(plan.updated);
 
-    $log("savePlan", plan);
     $client.save("moysklad.processingPlan", plan, function(error, plan){
 
       plan.material = prepareMaterials(plan)
@@ -184,11 +183,16 @@ module.exports = function() {
       saveOrder(plan.uuid);
     });
   } else {
-      plan.material = prepareMaterials(plan)
-      $client.save("moysklad.processingPlan", plan, function(error, plan){
-        $log('Plan updated', plan);
-        require('../utils').parseProcessingPlans([plan]);
-      });
+      var operations = $client.from('Processing').select({planUuid: templateUuid}).load(),
+          isRelatedPlan = !!operations.length;
+
+      if(!isRelatedPlan) {
+        plan.material = prepareMaterials(plan)
+        $client.save("moysklad.processingPlan", plan, function(error, plan){
+          $log('Plan updated', plan);
+          require('../utils').parseProcessingPlans([plan]);
+        });
+      }
       saveOrder(plan.uuid);
   }
 };

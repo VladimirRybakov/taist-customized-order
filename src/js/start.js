@@ -250,32 +250,12 @@ function onCompanyDataLoaded(error, taistOptions) {
   }
 }
 
-function extendApi() {
-  $api.getOrder = function(uuid, callback) {
-    $api.companyData.getPart('ordersList', uuid, callback);
-  }
-
-  $api.getOrdersList = function(callback) {
-    $api.companyData.get('ordersList', function(error, data){
-      $api.log('data received from server');
-      callback(error, data);
-      $api.getOrdersList = function(callback) {
-        callback(error, data);
-      }
-    });
-  }
-
-  $api.setOrder = function(uuid, data, callback) {
-    $api.companyData.setPart('ordersList', uuid, data, callback);
-  }
-}
-
 function onStart(_taistApi) {
 
   $.extend($api, _taistApi);
   window.$api = $api;
 
-  extendApi();
+  require('./utils').extendApi($api);
 
   $api.log('onStart');
 
