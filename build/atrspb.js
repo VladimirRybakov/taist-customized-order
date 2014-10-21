@@ -7,7 +7,7 @@ var addonEntry = {
 
 module.exports = addonEntry;
 
-},{"./start":30}],"atrspb":[function(require,module,exports){
+},{"./start":31}],"atrspb":[function(require,module,exports){
 module.exports=require('U+ghpQ');
 },{}],3:[function(require,module,exports){
 module.exports = {
@@ -179,6 +179,16 @@ module.exports = {
       })
       .appendTo(container);
 
+    $('<button>')
+      .text('Обновить позиции в соответствии с текущим проектом')
+      .css({
+        padding: 4,
+        margin: 12,
+      })
+      .attr('data-bind', 'click: onCreateGoodsForOrder')
+      .appendTo(div);
+
+
     $('<div>')
       .text('Комментарий к заказу:')
       .css({
@@ -196,7 +206,7 @@ module.exports = {
   }
 }
 
-},{"./primeCostInterface":22,"./utils":33}],4:[function(require,module,exports){
+},{"./primeCostInterface":23,"./utils":34}],4:[function(require,module,exports){
 module.exports = {
   getProcessingPlanGoods: require('./dataProvider/getProcessingPlanGoods'),
 }
@@ -276,9 +286,10 @@ module.exports = {
   onDelete: require('./handlers/onDelete'),
   onSelectBasePlanForCustomerOrder: require('./handlers/onSelectBasePlanForCustomerOrder'),
   onEditProcessingPlan: require('./handlers/onEditProcessingPlan'),
+  onCreateGoodsForOrder: require('./handlers/onCreateGoodsForOrder'),
 }
 
-},{"./handlers/onChangeHash":12,"./handlers/onChangesDialog":13,"./handlers/onCustomerOrder":14,"./handlers/onDelete":15,"./handlers/onEditCustomerOrder":16,"./handlers/onEditProcessingPlan":17,"./handlers/onNewCustomerOrder":18,"./handlers/onReserve":19,"./handlers/onSaveOrder":20,"./handlers/onSelectBasePlanForCustomerOrder":21}],12:[function(require,module,exports){
+},{"./handlers/onChangeHash":12,"./handlers/onChangesDialog":13,"./handlers/onCreateGoodsForOrder":14,"./handlers/onCustomerOrder":15,"./handlers/onDelete":16,"./handlers/onEditCustomerOrder":17,"./handlers/onEditProcessingPlan":18,"./handlers/onNewCustomerOrder":19,"./handlers/onReserve":20,"./handlers/onSaveOrder":21,"./handlers/onSelectBasePlanForCustomerOrder":22}],12:[function(require,module,exports){
 var $app = require('../globals/app'),
     $api = require('../globals/api'),
     STATE = require('../state');
@@ -322,7 +333,7 @@ module.exports = function() {
   }
 }
 
-},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":31}],13:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":32}],13:[function(require,module,exports){
 var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state')
@@ -376,7 +387,56 @@ module.exports = function(){
     });
 }
 
-},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":31}],14:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../handlers":11,"../state":32}],14:[function(require,module,exports){
+var $vm = require('../globals/vm'),
+    $api = require('../globals/api'),
+    $client = require('../globals/client');
+
+module.exports = function(){
+  var positions = $vm.selectedPositions(),
+      length = positions.length,
+      updatedPositions = [],
+      ts = new Date().getTime();
+
+  function updateGoodName(name) {
+    var suffix = ts,
+        order = $vm.selectedOrder();
+
+    if(order) {
+      if(order._project()) {
+        suffix = order._project();
+      }
+    }
+
+    name = name.replace(/\s*\(.+?\)\s*$/, '');
+    name += ' (' + suffix + ')';
+    return name;
+  }
+
+  ko.utils.arrayForEach(positions, function(pos) {
+    var good = $api.moysklad.cloneGood(pos.goodUuid(), updateGoodName);
+
+    $client.save('moysklad.good', good, function(dummy, good){
+      delete(pos.consignmentUuid);
+      pos.goodUuid(good.uuid);
+
+      updatedPositions.push(good);
+      if(updatedPositions.length === length){
+        console.log(updatedPositions);
+
+        require('../handlers').onSaveOrder();
+
+        ko.utils.arrayForEach($vm.selectedPositions(), function(pos){
+          pos._isSelected(false);
+        })
+      }
+    });
+  });
+}
+
+$api.onCreateGoodsForOrder = module.exports;
+
+},{"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../handlers":11}],15:[function(require,module,exports){
 module.exports = function() {
   var $log = require('../globals/api').log;
 
@@ -404,7 +464,7 @@ module.exports = function() {
 
 }
 
-},{"../globals/api":6}],15:[function(require,module,exports){
+},{"../globals/api":6}],16:[function(require,module,exports){
 module.exports = function() {
   var positions = $vm.selectedOrder().customerOrderPosition;
   positions.remove(function(pos) {
@@ -413,7 +473,7 @@ module.exports = function() {
   require('../handlers').onSaveOrder();
 }
 
-},{"../handlers":11}],16:[function(require,module,exports){
+},{"../handlers":11}],17:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -742,7 +802,7 @@ module.exports = function() {
   });
 }
 
-},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../handlers":11,"../processors":23,"../processors/parseOrderAttributes":28,"../state":31,"../utils":33}],17:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../handlers":11,"../processors":24,"../processors/parseOrderAttributes":29,"../state":32,"../utils":34}],18:[function(require,module,exports){
 var $api = require('../globals/api');
 
 module.exports = function() {
@@ -783,7 +843,7 @@ module.exports = function() {
   })
 }
 
-},{"../globals/api":6,"../utils":33}],18:[function(require,module,exports){
+},{"../globals/api":6,"../utils":34}],19:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
@@ -831,7 +891,7 @@ module.exports = function() {
   });
 }
 
-},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors":23}],19:[function(require,module,exports){
+},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors":24}],20:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(doesUserWantToReserve){
@@ -851,7 +911,7 @@ module.exports = function(doesUserWantToReserve){
   })
 }
 
-},{"../globals/vm":10,"../handlers":11}],20:[function(require,module,exports){
+},{"../globals/vm":10,"../handlers":11}],21:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $vm = require('../globals/vm');
@@ -1051,7 +1111,7 @@ module.exports = function() {
   }
 };
 
-},{"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors/parseOrderAttributes":28,"../utils":33}],21:[function(require,module,exports){
+},{"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors/parseOrderAttributes":29,"../utils":34}],22:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
@@ -1100,7 +1160,7 @@ module.exports = function(){
   });
 }
 
-},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors":23}],22:[function(require,module,exports){
+},{"../dataProvider":4,"../globals/api":6,"../globals/client":8,"../globals/vm":10,"../processors":24}],23:[function(require,module,exports){
 module.exports = {
   create: function(container){
     var table = $('<table class="taistTable primeCost">'),
@@ -1120,7 +1180,7 @@ module.exports = {
   }
 }
 
-},{"./utils":33}],23:[function(require,module,exports){
+},{"./utils":34}],24:[function(require,module,exports){
 module.exports = {
   createCustomerOrderPosition: require('./processors/createCustomerOrderPosition'),
   createSumObject: require('./processors/createSumObject'),
@@ -1128,7 +1188,7 @@ module.exports = {
   createPositionsByGoods: require('./processors/createPositionsByGoods'),
 }
 
-},{"./processors/createCustomerOrderPosition":24,"./processors/createPositionsByGoods":25,"./processors/createPrimeCost":26,"./processors/createSumObject":27}],24:[function(require,module,exports){
+},{"./processors/createCustomerOrderPosition":25,"./processors/createPositionsByGoods":26,"./processors/createPrimeCost":27,"./processors/createSumObject":28}],25:[function(require,module,exports){
 var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $dom = require('../globals/dom'),
@@ -1253,7 +1313,7 @@ module.exports = function (options) {
   return koData;
 }
 
-},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../processors":23,"../requestQueue":29,"../state":31}],25:[function(require,module,exports){
+},{"../globals/api":6,"../globals/app":7,"../globals/client":8,"../globals/dom":9,"../processors":24,"../requestQueue":30,"../state":32}],26:[function(require,module,exports){
 module.exports = function(goods, quantitiesMap) {
   var i, l, good, positions = [];
 
@@ -1280,7 +1340,7 @@ module.exports = function(goods, quantitiesMap) {
   return positions;
 }
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function (options) {
@@ -1343,7 +1403,7 @@ module.exports = function (options) {
   return primeCost;
 }
 
-},{"../globals/vm":10}],27:[function(require,module,exports){
+},{"../globals/vm":10}],28:[function(require,module,exports){
 module.exports = function (options) {
   return ko.mapping.fromJS(
     options.data,
@@ -1353,7 +1413,7 @@ module.exports = function (options) {
   );
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -1405,7 +1465,7 @@ module.exports = function (order){
   order._state(val);
 }
 
-},{"../globals/api":6,"../globals/vm":10}],29:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],30:[function(require,module,exports){
 var $api = require('./globals/api'),
     queue = [],
     isInProgress = false;
@@ -1437,7 +1497,7 @@ module.exports = {
   }
 }
 
-},{"./globals/api":6}],30:[function(require,module,exports){
+},{"./globals/api":6}],31:[function(require,module,exports){
 var $api = require('./globals/api')
   , $client = require('./globals/client')
   , $vm = require('./globals/vm')
@@ -1606,6 +1666,9 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostRisk = ko.observable(taistOptions.primeCostRisk || 5);
   $vm.primeCostDiscount = ko.observable(taistOptions.primeCostDiscount || 0);
 
+  $vm.onCreateGoodsForOrder = function(){
+    require('./handlers').onCreateGoodsForOrder();
+  }
 
   var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
   settingsDiv.appendTo($div);
@@ -1740,7 +1803,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./globals/api":6,"./globals/app":7,"./globals/client":8,"./globals/dom":9,"./globals/vm":10,"./handlers":11,"./processors":23,"./processors/parseOrderAttributes":28,"./state":31,"./taistSettingsInterface":32,"./utils":33,"./xmlhttphandlers":42,"./xmlhttpproxy":43}],31:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./globals/api":6,"./globals/app":7,"./globals/client":8,"./globals/dom":9,"./globals/vm":10,"./handlers":11,"./processors":24,"./processors/parseOrderAttributes":29,"./state":32,"./taistSettingsInterface":33,"./utils":34,"./xmlhttphandlers":43,"./xmlhttpproxy":44}],32:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',
@@ -1754,7 +1817,7 @@ module.exports = {
   },
 }
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var $api = require('./globals/api'),
     $client = require('./globals/client'),
     $vm = require('./globals/vm');
@@ -1924,7 +1987,7 @@ module.exports = {
 
 }
 
-},{"./globals/api":6,"./globals/client":8,"./globals/vm":10,"./utils":33}],33:[function(require,module,exports){
+},{"./globals/api":6,"./globals/client":8,"./globals/vm":10,"./utils":34}],34:[function(require,module,exports){
 module.exports = {
   parseProcessingPlans: require('./utils/parseProcessingPlans'),
 
@@ -1939,7 +2002,7 @@ module.exports = {
   extendApi: require('./utils/extendApi'),
 }
 
-},{"./utils/createBindedTable":34,"./utils/extendApi":35,"./utils/getFromLocalStorage":36,"./utils/getPositionsOrder":37,"./utils/parseProcessingPlans":38,"./utils/resetLocalStorage":39,"./utils/saveTaistOptions":40,"./utils/waitForElement":41}],34:[function(require,module,exports){
+},{"./utils/createBindedTable":35,"./utils/extendApi":36,"./utils/getFromLocalStorage":37,"./utils/getPositionsOrder":38,"./utils/parseProcessingPlans":39,"./utils/resetLocalStorage":40,"./utils/saveTaistOptions":41,"./utils/waitForElement":42}],35:[function(require,module,exports){
 module.exports = function(table, fields, collectionName) {
   var thead  = $('<thead>').appendTo(table),
       trhead = $('<tr>').appendTo(thead),
@@ -1973,7 +2036,7 @@ module.exports = function(table, fields, collectionName) {
   });
 }
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var $client = require('../globals/client');
 
 module.exports = function(api) {
@@ -2035,7 +2098,7 @@ module.exports = function(api) {
   }
 }
 
-},{"../globals/client":8}],36:[function(require,module,exports){
+},{"../globals/client":8}],37:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -2048,7 +2111,7 @@ module.exports = function(key, callback) {
   return storedData[key];
 }
 
-},{"../globals/api":6,"../globals/vm":10}],37:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],38:[function(require,module,exports){
 module.exports = function() {
   return $('tr', '.taist-table')
     .not(':first')
@@ -2058,7 +2121,7 @@ module.exports = function() {
     });
 }
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var $vm = require('../globals/vm');
 
 module.exports = function(plans) {
@@ -2089,7 +2152,7 @@ module.exports = function(plans) {
   }
 }
 
-},{"../globals/vm":10}],39:[function(require,module,exports){
+},{"../globals/vm":10}],40:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -2097,7 +2160,7 @@ module.exports = function() {
   $api.localStorage.set($vm.companyUuid, null);
 }
 
-},{"../globals/api":6,"../globals/vm":10}],40:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],41:[function(require,module,exports){
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
@@ -2133,7 +2196,7 @@ module.exports = function() {
   }, function(){});
 }
 
-},{"../globals/api":6,"../globals/vm":10}],41:[function(require,module,exports){
+},{"../globals/api":6,"../globals/vm":10}],42:[function(require,module,exports){
 var elementsCallbacks = [];
 
 function runListener(){
@@ -2158,7 +2221,7 @@ module.exports = function(selector, callback) {
   runListener();
 }
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 var $app    = require('./globals/app'),
     $api    = require('./globals/api'),
     $client = require('./globals/client'),
@@ -2288,7 +2351,7 @@ module.exports = {
   },
 }
 
-},{"./globals/api":6,"./globals/app":7,"./globals/client":8,"./processors":23,"./state":31}],43:[function(require,module,exports){
+},{"./globals/api":6,"./globals/app":7,"./globals/client":8,"./processors":24,"./state":32}],44:[function(require,module,exports){
 var $api = require("./globals/api");
 
 var registerXMLHttpHandlers = function (handlers) {

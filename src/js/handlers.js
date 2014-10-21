@@ -9,4 +9,5 @@ module.exports = {
   onDelete: require('./handlers/onDelete'),
   onSelectBasePlanForCustomerOrder: require('./handlers/onSelectBasePlanForCustomerOrder'),
   onEditProcessingPlan: require('./handlers/onEditProcessingPlan'),
+  onCreateGoodsForOrder: require('./handlers/onCreateGoodsForOrder'),
 }

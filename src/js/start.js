@@ -166,6 +166,9 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostRisk = ko.observable(taistOptions.primeCostRisk || 5);
   $vm.primeCostDiscount = ko.observable(taistOptions.primeCostDiscount || 0);
 
+  $vm.onCreateGoodsForOrder = function(){
+    require('./handlers').onCreateGoodsForOrder();
+  }
 
   var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
   settingsDiv.appendTo($div);

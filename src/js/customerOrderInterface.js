@@ -167,6 +167,16 @@ module.exports = {
       })
       .appendTo(container);
 
+    $('<button>')
+      .text('Обновить позиции в соответствии с текущим проектом')
+      .css({
+        padding: 4,
+        margin: 12,
+      })
+      .attr('data-bind', 'click: onCreateGoodsForOrder')
+      .appendTo(div);
+
+
     $('<div>')
       .text('Комментарий к заказу:')
       .css({
