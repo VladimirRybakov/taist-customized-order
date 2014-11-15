@@ -4,20 +4,20 @@ module.exports = function(goods, quantitiesMap) {
   for( i = 0, l = goods.length; i < l; i+= 1 ) {
     good = goods[i];
 
+    price = good.buyPrice || 0
+    priceObject = {
+      sum: price,
+      sumInCurrency: price
+    }
+
     positions.push({
       vat: good.vat,
       goodUuid: good.uuid,
       quantity: quantitiesMap[good.uuid],
       discount: 0,
       reserve: 0,
-      basePrice: {
-        sum: good.salePrice,
-        sumInCurrency: good.salePrice
-      },
-      price: {
-        sum: good.salePrice,
-        sumInCurrency: good.salePrice
-      },
+      basePrice: priceObject,
+      price: priceObject,
     });
   }
 

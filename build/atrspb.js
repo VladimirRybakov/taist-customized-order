@@ -1320,20 +1320,20 @@ module.exports = function(goods, quantitiesMap) {
   for( i = 0, l = goods.length; i < l; i+= 1 ) {
     good = goods[i];
 
+    price = good.buyPrice || 0
+    priceObject = {
+      sum: price,
+      sumInCurrency: price
+    }
+
     positions.push({
       vat: good.vat,
       goodUuid: good.uuid,
       quantity: quantitiesMap[good.uuid],
       discount: 0,
       reserve: 0,
-      basePrice: {
-        sum: good.salePrice,
-        sumInCurrency: good.salePrice
-      },
-      price: {
-        sum: good.salePrice,
-        sumInCurrency: good.salePrice
-      },
+      basePrice: priceObject,
+      price: priceObject,
     });
   }
 
@@ -2285,6 +2285,11 @@ module.exports = {
         };
       }
 
+      var price = good.buyPrice || 0;
+      var priceObject = {
+        sum: price,
+        sumInCurrency: price
+      };
       var position = require('./processors').createCustomerOrderPosition({
         data: {
           vat: good.vat,
@@ -2292,14 +2297,8 @@ module.exports = {
           quantity: 1,
           discount: 0,
           reserve: 0,
-          basePrice: {
-            sum: good.salePrice,
-            sumInCurrency: good.salePrice
-          },
-          price: {
-            sum: good.salePrice,
-            sumInCurrency: good.salePrice
-          },
+          basePrice: priceObject,
+          price: priceObject,
         }
       });
 
@@ -2331,19 +2330,16 @@ module.exports = {
     var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g,
         matches = requestData.match(pattern);
     if(matches) {
-      var i = 0;
-      while(matches[i] == 'e15a38f1-cd54-11e2-42ae-001b21d91495') {
-        i++;
-      }
+      var i = 0,
+          customerKey = matches.pop()
 
-      $client.load('Company', matches[i], function(dummy, company){
+      $client.load('Company', customerKey, function(dummy, company){
         if(company) {
           var order = $vm.selectedOrder();
           if(order) {
             order.sourceAccountUuid = company.accountUuid;
             order.sourceAgentUuid   = company.uuid;
             order._customer(company.name);
-            // $api.log(company);
           }
         }
       });
