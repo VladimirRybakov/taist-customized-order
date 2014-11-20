@@ -1017,6 +1017,7 @@ module.exports = function() {
         order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
         order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
         order.targetAgentUuid = $vm.selectedCompany().uuid;
+        delete order.targetAccountUuid;
 
         $client.save("moysklad.customerOrder", order, function(dummy, order){
           var vmOrder = $vm.selectedOrder(),
