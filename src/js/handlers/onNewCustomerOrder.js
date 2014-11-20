@@ -21,12 +21,11 @@ module.exports = function() {
   var order = {
     vatIncluded: true,
     applicable: true,
-    sourceStoreUuid: $vm.selectedWarehouse().uuid, // основной склад
+    sourceStoreUuid: $vm.selectedWarehouse().uuid,
     payerVat: true,
     // sourceAgentUuid: "", // контрагент
     targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
     moment: new Date(),
-    // name: new Date().getTime().toString(),
     customerOrderPosition: positions,
     employeeUuid: $vm.employeeUuid,
   }
