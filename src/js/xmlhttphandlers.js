@@ -92,33 +92,4 @@ module.exports = {
     });
   },
 
-  'TagService.getTags': function(requestData, responseText){
-    // $api.log(requestData, responseText);
-  },
-
-  'ContractService.getContracts': function(requestData, responseText){
-    // $api.log(requestData, responseText);
-    var state = $app.getFirstState();
-    if(!state || state.name !== STATE.APP.orderOpened) {
-      return false;
-    }
-
-    var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g,
-        matches = requestData.match(pattern);
-    if(matches) {
-      var i = 0,
-          customerKey = matches.pop()
-
-      $client.load('Company', customerKey, function(dummy, company){
-        if(company) {
-          var order = $vm.selectedOrder();
-          if(order) {
-            order.sourceAccountUuid = company.accountUuid;
-            order.sourceAgentUuid   = company.uuid;
-            order._customer(company.name);
-          }
-        }
-      });
-    }
-  },
 }

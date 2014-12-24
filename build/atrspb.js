@@ -929,7 +929,7 @@ module.exports = function() {
         var order = ko.mapping.toJS($vm.selectedOrder),
             mapping = {
               //'_company',
-              //'_customer',
+              '_customer' : { collection: 'Company', saveAs: 'sourceAgentUuid' },
               '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
               //'_store',
               '_contract' : { collection: 'Contract', saveAs: 'contractUuid' },
@@ -1017,6 +1017,9 @@ module.exports = function() {
         order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
         order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
         order.targetAgentUuid = $vm.selectedCompany().uuid;
+
+        order.sourceAccountUuid = order.sourceAgentUuid
+
         delete order.targetAccountUuid;
 
         $client.save("moysklad.customerOrder", order, function(dummy, order){
@@ -2317,35 +2320,6 @@ module.exports = {
     });
   },
 
-  'TagService.getTags': function(requestData, responseText){
-    // $api.log(requestData, responseText);
-  },
-
-  'ContractService.getContracts': function(requestData, responseText){
-    // $api.log(requestData, responseText);
-    var state = $app.getFirstState();
-    if(!state || state.name !== STATE.APP.orderOpened) {
-      return false;
-    }
-
-    var pattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g,
-        matches = requestData.match(pattern);
-    if(matches) {
-      var i = 0,
-          customerKey = matches.pop()
-
-      $client.load('Company', customerKey, function(dummy, company){
-        if(company) {
-          var order = $vm.selectedOrder();
-          if(order) {
-            order.sourceAccountUuid = company.accountUuid;
-            order.sourceAgentUuid   = company.uuid;
-            order._customer(company.name);
-          }
-        }
-      });
-    }
-  },
 }
 
 },{"./globals/api":6,"./globals/app":7,"./globals/client":8,"./processors":24,"./state":32}],44:[function(require,module,exports){
