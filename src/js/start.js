@@ -42,27 +42,15 @@ function waitForKnockout(count, callback){
 
 function setupDicts(taistOptions) {
 
-  $vm.getFromDict = function(dict, name) {
+  dictsProvider = require('./dictsProvider')
 
-    console.log('getFromDict', dict, name)
-
-    updateFunctions = {
-      units: function() {
-        var units = {}
-        $client.from('Uom').load().forEach(function(uom){
-          units[uom.uuid] = uom.name;
-        });
-        return units;
-      }
-    }
-
-    if(!$vm[dict] || !$vm[dict][name]){
-      $vm[dict] = require('./utils')
-        .getFromLocalStorage('dict-' + dict, updateFunctions[dict])
-    }
-
-    return $vm[dict][name]
-  }
+  dictsProvider.register('units', function(){
+    var units = {}
+    $client.from('Uom').load().forEach(function(uom){
+      units[uom.uuid] = uom.name;
+    });
+    return units;
+  })
 
   $vm.states = {};
   $client.from('Workflow')

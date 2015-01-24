@@ -57,7 +57,7 @@ module.exports = {
       if(!$vm.goods[good.uuid]) {
         $vm.goods[good.uuid] = {
           name: ko.observable(good.name),
-          unit: ko.observable( $vm.getFromDict('units', good.uomUuid) ),
+          unit: ko.observable( require('./dictsProvider').get('units', good.uomUuid) ),
         };
       }
 
