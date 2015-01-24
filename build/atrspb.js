@@ -245,7 +245,7 @@ module.exports = {
         .getFromLocalStorage('dict.' + dict, updateFunctions[dict] || function() {
           console.log('dictsProvider didn\'t find update function for ' + dict);
           return {}
-        }, !$vm[dict][name])
+        }, true)
     }
 
     console.log('getFromDict', dict, name, $vm[dict][name])
