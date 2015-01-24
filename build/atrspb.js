@@ -1050,7 +1050,7 @@ module.exports = function() {
           }
         }
 
-        order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
+        order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
         order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
         order.targetAgentUuid = $vm.selectedCompany().uuid;
 
@@ -1164,7 +1164,7 @@ module.exports = function() {
   }
 };
 
-},{"../globals/api":7,"../globals/client":9,"../globals/vm":11,"../processors/parseOrderAttributes":30,"../utils":35}],23:[function(require,module,exports){
+},{"../dictsProvider":6,"../globals/api":7,"../globals/client":9,"../globals/vm":11,"../processors/parseOrderAttributes":30,"../utils":35}],23:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');

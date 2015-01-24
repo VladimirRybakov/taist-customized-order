@@ -101,7 +101,7 @@ module.exports = function() {
           }
         }
 
-        order.stateUuid = $vm.states[$vm.selectedOrder()._state()];
+        order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
         order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
         order.targetAgentUuid = $vm.selectedCompany().uuid;
 
