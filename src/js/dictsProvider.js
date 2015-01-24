@@ -1,4 +1,5 @@
 var $vm = require('./globals/vm'),
+    $api = require('./globals/api'),
 
     updateFunctions = {}
 
@@ -7,15 +8,16 @@ module.exports = {
 
     if(!$vm[dict] || !$vm[dict][name]){
       $vm[dict] = require('./utils')
-      .getFromLocalStorage('dict.' + dict, updateFunctions[dict] || function() {
-        console.log('dictsProvider didn\'t find update function for ' + dict);
-        return {}
-      })
+        .getFromLocalStorage('dict.' + dict, updateFunctions[dict] || function() {
+          console.log('dictsProvider didn\'t find update function for ' + dict);
+          return {}
+        }, !$vm[dict][name])
     }
 
     console.log('getFromDict', dict, name, $vm[dict][name])
     return $vm[dict][name]
   },
+
   register: function(dict, updateFunc) {
     updateFunctions[dict] = updateFunc
   }

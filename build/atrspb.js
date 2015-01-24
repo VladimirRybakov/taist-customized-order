@@ -233,6 +233,7 @@ module.exports = function(uuid){
 
 },{"../globals/client":9}],6:[function(require,module,exports){
 var $vm = require('./globals/vm'),
+    $api = require('./globals/api'),
 
     updateFunctions = {}
 
@@ -241,21 +242,22 @@ module.exports = {
 
     if(!$vm[dict] || !$vm[dict][name]){
       $vm[dict] = require('./utils')
-      .getFromLocalStorage('dict.' + dict, updateFunctions[dict] || function() {
-        console.log('dictsProvider didn\'t find update function for ' + dict);
-        return {}
-      })
+        .getFromLocalStorage('dict.' + dict, updateFunctions[dict] || function() {
+          console.log('dictsProvider didn\'t find update function for ' + dict);
+          return {}
+        }, !$vm[dict][name])
     }
 
     console.log('getFromDict', dict, name, $vm[dict][name])
     return $vm[dict][name]
   },
+
   register: function(dict, updateFunc) {
     updateFunctions[dict] = updateFunc
   }
 }
 
-},{"./globals/vm":11,"./utils":35}],7:[function(require,module,exports){
+},{"./globals/api":7,"./globals/vm":11,"./utils":35}],7:[function(require,module,exports){
 module.exports = {};
 
 },{}],8:[function(require,module,exports){
@@ -2151,10 +2153,17 @@ module.exports = function(api) {
 var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
-module.exports = function(key, callback) {
+module.exports = function(key, callback, forceUpdate) {
   var storedData = $api.localStorage.get($vm.companyUuid) || {};
   if(!storedData[key]) {
     storedData[key] = callback(key);
+    $api.localStorage.set($vm.companyUuid, storedData);
+  }
+  else if (forceUpdate) {
+    data = callback(key);
+    Object.keys(data).forEach(function(entityKey){
+      storedData[key][entity.key] = data[entity.key]
+    })
     $api.localStorage.set($vm.companyUuid, storedData);
   }
   return storedData[key];
