@@ -109,28 +109,30 @@ module.exports = function() {
 
         delete order.targetAccountUuid;
 
-        $client.save("moysklad.customerOrder", order, function(dummy, order){
-          var vmOrder = $vm.selectedOrder(),
-              data = {
-                uuid: order.uuid,
-                name: vmOrder._name(),
-                customName: vmOrder._customName(),
-                baseTemplate: $vm.basePlan().data.uuid,
-                orderTemplate: templateUuid,
-                presentsCount: vmOrder._presentsCount(),
-                discount: vmOrder._discount(),
-                sortOrder: require('../utils').getPositionsOrder(),
-              };
+        setTimeout(function() {
+          $client.save("moysklad.customerOrder", order, function(dummy, order){
+            var vmOrder = $vm.selectedOrder(),
+            data = {
+              uuid: order.uuid,
+              name: vmOrder._name(),
+              customName: vmOrder._customName(),
+              baseTemplate: $vm.basePlan().data.uuid,
+              orderTemplate: templateUuid,
+              presentsCount: vmOrder._presentsCount(),
+              discount: vmOrder._discount(),
+              sortOrder: require('../utils').getPositionsOrder(),
+            };
 
-          [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+            [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
               param = 'primeCost' + param;
               data[param] = parseFloat( vmOrder[param]() );
-          });
+            });
 
-          $api.setOrder(order.uuid, data, function(error){
-            location.reload();
-          })
-        });
+            $api.setOrder(order.uuid, data, function(error){
+              location.reload();
+            })
+          });
+        }, 300);
       },
 
       prepareMaterials = function(plan){
