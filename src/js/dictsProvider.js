@@ -1,6 +1,6 @@
 var $vm = require('./globals/vm'),
 
-    updateFuctions = {}
+    updateFunctions = {}
 
 module.exports = {
   get: function(dict, name) {

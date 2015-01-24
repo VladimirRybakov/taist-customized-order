@@ -234,7 +234,7 @@ module.exports = function(uuid){
 },{"../globals/client":9}],6:[function(require,module,exports){
 var $vm = require('./globals/vm'),
 
-    updateFuctions = {}
+    updateFunctions = {}
 
 module.exports = {
   get: function(dict, name) {
