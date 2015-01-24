@@ -10,7 +10,7 @@ module.exports = function(key, callback, forceUpdate) {
   else if (forceUpdate) {
     data = callback(key);
     Object.keys(data).forEach(function(entityKey){
-      storedData[key][entity.key] = data[entity.key]
+      storedData[key][entityKey] = data[entityKey]
     })
     $api.localStorage.set($vm.companyUuid, storedData);
   }
