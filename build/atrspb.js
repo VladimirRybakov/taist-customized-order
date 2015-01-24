@@ -1577,7 +1577,7 @@ function setupDicts(taistOptions) {
 
     if(!$vm[dict] || !$vm[dict][name]){
       $vm[dict] = require('./utils')
-        .getFromLocalStorage('dict.' + dict, updateFunctions[dict])
+        .getFromLocalStorage('dict-' + dict, updateFunctions[dict])
     }
 
     return $vm[dict][name]
