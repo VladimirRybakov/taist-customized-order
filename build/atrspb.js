@@ -507,6 +507,8 @@ module.exports = function() {
 
   $api.getOrder(uuid, function(error, taistOrderData) {
 
+    console.log('getOrder callback', error, taistOrderData)
+
     if(typeof taistOrderData === 'undefined') {
       $('body').removeClass('newOrderInterface');
       return;
@@ -1808,6 +1810,7 @@ function onStart(_taistApi) {
         $api.localStorage.set('employeeUuid', $vm.employeeUuid || '');
       }
 
+      console.log('setCompanyKey', $vm.companyUuid);
       $api.companyData.setCompanyKey($vm.companyUuid);
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 

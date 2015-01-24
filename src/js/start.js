@@ -293,6 +293,7 @@ function onStart(_taistApi) {
         $api.localStorage.set('employeeUuid', $vm.employeeUuid || '');
       }
 
+      console.log('setCompanyKey', $vm.companyUuid);
       $api.companyData.setCompanyKey($vm.companyUuid);
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 

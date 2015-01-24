@@ -31,6 +31,8 @@ module.exports = function() {
 
   $api.getOrder(uuid, function(error, taistOrderData) {
 
+    console.log('getOrder callback', error, taistOrderData)
+
     if(typeof taistOrderData === 'undefined') {
       $('body').removeClass('newOrderInterface');
       return;
