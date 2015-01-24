@@ -1134,7 +1134,7 @@ module.exports = function() {
       $client.save("moysklad.processingPlan", plan, function(error, plan){
         $log('New plan saved', plan);
         require('../utils').parseProcessingPlans([plan]);
-        saveOrder(plan.uuid);
+        setTimeout(function(){ saveOrder(plan.uuid); }, 300);
       });
 
     });
@@ -1151,12 +1151,12 @@ module.exports = function() {
           }
           $log('Plan updated', plan);
           require('../utils').parseProcessingPlans([plan]);
-          saveOrder(plan.uuid);
+          setTimeout(function(){ saveOrder(plan.uuid); }, 300);
         });
       }
       else
       {
-        saveOrder(plan.uuid);
+        setTimeout(function(){ saveOrder(plan.uuid); }, 300);
         // Пользователь не может изменять технологическую карту, но может менять некоторые поля в заказе, например статус
         // alert('Невозможно изменить технологическую карту для которой, создана технологическая операция')
         // location.reload();
