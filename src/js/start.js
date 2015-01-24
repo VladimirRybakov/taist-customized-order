@@ -59,8 +59,11 @@ function setupDicts(taistOptions) {
     .load()[0].state.forEach(function(state){
       states[state.name] = state.uuid;
     });
+    states['_dummyHotFix'] = '_dummyHotFix';
     return states;
   })
+
+  var dummy = dictsProvider.get('states', '_dummyHotFix');
 
   setTimeout(function() {
     $vm.attrDicts = {};
