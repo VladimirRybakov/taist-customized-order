@@ -559,8 +559,8 @@ module.exports = function() {
         good = order.customerOrderPosition[i].good;
         if(!$vm.goods[good.uuid]) {
           $vm.goods[good.uuid] = {
-            name: ko.observable(good.name),
-            unit: ko.observable($vm.units[good.uomUuid])
+            name: ko.observable( good.name ),
+            unit: ko.observable( getFromDict('units', good.uomUuid) )
           };
         }
       }
@@ -1561,10 +1561,25 @@ function waitForKnockout(count, callback){
 
 function setupDicts(taistOptions) {
 
-  $vm.units = {};
-  $client.from('Uom').load().forEach(function(uom){
-    $vm.units[uom.uuid] = uom.name;
-  })
+  $vm.getFromDict = function(dict, name) {
+
+    updateFunctions = {
+      units: function() {
+        var units = {}
+        $client.from('Uom').load().forEach(function(uom){
+          units[uom.uuid] = uom.name;
+        });
+        return units;
+      }
+    }
+
+    if(!$vm[dict][name]){
+      $vm[dict] = require('./utils')
+        .getFromLocalStorage('dict.' + dict, updateFunctions[dict])
+    }
+
+    return $vm[dict][name]
+  }
 
   $vm.states = {};
   $client.from('Workflow')
@@ -2301,7 +2316,7 @@ module.exports = {
       if(!$vm.goods[good.uuid]) {
         $vm.goods[good.uuid] = {
           name: ko.observable(good.name),
-          unit: ko.observable($vm.units[good.uomUuid]),
+          unit: ko.observable( getFromDict('units', good.uomUuid) ),
         };
       }
 

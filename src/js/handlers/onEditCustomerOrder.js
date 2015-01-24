@@ -83,8 +83,8 @@ module.exports = function() {
         good = order.customerOrderPosition[i].good;
         if(!$vm.goods[good.uuid]) {
           $vm.goods[good.uuid] = {
-            name: ko.observable(good.name),
-            unit: ko.observable($vm.units[good.uomUuid])
+            name: ko.observable( good.name ),
+            unit: ko.observable( getFromDict('units', good.uomUuid) )
           };
         }
       }
