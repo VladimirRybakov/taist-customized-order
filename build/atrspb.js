@@ -1605,12 +1605,15 @@ function setupDicts(taistOptions) {
     return units;
   })
 
-  $vm.states = {};
-  $client.from('Workflow')
+  dictsProvider.register('states', function(){
+    var states = {};
+    $client.from('Workflow')
     .select({code: 'CustomerOrder'})
     .load()[0].state.forEach(function(state){
-      $vm.states[state.name] = state.uuid;
-    })
+      states[state.name] = state.uuid;
+    });
+    return states;
+  })
 
   setTimeout(function() {
     $vm.attrDicts = {};
