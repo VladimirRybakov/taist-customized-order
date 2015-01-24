@@ -132,7 +132,7 @@ module.exports = function() {
               location.reload();
             })
           });
-        }, 300);
+        }, 1000);
       },
 
       prepareMaterials = function(plan){
