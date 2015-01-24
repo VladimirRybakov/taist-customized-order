@@ -183,9 +183,9 @@ module.exports = function() {
       $client.save("moysklad.processingPlan", plan, function(error, plan){
         $log('New plan saved', plan);
         require('../utils').parseProcessingPlans([plan]);
+        saveOrder(plan.uuid);
       });
 
-      saveOrder(plan.uuid);
     });
   } else {
       var operations = $client.from('Processing').select({planUuid: templateUuid}).load(),
@@ -194,10 +194,21 @@ module.exports = function() {
       if(!isRelatedPlan) {
         plan.material = prepareMaterials(plan)
         $client.save("moysklad.processingPlan", plan, function(error, plan){
+          if(error) {
+            $log('Error while saving processingPlan', error)
+            return
+          }
           $log('Plan updated', plan);
           require('../utils').parseProcessingPlans([plan]);
+          saveOrder(plan.uuid);
         });
       }
-      saveOrder(plan.uuid);
+      else
+      {
+        saveOrder(plan.uuid);
+        // Пользователь не может изменять технологическую карту, но может менять некоторые поля в заказе, например статус
+        // alert('Невозможно изменить технологическую карту для которой, создана технологическая операция')
+        // location.reload();
+      }
   }
 };
