@@ -44,6 +44,8 @@ function setupDicts(taistOptions) {
 
   $vm.getFromDict = function(dict, name) {
 
+    console.log('getFromDict', dict, name)
+
     updateFunctions = {
       units: function() {
         var units = {}
