@@ -63,6 +63,16 @@ function setupDicts(taistOptions) {
     return states;
   })
 
+  ['Company', 'Employee', 'Contract', 'Project'].forEach(function(collection){
+    dictsProvider.register(collection, function(){
+      var result = {};
+      $client.from(collection).load().forEach(function(entity){
+        units[entity.name] = entity.uuid;
+      });
+      return result;
+    })
+  })
+
   var dummy = dictsProvider.get('states', '_dummyHotFix');
 
   setTimeout(function() {

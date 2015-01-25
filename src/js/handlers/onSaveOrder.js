@@ -36,9 +36,7 @@ module.exports = function() {
           mapObject = mapping[key];
 
           if(val !== '') {
-            uuid = ($client.from(mapObject.collection)
-              .select({name: val})
-              .load()[0] || {}).uuid;
+            uuid = require('../dictsProvider').get(mapObject.collection, val);
             if(uuid) {
               order[mapObject.saveAs] = uuid;
               $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);

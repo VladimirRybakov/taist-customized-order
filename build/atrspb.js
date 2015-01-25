@@ -985,9 +985,7 @@ module.exports = function() {
           mapObject = mapping[key];
 
           if(val !== '') {
-            uuid = ($client.from(mapObject.collection)
-              .select({name: val})
-              .load()[0] || {}).uuid;
+            uuid = require('../dictsProvider').get(mapObject.collection, val);
             if(uuid) {
               order[mapObject.saveAs] = uuid;
               $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
@@ -1614,6 +1612,16 @@ function setupDicts(taistOptions) {
     });
     states['_dummyHotFix'] = '_dummyHotFix';
     return states;
+  })
+
+  ['Company', 'Employee', 'Contract', 'Project'].forEach(function(collection){
+    dictsProvider.register(collection, function(){
+      var result = {};
+      $client.from(collection).load().forEach(function(entity){
+        units[entity.name] = entity.uuid;
+      });
+      return result;
+    })
   })
 
   var dummy = dictsProvider.get('states', '_dummyHotFix');
