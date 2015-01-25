@@ -63,7 +63,9 @@ function setupDicts(taistOptions) {
     return states;
   })
 
-  ['Company', 'Employee', 'Contract', 'Project'].forEach(function(collection){
+  var cachedCollections = ['Company', 'Employee', 'Contract', 'Project'];
+  console.log(cachedCollections);
+  cachedCollections.forEach( function(collection){
     console.log('register cache', collection);
     dictsProvider.register(collection, function(collectionName){
       var result = {};
@@ -72,7 +74,7 @@ function setupDicts(taistOptions) {
       });
       return result;
     })
-  })
+  });
 
   var dummy = dictsProvider.get('states', '_dummyHotFix');
 
