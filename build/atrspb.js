@@ -1621,7 +1621,7 @@ function setupDicts(taistOptions) {
     dictsProvider.register(collection, function(collectionName){
       var result = {};
       $client.from(collectionName).load().forEach(function(entity){
-        units[entity.name] = entity.uuid;
+        result[entity.name] = entity.uuid;
       });
       return result;
     })
