@@ -1615,9 +1615,10 @@ function setupDicts(taistOptions) {
   })
 
   ['Company', 'Employee', 'Contract', 'Project'].forEach(function(collection){
-    dictsProvider.register(collection, function(){
+    console.log('register cache', collection);
+    dictsProvider.register(collection, function(collectionName){
       var result = {};
-      $client.from(collection).load().forEach(function(entity){
+      $client.from(collectionName).load().forEach(function(entity){
         units[entity.name] = entity.uuid;
       });
       return result;
