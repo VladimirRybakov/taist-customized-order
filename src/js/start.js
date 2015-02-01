@@ -138,6 +138,10 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div.appendTo($div);
 
+  $('<div id="reactOrdersList">').appendTo(div);
+  require('./react/main').render('reactOrdersList');
+
+
   div = $('<div id = "taist_basePlanForOrder">');
   $("<select>")
     .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: basePlanForOrder")

@@ -1,11 +1,11 @@
 #global module:false
 module.exports = (grunt) ->
-  grunt.loadNpmTasks "grunt-contrib-concat"
-  grunt.loadNpmTasks "grunt-contrib-copy"
-  grunt.loadNpmTasks "grunt-browserify"
-  grunt.loadNpmTasks "grunt-contrib-coffee"
+  grunt.loadNpmTasks 'grunt-contrib-concat'
+  grunt.loadNpmTasks 'grunt-contrib-copy'
+  grunt.loadNpmTasks 'grunt-browserify'
+  grunt.loadNpmTasks 'grunt-contrib-uglify'
+  grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-watch'
-
 
   grunt.initConfig
     pkg: grunt.file.readJSON("package.json")
@@ -41,6 +41,11 @@ module.exports = (grunt) ->
             next err, src
             return
 
+    uglify:
+      addon:
+        files:
+          'build/addon.js': ['build/addon.js']
+
     concat:
       addon:
         src: [
@@ -58,11 +63,20 @@ module.exports = (grunt) ->
     "watch"
   ]
 
-  grunt.registerTask "build", [
-    "coffee:addon"
-    "copy:addon"
-    "browserify:addon"
-    "concat:addon"
+  grunt.registerTask 'build', [
+    'coffee:addon'
+    'copy:addon'
+    'browserify:addon'
+    'concat:addon'
   ]
+
+  grunt.registerTask 'release', [
+    'coffee:addon'
+    'copy:addon'
+    'browserify:addon'
+    'uglify:addon'
+    'concat:addon'
+  ]
+
 
   return
