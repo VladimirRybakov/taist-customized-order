@@ -4,7 +4,7 @@
   "siteName": "МойСклад",
   "siteRegexp": "online.moysklad.ru",
   "title": "Модификация заказа покупателя",
-  "js": "atrspb.js",
+  "js": "addon.js",
   "css": "atrspb.css",
   "description": "atrspb.md"
 }
