@@ -138,9 +138,8 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div.appendTo($div);
 
-  $('<div id="reactOrdersList">').appendTo(div);
-  require('./react/main').render('reactOrdersList');
-
+  // $('<div id="reactOrdersList">').appendTo(div);
+  // require('./react/main').render('reactOrdersList');
 
   div = $('<div id = "taist_basePlanForOrder">');
   $("<select>")
@@ -206,7 +205,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   settingsDiv.appendTo(td);
 
-  $('<img src="http://www.tai.st/images/logo_sq_180.png">')
+  $('<img src="https://afternoon-fire-9050.herokuapp.com/images/logo_sq_180.png">')
     .css({
       width: 24,
       cursor: 'pointer',

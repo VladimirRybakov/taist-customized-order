@@ -1,9 +1,10 @@
 React = require 'react'
 
-{ div } = React.DOM
+{ div, button } = React.DOM
 
 ordersList = React.createFactory React.createClass
   render: ->
-    div {}, 'List of Orders'
+    div {},
+      button {}, 'Update'
 
 module.exports = ordersList
