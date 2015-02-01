@@ -1,3 +1,2 @@
 node_modules/
-/atrspb.js
-/build/.*
+build/
