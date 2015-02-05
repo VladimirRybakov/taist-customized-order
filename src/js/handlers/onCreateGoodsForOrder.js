@@ -31,16 +31,18 @@ module.exports = function(){
       pos.goodUuid(good.uuid);
 
       updatedPositions.push(good);
+
       if(updatedPositions.length === length){
-        console.log(updatedPositions);
-
-        require('../handlers').onSaveOrder();
-
-        ko.utils.arrayForEach($vm.selectedPositions(), function(pos){
-          pos._isSelected(false);
-        })
+        console.log('updatedPositions', updatedPositions);
+        setTimeout( function() {
+          require('../handlers').onSaveOrder();
+          ko.utils.arrayForEach($vm.selectedPositions(), function(pos){
+            pos._isSelected(false);
+          })
+        }, 500);
       }
     });
+    
   });
 }
 
