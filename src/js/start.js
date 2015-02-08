@@ -66,7 +66,6 @@ function setupDicts(taistOptions) {
   var cachedCollections = ['Company', 'Employee', 'Contract', 'Project'];
   console.log(cachedCollections);
   cachedCollections.forEach( function(collection){
-    console.log('register cache', collection);
     dictsProvider.register(collection, function(collectionName){
       var result = {};
       $client.from(collectionName).load().forEach(function(entity){
@@ -138,8 +137,8 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   div.appendTo($div);
 
-  // $('<div id="reactOrdersList">').appendTo(div);
-  // require('./react/main').render('reactOrdersList');
+  $('<div id="reactOrdersList" style="position: relative">').appendTo(div);
+  require('./react/main').render('reactOrdersList');
 
   div = $('<div id = "taist_basePlanForOrder">');
   $("<select>")

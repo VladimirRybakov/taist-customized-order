@@ -7,7 +7,6 @@ var $app    = require('./globals/app'),
 
 module.exports = {
   'CommonService.getItemTO': function(requestData, responseText){
-    $api.log('CommonService.getItemTO', requestData, responseText);
     var state = $app.getLastState(), tmp;
     if(!state
       ||
@@ -31,8 +30,6 @@ module.exports = {
     }
 
     if(matches) {
-      $api.log('CommonService.getItemTO', 'Good Found', matches[2]);
-
       $app.changeState(STATE.ORDER.newGoodSelected, {
         uuid: matches[2],
         name: $client.from(matches[1]).select({uuid: matches[2]}).load()[0].name,
@@ -45,13 +42,11 @@ module.exports = {
   },
 
   'OrderService.stockForConsignmentsWithReserve': function(requestData, responseText){
-    // $api.log(requestData, responseText);
     var state = $app.getLastState();
     if(!state || state.name !== STATE.ORDER.newGoodSelected) {
       return false;
     }
 
-    $api.log('New position', state.data);
     $client.load(state.data.type, state.data.uuid, function(dummy, good){
 
       if(!$vm.goods[good.uuid]) {
@@ -86,7 +81,6 @@ module.exports = {
         return quantity;
       }, position);
 
-      // $api.log(position);
       order.customerOrderPosition.push(position);
       $app.changeState(STATE.ORDER.newGoodWaited, {});
     });

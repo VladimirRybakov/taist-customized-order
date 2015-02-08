@@ -26,7 +26,8 @@ module.exports = {
     return $vm[dict][name]
   },
 
-  register: function(dict, updateFunc) {
-    updateFunctions[dict] = updateFunc
+  register: function(dictName, updateFunc) {
+    console.log('register dictionary', dictName);
+    updateFunctions[dictName] = updateFunc
   }
 }
