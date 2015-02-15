@@ -142,7 +142,7 @@ module.exports = {
     var orderPositionsField = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
-      { title: 'Товар', bind: 'text', var: '_name' },
+      { title: 'Товар', bind: 'text', var: '_name', href: "'https://online.moysklad.ru/app/#good/edit?id='+goodUuid()" },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
       { title: '', bind: 'text', var: '_unit' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },

@@ -17,7 +17,17 @@ module.exports = function(table, fields, collectionName) {
       bindValue += ', click: ' + item.click;
     }
 
-    elem = $(item.bind == 'text' ? '<span>' : '<input>')
+    elemType = '<input>'
+    if(item.bind == 'text'){
+      elemType = '<span>';
+    }
+
+    if(item.href) {
+      elemType = '<a>';
+      bindValue += ', attr: { href: ' + item.href + ' }'
+    }
+
+    elem = $(elemType)
       .attr("data-bind", bindValue)
       .appendTo(td);
 
