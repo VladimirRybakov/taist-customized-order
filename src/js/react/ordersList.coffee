@@ -12,18 +12,22 @@ ordersList = React.createFactory React.createClass
   toggleList: ->
     @setState { isListVisible: !@state.isListVisible }
     unless @props.orders.length
-      @setState { status: 'ЗАГРУЗКА СПИСКА ПОДАРКОВ' }
+      # @setState { status: 'ЗАГРУЗКА СПИСКА ПОДАРКОВ' }
       @props.actions.loadOrders()
 
-  getInlineStyle: (width) ->
-    display: 'inline-block'
-    width: width
-    overflow: 'hidden'
+  getNewPrices: ->
+    @props.actions.getNewPrices()
+
+  getInlineStyle: (width, style = {}) ->
+    style.display = 'inline-block'
+    style.width = width
+    style.overflow = 'hidden'
+    style
 
   makeOrderLink: (order) ->
     a {
       href: "https://online.moysklad.ru/app/#customerorder/edit?id=#{order.msOrder.uuid}"
-      style: @getInlineStyle 400
+      style: @getInlineStyle 300
     }, @getOrderName order
 
   getOrderName: (order) ->
@@ -35,27 +39,37 @@ ordersList = React.createFactory React.createClass
         position: 'absolute'
         top: -16
         bottom: 0
+        right: 0
         width: '100%'
-        zIndex: 1024
+        zIndex: 512
     },
-      div { style: textAlign: 'right' },
+      div { style: { textAlign: 'right', width: '50%', position: 'absolute', right: 0 } },
         a { onClick: @toggleList, style: cursor: 'pointer' }, 'Показать список НОВЫХ ПОДАРКОВ'
       if @state.isListVisible
         div {
           style:
             backgroundColor: 'white'
-            marginTop: 8
+            marginTop: 20
             border: '1px solid silver'
             padding: 8
+            width: '100%'
         },
-          div { style: marginBottom: 8 }, 'НОВЫЕ ПОДАРКИ ',
-            span {},
-              img { style: { margin: "0px 8px" }, src: progressIndicator }
-            span {}, @state.status
-          div { style: height: 300, overflowY: 'scroll' },
+          div { style: marginBottom: 12 }, 'НОВЫЕ ПОДАРКИ ',
+            button { onClick: @getNewPrices, style: marginLeft: 12 }, 'Расчитать текущие цены'
+            # span {},
+            #   img { style: { margin: "0px 8px" }, src: progressIndicator }
+            # span {}, @state.status
+          div { style: height: 200, overflowY: 'scroll' },
             @props.orders.map (order) =>
-              div { key: order.msOrder.uuid, style: { padding: 6, borderBottom: '1px solid silver' } },
+              style =
+                padding: 8
+                borderTop: '1px solid silver'
+                backgroundColor: if order.diff < 0 then '#fdbcb4' else 'white'
+
+              div { key: order.msOrder.uuid, style: style },
                 @makeOrderLink order
-                div { style: @getInlineStyle 200 }, 'DIV'
+                div { style: @getInlineStyle 120, { textAlign: 'right' } }, order.sum
+                div { style: @getInlineStyle 120, { textAlign: 'right' } }, order.newSum
+                div { style: @getInlineStyle 120, { textAlign: 'right' } }, order.diff
 
 module.exports = ordersList

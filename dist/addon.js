@@ -1522,7 +1522,7 @@ module.exports = function (order){
 }
 
 },{"../globals/api":7,"../globals/vm":11}],31:[function(require,module,exports){
-var OrdersList, React, client, container, data, loadOrders, render, timeout, vm;
+var OrdersList, React, calculateOrderSum, calculateOrdersSumWithNewPrices, calculatePrice, client, container, data, getNewPrices, loadOrders, render, timeout, vm;
 
 React = require('react');
 
@@ -1533,6 +1533,71 @@ vm = require('../globals/vm');
 client = require('../globals/client');
 
 timeout = 200;
+
+calculatePrice = function(goodsSum, taistOrder) {
+  var orderSum;
+  orderSum = (goodsSum + taistOrder.primeCostPackage) * (1 + taistOrder.primeCostRisk / 100) * (1 + 1 * taistOrder.primeCostInterest) * (1 + 1 * taistOrder.primeCostTax) / taistOrder.presentsCount;
+  return orderSum.toFixed(2);
+};
+
+calculateOrderSum = function(msOrder, taistOrder) {
+  var goodsSum;
+  goodsSum = msOrder.customerOrderPosition.reduce(function(sum, pos) {
+    var oldGoodPrice;
+    oldGoodPrice = pos.price.sum / 100;
+    if (!data.goodsIndex[pos.goodUuid]) {
+      data.goodsIndex[pos.goodUuid] = {
+        uuid: pos.goodUuid,
+        oldPrices: [oldGoodPrice]
+      };
+      data.goods.push(data.goodsIndex[pos.goodUuid]);
+    } else {
+      data.goodsIndex[pos.goodUuid].oldPrices.push(oldGoodPrice);
+    }
+    return sum + oldGoodPrice * pos.quantity;
+  }, 0);
+  return calculatePrice(goodsSum, taistOrder);
+};
+
+calculateOrdersSumWithNewPrices = function() {
+  var goodsSum, order, _i, _len, _ref;
+  _ref = data.orders;
+  for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+    order = _ref[_i];
+    goodsSum = order.msOrder.customerOrderPosition.reduce(function(sum, pos) {
+      var newGoodPrice;
+      newGoodPrice = data.goodsIndex[pos.goodUuid].newPrice;
+      if (typeof newGoodPrice === 'undefined') {
+        console.log(data.goodsIndex[pos.goodUuid]);
+      }
+      return sum + (newGoodPrice || 0) * pos.quantity;
+    }, 0);
+    order.newSum = calculatePrice(goodsSum, order.taistOrder);
+    order.diff = (order.newSum - order.sum).toFixed(2);
+  }
+  return render();
+};
+
+getNewPrices = function() {
+  var goodsPart, idx, len;
+  idx = 0;
+  len = 40;
+  while ((idx * len) < data.goods.length) {
+    goodsPart = data.goods.slice(idx * len, (idx + 1) * len);
+    client.from('Good').select({
+      uuid: goodsPart.reduce((function(str, good) {
+        return "" + str + ";uuid=" + good.uuid;
+      }), "0")
+    }).load(function(err, goods) {
+      return goods.forEach(function(good) {
+        data.goodsIndex[good.uuid].newPrice = (good.buyPrice || 0) / 100;
+        return data.goodsIndex[good.uuid].name = good.name;
+      });
+    });
+    idx += 1;
+  }
+  return calculateOrdersSumWithNewPrices();
+};
 
 loadOrders = function() {
   return setTimeout(function() {
@@ -1546,9 +1611,12 @@ loadOrders = function() {
         msOrder = orders[_i];
         _results.push((function(msOrder) {
           return vm.getOrder(msOrder.uuid, function(err, taistOrder) {
+            var sum;
+            sum = calculateOrderSum(msOrder, taistOrder);
             data.orders.push({
               msOrder: msOrder,
-              taistOrder: taistOrder
+              taistOrder: taistOrder,
+              sum: sum
             });
             return render();
           });
@@ -1561,8 +1629,11 @@ loadOrders = function() {
 
 data = {
   orders: [],
+  goods: [],
+  goodsIndex: {},
   actions: {
-    loadOrders: loadOrders
+    loadOrders: loadOrders,
+    getNewPrices: getNewPrices
   }
 };
 
@@ -1602,23 +1673,25 @@ ordersList = React.createFactory(React.createClass({
       isListVisible: !this.state.isListVisible
     });
     if (!this.props.orders.length) {
-      this.setState({
-        status: 'ЗАГРУЗКА СПИСКА ПОДАРКОВ'
-      });
       return this.props.actions.loadOrders();
     }
   },
-  getInlineStyle: function(width) {
-    return {
-      display: 'inline-block',
-      width: width,
-      overflow: 'hidden'
-    };
+  getNewPrices: function() {
+    return this.props.actions.getNewPrices();
+  },
+  getInlineStyle: function(width, style) {
+    if (style == null) {
+      style = {};
+    }
+    style.display = 'inline-block';
+    style.width = width;
+    style.overflow = 'hidden';
+    return style;
   },
   makeOrderLink: function(order) {
     return a({
       href: "https://online.moysklad.ru/app/#customerorder/edit?id=" + order.msOrder.uuid,
-      style: this.getInlineStyle(400)
+      style: this.getInlineStyle(300)
     }, this.getOrderName(order));
   },
   getOrderName: function(order) {
@@ -1630,12 +1703,16 @@ ordersList = React.createFactory(React.createClass({
         position: 'absolute',
         top: -16,
         bottom: 0,
+        right: 0,
         width: '100%',
-        zIndex: 1024
+        zIndex: 512
       }
     }, div({
       style: {
-        textAlign: 'right'
+        textAlign: 'right',
+        width: '50%',
+        position: 'absolute',
+        right: 0
       }
     }, a({
       onClick: this.toggleList,
@@ -1645,35 +1722,49 @@ ordersList = React.createFactory(React.createClass({
     }, 'Показать список НОВЫХ ПОДАРКОВ')), this.state.isListVisible ? div({
       style: {
         backgroundColor: 'white',
-        marginTop: 8,
+        marginTop: 20,
         border: '1px solid silver',
-        padding: 8
+        padding: 8,
+        width: '100%'
       }
     }, div({
       style: {
-        marginBottom: 8
+        marginBottom: 12
       }
-    }, 'НОВЫЕ ПОДАРКИ ', span({}, img({
+    }, 'НОВЫЕ ПОДАРКИ ', button({
+      onClick: this.getNewPrices,
       style: {
-        margin: "0px 8px"
-      },
-      src: progressIndicator
-    })), span({}, this.state.status)), div({
+        marginLeft: 12
+      }
+    }, 'Расчитать текущие цены')), div({
       style: {
-        height: 300,
+        height: 200,
         overflowY: 'scroll'
       }
     }, this.props.orders.map((function(_this) {
       return function(order) {
+        var style;
+        style = {
+          padding: 8,
+          borderTop: '1px solid silver',
+          backgroundColor: order.diff < 0 ? '#fdbcb4' : 'white'
+        };
         return div({
           key: order.msOrder.uuid,
-          style: {
-            padding: 6,
-            borderBottom: '1px solid silver'
-          }
+          style: style
         }, _this.makeOrderLink(order), div({
-          style: _this.getInlineStyle(200)
-        }, 'DIV'));
+          style: _this.getInlineStyle(120, {
+            textAlign: 'right'
+          })
+        }, order.sum), div({
+          style: _this.getInlineStyle(120, {
+            textAlign: 'right'
+          })
+        }, order.newSum), div({
+          style: _this.getInlineStyle(120, {
+            textAlign: 'right'
+          })
+        }, order.diff));
       };
     })(this)))) : void 0);
   }
