@@ -50,7 +50,7 @@ module.exports = (grunt) ->
       addon:
         src: [
           "build/addon.js"
-          "src/lib/sample.js"
+          "build/lib/jquery-sortable.js"
         ]
         dest: "dist/addon.js"
 
