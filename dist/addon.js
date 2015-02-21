@@ -349,6 +349,7 @@ module.exports = function() {
   }
   else {
     $('#onCustomerOrder').hide();
+    $('#reactOrdersList').hide();
   }
 
   if(/#customerorder\/edit/.test(hash)){
@@ -476,34 +477,31 @@ module.exports = function(){
 $api.onCreateGoodsForOrder = module.exports;
 
 },{"../globals/api":7,"../globals/client":9,"../globals/vm":11,"../handlers":12}],16:[function(require,module,exports){
+var api;
+
+api = require('../globals/api');
+
 module.exports = function() {
-  var $log = require('../globals/api').log;
-
-  $log('onCustomerOrder');
-  $api.wait.elementRender('.pump-title-panel:visible', function(){
-
-    var container = $('>tbody', '.pump-title-panel:visible'),
-        td = $('.taist_container', container),
-        tr,
-        originalButton;
-
-    if(td.length === 0) {
+  return api.wait.elementRender('.pump-title-panel:visible', function() {
+    var container, td, tr;
+    container = $('>tbody', '.pump-title-panel:visible');
+    td = $('.taist_container', container);
+    if (td.length === 0) {
       tr = $('<tr id="onCustomerOrder">');
-      td = $('<td>')
-        .addClass('taist_container')
-        .attr('colspan', 8)
-        .css({ paddingRight: '10px'})
-        .appendTo(tr);
+      td = $('<td>').addClass('taist_container').attr('colspan', 8).css({
+        paddingRight: '10px'
+      }).appendTo(tr);
       tr.appendTo(container);
+      $('<div id="reactOrdersList">').insertBefore('.lognex-ScreenWrapper');
     }
-
     $('#onCustomerOrder').show();
-    $('#taist_processingPlans').appendTo(td);
+    $('#taist_processingPlans').prependTo(td);
+    $('#reactOrdersList').show();
+    return require('../react/main').render('reactOrdersList');
   });
+};
 
-}
-
-},{"../globals/api":7}],17:[function(require,module,exports){
+},{"../globals/api":7,"../react/main":31}],17:[function(require,module,exports){
 module.exports = function() {
   var positions = $vm.selectedOrder().customerOrderPosition;
   positions.remove(function(pos) {
@@ -1700,26 +1698,19 @@ ordersList = React.createFactory(React.createClass({
   render: function() {
     return div({
       style: {
-        position: 'absolute',
-        top: -16,
-        bottom: 0,
-        right: 0,
-        width: '100%',
-        zIndex: 512
+        width: 1000,
+        margin: "-8px 0px 8px 48px"
       }
-    }, div({
+    }, div({}, div({
       style: {
-        textAlign: 'right',
-        width: '50%',
-        position: 'absolute',
-        right: 0
+        textAlign: 'right'
       }
     }, a({
       onClick: this.toggleList,
       style: {
         cursor: 'pointer'
       }
-    }, 'Показать список НОВЫХ ПОДАРКОВ')), this.state.isListVisible ? div({
+    }, (this.state.isListVisible ? 'Скрыть' : 'Показать'), ' список НОВЫХ ПОДАРКОВ'))), this.state.isListVisible ? div({
       style: {
         backgroundColor: 'white',
         marginTop: 20,
@@ -1734,7 +1725,8 @@ ordersList = React.createFactory(React.createClass({
     }, 'НОВЫЕ ПОДАРКИ ', button({
       onClick: this.getNewPrices,
       style: {
-        marginLeft: 12
+        marginLeft: 12,
+        padding: 4
       }
     }, 'Расчитать текущие цены')), div({
       style: {
@@ -1930,7 +1922,8 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   var div;
 
-  div = $('<div id = "taist_processingPlans">');
+  div = $('<div id = "taist_processingPlans">').css({ paddingTop: 4, paddingBottom: 4 })
+
   $("<select>")
     .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: selectedBasePlan")
     .css({ width: 400 })
@@ -1938,14 +1931,11 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $("<button>")
     .text('Заказ по шаблону')
-    .css({marginLeft: 20})
+    .css({ marginLeft: 10, padding: 4 })
     .click(require('./handlers').onNewCustomerOrder)
     .appendTo(div);
 
   div.appendTo($div);
-
-  $('<div id="reactOrdersList" style="position: relative">').appendTo(div);
-  require('./react/main').render('reactOrdersList');
 
   div = $('<div id = "taist_basePlanForOrder">');
   $("<select>")
@@ -2137,7 +2127,7 @@ function onStart(_taistApi) {
 
 module.exports = onStart
 
-},{"./customerOrderInterface":3,"./dictsProvider":6,"./globals/api":7,"./globals/app":8,"./globals/client":9,"./globals/dom":10,"./globals/vm":11,"./handlers":12,"./processors":25,"./processors/parseOrderAttributes":30,"./react/main":31,"./state":35,"./taistSettingsInterface":36,"./utils":37,"./xmlhttphandlers":46,"./xmlhttpproxy":47}],35:[function(require,module,exports){
+},{"./customerOrderInterface":3,"./dictsProvider":6,"./globals/api":7,"./globals/app":8,"./globals/client":9,"./globals/dom":10,"./globals/vm":11,"./handlers":12,"./processors":25,"./processors/parseOrderAttributes":30,"./state":35,"./taistSettingsInterface":36,"./utils":37,"./xmlhttphandlers":46,"./xmlhttpproxy":47}],35:[function(require,module,exports){
 module.exports = {
   APP: {
     appStarted:           'appStarted',

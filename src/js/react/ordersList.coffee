@@ -34,17 +34,12 @@ ordersList = React.createFactory React.createClass
     order.taistOrder.customName or order.taistOrder.name
 
   render: ->
-    div {
-      style:
-        position: 'absolute'
-        top: -16
-        bottom: 0
-        right: 0
-        width: '100%'
-        zIndex: 512
-    },
-      div { style: { textAlign: 'right', width: '50%', position: 'absolute', right: 0 } },
-        a { onClick: @toggleList, style: cursor: 'pointer' }, 'Показать список НОВЫХ ПОДАРКОВ'
+    div { style: width: 1000, margin: "-8px 0px 8px 48px" },
+      div {},
+        div { style: textAlign: 'right' },
+          a { onClick: @toggleList, style: cursor: 'pointer' },
+            ( if @state.isListVisible then 'Скрыть' else 'Показать' ),
+            ' список НОВЫХ ПОДАРКОВ'
       if @state.isListVisible
         div {
           style:
@@ -55,7 +50,7 @@ ordersList = React.createFactory React.createClass
             width: '100%'
         },
           div { style: marginBottom: 12 }, 'НОВЫЕ ПОДАРКИ ',
-            button { onClick: @getNewPrices, style: marginLeft: 12 }, 'Расчитать текущие цены'
+            button { onClick: @getNewPrices, style: marginLeft: 12, padding: 4 }, 'Расчитать текущие цены'
             # span {},
             #   img { style: { margin: "0px 8px" }, src: progressIndicator }
             # span {}, @state.status

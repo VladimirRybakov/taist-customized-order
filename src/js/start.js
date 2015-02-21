@@ -123,7 +123,8 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   var div;
 
-  div = $('<div id = "taist_processingPlans">');
+  div = $('<div id = "taist_processingPlans">').css({ paddingTop: 4, paddingBottom: 4 })
+
   $("<select>")
     .attr('data-bind', "options: baseProcessingPlans, optionsText: 'name', value: selectedBasePlan")
     .css({ width: 400 })
@@ -131,14 +132,11 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $("<button>")
     .text('Заказ по шаблону')
-    .css({marginLeft: 20})
+    .css({ marginLeft: 10, padding: 4 })
     .click(require('./handlers').onNewCustomerOrder)
     .appendTo(div);
 
   div.appendTo($div);
-
-  $('<div id="reactOrdersList" style="position: relative">').appendTo(div);
-  require('./react/main').render('reactOrdersList');
 
   div = $('<div id = "taist_basePlanForOrder">');
   $("<select>")

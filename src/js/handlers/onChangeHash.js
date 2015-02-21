@@ -20,6 +20,7 @@ module.exports = function() {
   }
   else {
     $('#onCustomerOrder').hide();
+    $('#reactOrdersList').hide();
   }
 
   if(/#customerorder\/edit/.test(hash)){
