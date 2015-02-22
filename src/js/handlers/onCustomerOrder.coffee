@@ -21,4 +21,4 @@ module.exports = () ->
     $('#taist_processingPlans').prependTo td
 
     $('#reactOrdersList').show()
-    require('../react/main').render('reactOrdersList')
+    require('../react/main').renderOrdersList('reactOrdersList')

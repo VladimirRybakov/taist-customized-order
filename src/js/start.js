@@ -266,7 +266,9 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedOrderPositions = ko.observableArray([]);
 
   var goodsDOMNode = $('<div id="taist_allGoods" data-bind="if: selectedOrder() !== null">');
+
   require('./customerOrderInterface').create(goodsDOMNode);
+
   goodsDOMNode.appendTo($div);
   $dom.setGoodsNode(goodsDOMNode[0]);
 

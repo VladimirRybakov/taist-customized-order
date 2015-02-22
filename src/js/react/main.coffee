@@ -1,6 +1,3 @@
-React = require 'react'
-OrdersList = require './ordersList'
-
 vm = require '../globals/vm'
 client = require '../globals/client'
 
@@ -39,7 +36,7 @@ calculateOrdersSumWithNewPrices = () ->
     , 0
     order.newSum = calculatePrice goodsSum, order.taistOrder
     order.diff = (order.newSum - order.sum).toFixed 2
-  render()
+  renderOrdersList()
 
 getNewPrices = () ->
   idx = 0
@@ -69,7 +66,7 @@ loadOrders = () ->
             vm.getOrder msOrder.uuid, (err, taistOrder) ->
               sum = calculateOrderSum msOrder, taistOrder
               data.orders.push { msOrder, taistOrder, sum }
-              render()
+              renderOrdersList()
   , timeout
 
 data =
@@ -81,12 +78,49 @@ data =
     getNewPrices
   }
 
-container = null
-render = () ->
-  if container
-    React.render (OrdersList data), container
+React = require 'react'
+
+OrdersList = require './ordersList'
+ordersListContainer = null
+renderOrdersList = () ->
+  if ordersListContainer
+    React.render ( OrdersList data ), ordersListContainer
+
+OrderPrimeCost = require './orderPrimeCost'
+orderPrimeListContainer = null
+renderOrderPrimeCost = () ->
+  if orderPrimeListContainer
+
+    order = {}
+
+    [
+      'primeCostInterest'
+      'primeCostTax'
+      'primeCostOutput'
+      'primeCostPackage'
+      'primeCostRisk'
+      '_discount'
+    ].map (name) =>
+      order[name] = parseFloat( $vm.selectedOrder()[name]() or 0 )
+
+    console.log 'render order', order
+    React.render (
+      OrderPrimeCost {
+        order: order
+        pricePerPresent: $vm.selectedOrder()._pricePerPresent()
+        presentsCount: $vm.selectedOrder()._presentsCount()
+        onChangePrimeCostParam: (name, value) ->
+          console.log 'onChangePrimeCostParam', name, value
+          $vm.selectedOrder()[name](value);
+          renderOrderPrimeCost()
+      }
+    ), orderPrimeListContainer
 
 module.exports =
-  render: (containerId) ->
-    container = document.getElementById containerId
-    render()
+  renderOrdersList: (containerId) ->
+    ordersListContainer = document.getElementById containerId
+    renderOrdersList()
+
+  renderOrderPrimeCost: (container) ->
+    orderPrimeListContainer = container
+    renderOrderPrimeCost()

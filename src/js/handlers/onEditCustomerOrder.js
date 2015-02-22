@@ -308,7 +308,11 @@ module.exports = function() {
           $('.operationNamePanel td:last').hide();
 
           ko.applyBindings($vm, goodsDOMNode);
+
           require('../processors/parseOrderAttributes')($vm.selectedOrder());
+
+          require('../react/main').renderOrderPrimeCost(document.getElementById('reactOrderPrimeCost'));
+
           $(goodsDOMNode)
             .insertAfter( originalGoodsTable )
             .show();

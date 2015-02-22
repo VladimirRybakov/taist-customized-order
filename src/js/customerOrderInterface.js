@@ -139,6 +139,8 @@ module.exports = {
       span.attr('data-bind', bind + ', click: ' + show.toString());
     }
 
+    div = $('<div id="reactOrderPrimeCost">').appendTo(container);
+
     var orderPositionsField = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
