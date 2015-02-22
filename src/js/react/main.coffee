@@ -99,18 +99,17 @@ renderOrderPrimeCost = () ->
       'primeCostOutput'
       'primeCostPackage'
       'primeCostRisk'
+      'primeCostFixedPrice'
       '_discount'
     ].map (name) =>
       order[name] = parseFloat( $vm.selectedOrder()[name]() or 0 )
 
-    console.log 'render order', order
     React.render (
       OrderPrimeCost {
         order: order
         pricePerPresent: $vm.selectedOrder()._pricePerPresent()
         presentsCount: $vm.selectedOrder()._presentsCount()
         onChangePrimeCostParam: (name, value) ->
-          console.log 'onChangePrimeCostParam', name, value
           $vm.selectedOrder()[name](value);
           renderOrderPrimeCost()
       }

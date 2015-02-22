@@ -612,7 +612,7 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
-      [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+      [ 'Interest', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
           param = 'primeCost' + param;
           order[param] = ko.observable( taistOrderData[param] || $vm[param]() )
       });
@@ -1041,7 +1041,7 @@ module.exports = function() {
               sortOrder: require('../utils').getPositionsOrder(),
             };
 
-            [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+            [ 'Interest', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
               param = 'primeCost' + param;
               data[param] = parseFloat( vmOrder[param]() );
             });
@@ -1599,18 +1599,16 @@ renderOrderPrimeCost = function() {
   var order;
   if (orderPrimeListContainer) {
     order = {};
-    ['primeCostInterest', 'primeCostTax', 'primeCostOutput', 'primeCostPackage', 'primeCostRisk', '_discount'].map((function(_this) {
+    ['primeCostInterest', 'primeCostTax', 'primeCostOutput', 'primeCostPackage', 'primeCostRisk', 'primeCostFixedPrice', '_discount'].map((function(_this) {
       return function(name) {
         return order[name] = parseFloat($vm.selectedOrder()[name]() || 0);
       };
     })(this));
-    console.log('render order', order);
     return React.render(OrderPrimeCost({
       order: order,
       pricePerPresent: $vm.selectedOrder()._pricePerPresent(),
       presentsCount: $vm.selectedOrder()._presentsCount(),
       onChangePrimeCostParam: function(name, value) {
-        console.log('onChangePrimeCostParam', name, value);
         $vm.selectedOrder()[name](value);
         return renderOrderPrimeCost();
       }
@@ -1646,12 +1644,16 @@ PrimeCostCalculation = React.createFactory(React.createClass({
     };
   },
   columnStyle: {
-    padding: '8px 16px',
+    padding: '6px 16px',
     textAlign: 'right'
   },
   calculatePrice: function() {
     var orderSum;
-    orderSum = (this.props.pricePerPresent + this.props.order.primeCostPackage) * (1 + this.props.order.primeCostRisk / 100) * (1 + 1 * this.props.order.primeCostInterest) * (1 + 1 * this.props.order.primeCostTax) * (1 - this.state.discount / 100);
+    if (this.props.calcData.fixedPrice) {
+      orderSum = this.props.calcData.fixedPrice;
+    } else {
+      orderSum = (this.props.pricePerPresent + this.props.order.primeCostPackage) * (1 + this.props.order.primeCostRisk / 100) * (1 + 1 * this.props.order.primeCostInterest) * (1 + 1 * this.props.order.primeCostTax) * (1 - this.state.discount / 100);
+    }
     return orderSum.toFixed(2);
   },
   calculateIncome: function() {
@@ -1681,7 +1683,12 @@ PrimeCostCalculation = React.createFactory(React.createClass({
       style: {
         borderBottom: '1px solid silver'
       }
-    }, td({
+    }, this.props.calcData.fixedPrice ? td({
+      colSpan: 2,
+      style: {
+        padding: '6px 16px'
+      }
+    }, 'Фиксированная цена') : void 0, !this.props.calcData.fixedPrice ? td({
       style: this.columnStyle
     }, this.props.calcData.onDiscountUpdate != null ? span({
       style: {
@@ -1694,7 +1701,7 @@ PrimeCostCalculation = React.createFactory(React.createClass({
         textAlign: 'right',
         width: 40
       }
-    })), td({
+    })) : void 0, !this.props.calcData.fixedPrice ? td({
       style: this.columnStyle
     }, input({
       value: this.props.calcData.onDiscountUpdate != null ? this.props.calcData.discount : this.state.discount,
@@ -1703,7 +1710,7 @@ PrimeCostCalculation = React.createFactory(React.createClass({
         textAlign: 'right',
         width: 40
       }
-    })), td({
+    })) : void 0, td({
       style: this.columnStyle
     }, this.calculatePrice()), td({
       style: this.columnStyle
@@ -1733,6 +1740,9 @@ OrderPrimeCost = React.createFactory(React.createClass({
     }, {
       name: 'Risk',
       title: 'Риски (% от суммы)'
+    }, {
+      name: 'FixedPrice',
+      title: 'Фиксированная цена'
     }
   ],
   calcData: [
@@ -1781,7 +1791,7 @@ OrderPrimeCost = React.createFactory(React.createClass({
         return div({
           key: field.name,
           style: {
-            padding: '8px 0'
+            padding: '6px 0'
           }
         }, div({
           style: _this.getInlineStyle(240)
@@ -1818,6 +1828,10 @@ OrderPrimeCost = React.createFactory(React.createClass({
           return _this.props.onChangePrimeCostParam('_discount', newValue);
         };
       })(this)
+    }).concat({
+      presentsCount: this.props.presentsCount,
+      discount: this.props.order._discount,
+      fixedPrice: this.props.order.primeCostFixedPrice
     }).map((function(_this) {
       return function(data) {
         return PrimeCostCalculation({
@@ -2167,6 +2181,8 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.primeCostOutput = ko.observable(taistOptions.primeCostOutput || 0.945);
   $vm.primeCostPackage = ko.observable(taistOptions.primeCostPackage || 10);
   $vm.primeCostRisk = ko.observable(taistOptions.primeCostRisk || 5);
+
+  $vm.primeCostFixedPrice = ko.observable(0);
 
   $vm.onCreateGoodsForOrder = function(){
     require('./handlers').onCreateGoodsForOrder();

@@ -121,7 +121,7 @@ module.exports = function() {
               sortOrder: require('../utils').getPositionsOrder(),
             };
 
-            [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
+            [ 'Interest', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
               param = 'primeCost' + param;
               data[param] = parseFloat( vmOrder[param]() );
             });

@@ -8,16 +8,19 @@ PrimeCostCalculation = React.createFactory React.createClass
     discount: @props.calcData.discount
 
   columnStyle:
-    padding: '8px 16px'
+    padding: '6px 16px'
     textAlign: 'right'
 
   calculatePrice: () ->
     #TODO Move to utils
-    orderSum = ( @props.pricePerPresent + @props.order.primeCostPackage ) *
-    ( 1 + @props.order.primeCostRisk / 100 ) *
-    ( 1 + 1 * @props.order.primeCostInterest ) *
-    ( 1 + 1 * @props.order.primeCostTax ) *
-    ( 1 - @state.discount / 100 )
+    if @props.calcData.fixedPrice
+      orderSum = @props.calcData.fixedPrice
+    else
+      orderSum = ( @props.pricePerPresent + @props.order.primeCostPackage ) *
+      ( 1 + @props.order.primeCostRisk / 100 ) *
+      ( 1 + 1 * @props.order.primeCostInterest ) *
+      ( 1 + 1 * @props.order.primeCostTax ) *
+      ( 1 - @state.discount / 100 )
 
     orderSum.toFixed(2)
 
@@ -45,25 +48,32 @@ PrimeCostCalculation = React.createFactory React.createClass
 
   render: ->
     tr { style: borderBottom: '1px solid silver' },
-      td { style: @columnStyle },
-        if @props.calcData.onDiscountUpdate?
-          span { style: fontWeight: 'bold' }, @props.calcData.presentsCount
-        else
+      if @props.calcData.fixedPrice
+        td { colSpan: 2, style: padding: '6px 16px' }, 'Фиксированная цена'
+
+      unless @props.calcData.fixedPrice
+        td { style: @columnStyle },
+          if @props.calcData.onDiscountUpdate?
+            span { style: fontWeight: 'bold' }, @props.calcData.presentsCount
+          else
+            input {
+              value: @state.presentsCount
+              onChange: @onChangePresentsCount
+              style:
+                textAlign: 'right'
+                width: 40
+            }
+
+      unless @props.calcData.fixedPrice
+        td { style: @columnStyle },
           input {
-            value: @state.presentsCount
-            onChange: @onChangePresentsCount
+            value: if @props.calcData.onDiscountUpdate? then @props.calcData.discount else @state.discount
+            onChange: @onChangeDiscount
             style:
               textAlign: 'right'
               width: 40
           }
-      td { style: @columnStyle },
-        input {
-          value: if @props.calcData.onDiscountUpdate? then @props.calcData.discount else @state.discount
-          onChange: @onChangeDiscount
-          style:
-            textAlign: 'right'
-            width: 40
-        }
+
       td { style: @columnStyle }, @calculatePrice()
       td { style: @columnStyle }, @calculateIncome()
       td { style: @columnStyle }, @calculateTotal()
@@ -78,6 +88,7 @@ OrderPrimeCost = React.createFactory React.createClass
     { name: 'Output', title: 'Выдача' }
     { name: 'Package', title: 'Транспортная упаковка' }
     { name: 'Risk', title: 'Риски (% от суммы)' }
+    { name: 'FixedPrice', title: 'Фиксированная цена' }
   ]
 
   calcData: [
@@ -102,7 +113,7 @@ OrderPrimeCost = React.createFactory React.createClass
           div { style: fontWeight: 'bold' }, 'РАСЧЕТ СЕБЕСТОИМОСТИ'
           div {},
             @primeCostFields.map (field) =>
-              div { key: field.name, style: padding: '8px 0' },
+              div { key: field.name, style: padding: '6px 0' },
                 div { style: @getInlineStyle 240 }, field.title
                 input {
                   'data-name': field.name
@@ -125,6 +136,11 @@ OrderPrimeCost = React.createFactory React.createClass
                 discount: @props.order._discount
                 onDiscountUpdate: (newValue) =>
                   @props.onChangePrimeCostParam '_discount', newValue
+              })
+              .concat({
+                presentsCount: @props.presentsCount
+                discount: @props.order._discount
+                fixedPrice: @props.order.primeCostFixedPrice
               })
               .map (data) =>
                 PrimeCostCalculation
