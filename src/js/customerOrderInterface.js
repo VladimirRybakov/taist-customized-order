@@ -3,16 +3,6 @@ module.exports = {
     var div,
         table  = $('<table>').addClass('taist-table');
 
-    div = $('<div>')
-      .css({
-        position: 'absolute',
-        left: 600,
-      })
-      .text('Расчет себестоимости')
-      .appendTo(container);
-
-    require('./primeCostInterface').create(div);
-
     orderFields = [
       {
         divBind: 'if: basePlan() !== null',
@@ -41,34 +31,6 @@ module.exports = {
       { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
 
       { name: '', cls: '', bind: '' },
-
-      {
-        name: 'Процент', cls: 'tar', elem: 'input',
-        bind: 'value: selectedOrder().primeCostInterest',
-        css: { width: 60, marginLeft: 20}
-      },
-      {
-        name: 'Налог', cls: 'tar', elem: 'input',
-        bind: 'value: selectedOrder().primeCostTax',
-        css: { width: 60, marginLeft: 20}
-      },
-      {
-        name: 'Выдача', cls: 'tar', elem: 'input',
-        bind: 'value: selectedOrder().primeCostOutput',
-        css: { width: 60, marginLeft: 20}
-      },
-      {
-        name: 'Транспортная упаковка', cls: 'tar', elem: 'input',
-        bind: 'value: selectedOrder().primeCostPackage',
-        css: { width: 60, marginLeft: 20}
-      },
-      {
-        name: 'Риски (% от суммы)', cls: 'tar', elem: 'input',
-        bind: 'value: selectedOrder().primeCostRisk',
-        css: { width: 60, marginLeft: 20}
-      },
-
-      // { name: '', cls: '', bind: '' },
     ]
 
     orderFields.map(function(field){

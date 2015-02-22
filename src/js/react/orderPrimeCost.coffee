@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, table, tbody, thead, tr, th, td, input } = React.DOM
+{ div, table, tbody, thead, tr, th, td, input, span } = React.DOM
 
 PrimeCostCalculation = React.createFactory React.createClass
   getInitialState: ->
@@ -29,7 +29,12 @@ PrimeCostCalculation = React.createFactory React.createClass
     orderIncome.toFixed(2)
 
   calculateTotal: () ->
-    (@calculateIncome() * @state.presentsCount).toFixed(2)
+    count = if @props.calcData.onDiscountUpdate?
+      @props.calcData.presentsCount
+    else
+      @state.presentsCount
+
+    (@calculateIncome() * count).toFixed(2)
 
   onChangeDiscount: () ->
     @setState discount: event.target.value
@@ -41,16 +46,19 @@ PrimeCostCalculation = React.createFactory React.createClass
   render: ->
     tr { style: borderBottom: '1px solid silver' },
       td { style: @columnStyle },
-        input {
-          value: @state.presentsCount
-          onChange: @onChangePresentsCount
-          style:
-            textAlign: 'right'
-            width: 40
-        }
+        if @props.calcData.onDiscountUpdate?
+          span { style: fontWeight: 'bold' }, @props.calcData.presentsCount
+        else
+          input {
+            value: @state.presentsCount
+            onChange: @onChangePresentsCount
+            style:
+              textAlign: 'right'
+              width: 40
+          }
       td { style: @columnStyle },
         input {
-          value: if @props.calcData.onDiscountUpdate then @props.calcData.discount else @state.discount
+          value: if @props.calcData.onDiscountUpdate? then @props.calcData.discount else @state.discount
           onChange: @onChangeDiscount
           style:
             textAlign: 'right'
@@ -87,7 +95,7 @@ OrderPrimeCost = React.createFactory React.createClass
     width: width
 
   render: ->
-    table { style: width: 1000 },
+    table { style: width: 1000, marginBottom: 8 },
       tbody {},
        tr {},
          td { style: width: '50%' },

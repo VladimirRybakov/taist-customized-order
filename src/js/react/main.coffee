@@ -122,5 +122,6 @@ module.exports =
     renderOrdersList()
 
   renderOrderPrimeCost: (container) ->
-    orderPrimeListContainer = container
+    if container
+      orderPrimeListContainer = container
     renderOrderPrimeCost()

@@ -130,12 +130,10 @@ module.exports = function() {
       order = $vm.customerOrders[uuid];
 
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
-      order._discount = ko.observable(taistOrderData.discount || 0);
+      order._discount = ko.observable(parseFloat(taistOrderData.discount) || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
-
-      $vm.primeCostDiscount(order._discount());
 
       [ 'Interest', 'Tax', 'Output', 'Package', 'Risk'].forEach(function(param){
           param = 'primeCost' + param;
@@ -184,6 +182,8 @@ module.exports = function() {
       }, order);
 
       order._sTotalWithPackageAndRisks = ko.computed(function(){
+        require('../react/main').renderOrderPrimeCost();
+
         return ( (this._total() + parseFloat(this.primeCostPackage()) ) *
           ( 1 + parseFloat(this.primeCostRisk()) / 100)
         ).toFixed(2).replace('.', ',');
