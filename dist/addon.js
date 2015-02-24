@@ -810,47 +810,78 @@ module.exports = function() {
 }
 
 },{"../dictsProvider":6,"../globals/api":7,"../globals/app":8,"../globals/client":9,"../globals/dom":10,"../handlers":12,"../processors":24,"../processors/parseOrderAttributes":29,"../react/main":30,"../state":35,"../utils":37}],19:[function(require,module,exports){
-var $api = require('../globals/api');
+var api, client, removeBrokenOrder;
+
+api = require('../globals/api');
+
+client = require('../globals/client');
+
+removeBrokenOrder = function(orders) {
+  var order;
+  order = orders.pop();
+  return api.setOrder(order.uuid, null, function() {
+    if (orders.length > 0) {
+      return removeBrokenOrder(orders);
+    } else {
+      return alert('Ссылки на несуществующие заказы удалены');
+    }
+  });
+};
 
 module.exports = function() {
-  $api.log('onEditProcessingPlan');
-  $api.getOrdersList(function(error, data){
-    $api.log('onLoadOrderList');
-    var uuid = location.hash.match(/id=(.+)/)[1],
-        orders = [],
-        i, plan,
-        divClass = 'processingplan-related-orders',
-        div;
-
+  return api.getOrdersList(function(error, data) {
+    var div, divClass, orders, plan, planUuid, uuid;
+    uuid = location.hash.match(/id=(.+)/)[1];
+    divClass = 'processingplan-related-orders';
+    orders = [];
     div = $('<div>').addClass(divClass);
-
-    for(i in data) {
-      plan = data[i];
-      if(plan.baseTemplate === uuid || plan.orderTemplate === uuid) {
-        if(plan.name !== '') {
-          $('<a>')
-            .css({display: 'block', padding: 5, marginLeft: 20})
-            .text(plan.name)
-            .attr('href', 'https://online.moysklad.ru/app/#customerorder/edit?id=' + plan.uuid)
-            .appendTo(div);
-
-          orders.push(data[i]);
+    for (planUuid in data) {
+      plan = data[planUuid];
+      if (plan.baseTemplate === uuid || plan.orderTemplate === uuid) {
+        if (plan.name !== '') {
+          $('<a>').css({
+            display: 'block',
+            padding: 5,
+            marginLeft: 20
+          }).text(plan.name).attr('href', 'https://online.moysklad.ru/app/#customerorder/edit?id=' + plan.uuid).appendTo(div);
+          orders.push(plan);
         }
       }
     }
-
-    require('../utils').waitForElement('.processingplan-editor-items-editor:first',
-      function(){
+    if (orders.length > 0) {
+      $('<button>').css({
+        padding: 4,
+        margin: "8px 20px"
+      }).text('Удалить ссылки на несуществующие заказы').appendTo(div).click(function() {
+        return client.from('CustomerOrder').select({
+          uuid: orders.reduce((function(str, order) {
+            return "" + str + ";uuid=" + order.uuid;
+          }), "0")
+        }).load(function(err, realOrders) {
+          var ordersToDelete, realOrdersIds;
+          realOrdersIds = {};
+          realOrders.forEach(function(order) {
+            return realOrdersIds[order.uuid] = true;
+          });
+          ordersToDelete = orders.filter(function(order) {
+            return !realOrdersIds[order.uuid];
+          });
+          if (ordersToDelete.length) {
+            return removeBrokenOrder(ordersToDelete);
+          } else {
+            return alert('Несуществующих заказов не найдено');
+          }
+        });
+      });
+      return require('../utils').waitForElement('.processingplan-editor-items-editor:first', function() {
         $('.' + divClass).remove();
-        div.insertAfter('.processingplan-editor-items-editor:first');
-      }
-    );
+        return div.insertAfter('.processingplan-editor-items-editor:first');
+      });
+    }
+  });
+};
 
-    console.log(orders);
-  })
-}
-
-},{"../globals/api":7,"../utils":37}],20:[function(require,module,exports){
+},{"../globals/api":7,"../globals/client":9,"../utils":37}],20:[function(require,module,exports){
 var $vm     = require('../globals/vm'),
     $api    = require('../globals/api'),
     $client = require('../globals/client');
