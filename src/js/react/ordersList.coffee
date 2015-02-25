@@ -50,7 +50,7 @@ ordersList = React.createFactory React.createClass
             width: '100%'
         },
           div { style: marginBottom: 12 }, 'НОВЫЕ ПОДАРКИ ',
-            button { onClick: @getNewPrices, style: marginLeft: 12, padding: 4 }, 'Расчитать текущие цены'
+            button { onClick: @getNewPrices, style: marginLeft: 12, padding: 4 }, 'Рассчитать текущие цены'
           div { style: height: 200, overflowY: 'scroll' },
             @props.orders.map (order) =>
               style =

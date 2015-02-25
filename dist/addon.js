@@ -1632,7 +1632,8 @@ renderOrderPrimeCost = function() {
     order = {};
     ['primeCostInterest', 'primeCostTax', 'primeCostOutput', 'primeCostPackage', 'primeCostRisk', 'primeCostFixedPrice', '_discount'].map((function(_this) {
       return function(name) {
-        return order[name] = parseFloat($vm.selectedOrder()[name]() || 0);
+        var _base;
+        return order[name] = typeof (_base = $vm.selectedOrder())[name] === "function" ? _base[name]() : void 0;
       };
     })(this));
     return React.render(OrderPrimeCost({
@@ -1681,7 +1682,7 @@ PrimeCostCalculation = React.createFactory(React.createClass({
   calculatePrice: function() {
     var orderSum;
     if (this.props.calcData.fixedPrice) {
-      orderSum = this.props.calcData.fixedPrice;
+      orderSum = parseFloat(this.props.calcData.fixedPrice);
     } else {
       orderSum = (this.props.pricePerPresent + this.props.order.primeCostPackage) * (1 + this.props.order.primeCostRisk / 100) * (1 + 1 * this.props.order.primeCostInterest) * (1 + 1 * this.props.order.primeCostTax) * (1 - this.state.discount / 100);
     }
@@ -1714,12 +1715,12 @@ PrimeCostCalculation = React.createFactory(React.createClass({
       style: {
         borderBottom: '1px solid silver'
       }
-    }, this.props.calcData.fixedPrice ? td({
+    }, this.props.calcData.isFixedPrice ? td({
       colSpan: 2,
       style: {
         padding: '6px 16px'
       }
-    }, 'Фиксированная цена') : void 0, !this.props.calcData.fixedPrice ? td({
+    }, 'Фиксированная цена') : void 0, !this.props.calcData.isFixedPrice ? td({
       style: this.columnStyle
     }, this.props.calcData.onDiscountUpdate != null ? span({
       style: {
@@ -1732,7 +1733,7 @@ PrimeCostCalculation = React.createFactory(React.createClass({
         textAlign: 'right',
         width: 40
       }
-    })) : void 0, !this.props.calcData.fixedPrice ? td({
+    })) : void 0, !this.props.calcData.isFixedPrice ? td({
       style: this.columnStyle
     }, input({
       value: this.props.calcData.onDiscountUpdate != null ? this.props.calcData.discount : this.state.discount,
@@ -1862,6 +1863,7 @@ OrderPrimeCost = React.createFactory(React.createClass({
     }).concat({
       presentsCount: this.props.presentsCount,
       discount: this.props.order._discount,
+      isFixedPrice: true,
       fixedPrice: this.props.order.primeCostFixedPrice
     }).map((function(_this) {
       return function(data) {
@@ -1953,7 +1955,7 @@ ordersList = React.createFactory(React.createClass({
         marginLeft: 12,
         padding: 4
       }
-    }, 'Расчитать текущие цены')), div({
+    }, 'Рассчитать текущие цены')), div({
       style: {
         height: 200,
         overflowY: 'scroll'

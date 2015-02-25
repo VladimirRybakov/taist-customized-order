@@ -102,7 +102,7 @@ renderOrderPrimeCost = () ->
       'primeCostFixedPrice'
       '_discount'
     ].map (name) =>
-      order[name] = parseFloat( $vm.selectedOrder()[name]() or 0 )
+      order[name] = $vm.selectedOrder()[name]?()
 
     React.render (
       OrderPrimeCost {

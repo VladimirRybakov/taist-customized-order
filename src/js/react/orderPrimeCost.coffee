@@ -12,9 +12,8 @@ PrimeCostCalculation = React.createFactory React.createClass
     textAlign: 'right'
 
   calculatePrice: () ->
-    #TODO Move to utils
     if @props.calcData.fixedPrice
-      orderSum = @props.calcData.fixedPrice
+      orderSum = parseFloat @props.calcData.fixedPrice
     else
       orderSum = ( @props.pricePerPresent + @props.order.primeCostPackage ) *
       ( 1 + @props.order.primeCostRisk / 100 ) *
@@ -48,10 +47,10 @@ PrimeCostCalculation = React.createFactory React.createClass
 
   render: ->
     tr { style: borderBottom: '1px solid silver' },
-      if @props.calcData.fixedPrice
+      if @props.calcData.isFixedPrice
         td { colSpan: 2, style: padding: '6px 16px' }, 'Фиксированная цена'
 
-      unless @props.calcData.fixedPrice
+      unless @props.calcData.isFixedPrice
         td { style: @columnStyle },
           if @props.calcData.onDiscountUpdate?
             span { style: fontWeight: 'bold' }, @props.calcData.presentsCount
@@ -64,7 +63,7 @@ PrimeCostCalculation = React.createFactory React.createClass
                 width: 40
             }
 
-      unless @props.calcData.fixedPrice
+      unless @props.calcData.isFixedPrice
         td { style: @columnStyle },
           input {
             value: if @props.calcData.onDiscountUpdate? then @props.calcData.discount else @state.discount
@@ -140,6 +139,7 @@ OrderPrimeCost = React.createFactory React.createClass
               .concat({
                 presentsCount: @props.presentsCount
                 discount: @props.order._discount
+                isFixedPrice: true
                 fixedPrice: @props.order.primeCostFixedPrice
               })
               .map (data) =>
