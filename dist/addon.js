@@ -1957,30 +1957,74 @@ ordersList = React.createFactory(React.createClass({
       }
     }, 'Рассчитать текущие цены')), div({
       style: {
+        marginBottom: '8px',
+        borderBottom: '1px solid black'
+      }
+    }, div({
+      style: this.getInlineStyle(300)
+    }, 'Название подарка'), div({
+      style: this.getInlineStyle(100)
+    }, ''), div({
+      style: this.getInlineStyle(100, {
+        textAlign: 'right'
+      })
+    }, '30'), div({
+      style: this.getInlineStyle(100, {
+        textAlign: 'right'
+      })
+    }, '100'), div({
+      style: this.getInlineStyle(100, {
+        textAlign: 'right'
+      })
+    }, '200'), div({
+      style: this.getInlineStyle(100, {
+        textAlign: 'right'
+      })
+    }, '500')), div({
+      style: {
         height: 200,
         overflowY: 'scroll'
       }
     }, this.props.orders.map((function(_this) {
       return function(order) {
-        var style;
+        var backgroundColor, style;
+        backgroundColor = 'white';
+        if (order.diff < 0) {
+          backgroundColor = '#318ce7';
+        }
+        if (order.diff > 0) {
+          backgroundColor = '#fdbcb4';
+        }
         style = {
           padding: 8,
           borderTop: '1px solid silver',
-          backgroundColor: order.diff < 0 ? '#fdbcb4' : 'white'
+          backgroundColor: backgroundColor
         };
         return div({
           key: order.msOrder.uuid,
           style: style
         }, _this.makeOrderLink(order), div({
-          style: _this.getInlineStyle(120, {
+          style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
         }, order.sum), div({
-          style: _this.getInlineStyle(120, {
+          style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
-        }, order.newSum), div({
-          style: _this.getInlineStyle(120, {
+        }, order.newSum), order.newSum ? div({
+          style: _this.getInlineStyle(100, {
+            textAlign: 'right'
+          })
+        }, (order.newSum * (100 - 7) / 100).toFixed(2)) : void 0, order.newSum ? div({
+          style: _this.getInlineStyle(100, {
+            textAlign: 'right'
+          })
+        }, (order.newSum * (100 - 10) / 100).toFixed(2)) : void 0, order.newSum ? div({
+          style: _this.getInlineStyle(100, {
+            textAlign: 'right'
+          })
+        }, (order.newSum * (100 - 13) / 100).toFixed(2)) : void 0, div({
+          style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
         }, order.diff));

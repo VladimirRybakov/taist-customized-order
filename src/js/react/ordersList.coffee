@@ -51,17 +51,39 @@ ordersList = React.createFactory React.createClass
         },
           div { style: marginBottom: 12 }, 'НОВЫЕ ПОДАРКИ ',
             button { onClick: @getNewPrices, style: marginLeft: 12, padding: 4 }, 'Рассчитать текущие цены'
+
+          div { style: marginBottom: '8px', borderBottom: '1px solid black' },
+            div { style: @getInlineStyle 300 }, 'Название подарка'
+            div { style: @getInlineStyle 100 }, ''
+            div { style: @getInlineStyle 100, textAlign: 'right' }, '30'
+            div { style: @getInlineStyle 100, textAlign: 'right' }, '100'
+            div { style: @getInlineStyle 100, textAlign: 'right' }, '200'
+            div { style: @getInlineStyle 100, textAlign: 'right' }, '500'
+
           div { style: height: 200, overflowY: 'scroll' },
             @props.orders.map (order) =>
+              backgroundColor = 'white'
+              backgroundColor = '#318ce7' if order.diff < 0
+              backgroundColor = '#fdbcb4' if order.diff > 0
+
               style =
                 padding: 8
                 borderTop: '1px solid silver'
-                backgroundColor: if order.diff < 0 then '#fdbcb4' else 'white'
+                backgroundColor: backgroundColor
 
               div { key: order.msOrder.uuid, style: style },
                 @makeOrderLink order
-                div { style: @getInlineStyle 120, { textAlign: 'right' } }, order.sum
-                div { style: @getInlineStyle 120, { textAlign: 'right' } }, order.newSum
-                div { style: @getInlineStyle 120, { textAlign: 'right' } }, order.diff
+                div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.sum
+                div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.newSum
+                if order.newSum
+                  div { style: @getInlineStyle 100, { textAlign: 'right' } },
+                    ( order.newSum * ( 100 - 7 ) / 100 ).toFixed(2)
+                if order.newSum
+                  div { style: @getInlineStyle 100, { textAlign: 'right' } },
+                    ( order.newSum * ( 100 - 10 ) / 100 ).toFixed(2)
+                if order.newSum
+                  div { style: @getInlineStyle 100, { textAlign: 'right' } },
+                    ( order.newSum * ( 100 - 13 ) / 100 ).toFixed(2)
+                div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.diff
 
 module.exports = ordersList
