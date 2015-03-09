@@ -1,6 +1,6 @@
 React = require 'react'
 
-{ div, table, tbody, thead, tr, th, td, input, span } = React.DOM
+{ div, table, tbody, thead, tr, th, td, input, span, button } = React.DOM
 
 PrimeCostCalculation = React.createFactory React.createClass
   getInitialState: ->
@@ -104,48 +104,54 @@ OrderPrimeCost = React.createFactory React.createClass
     display: 'inline-block'
     width: width
 
+  onCopyOrder: () ->
+    require('../handlers').onNewCustomerOrder true
+
   render: ->
-    table { style: width: 1000, marginBottom: 8 },
-      tbody {},
-       tr {},
-         td { style: width: '50%' },
-          div { style: fontWeight: 'bold' }, 'РАСЧЕТ СЕБЕСТОИМОСТИ'
-          div {},
-            @primeCostFields.map (field) =>
-              div { key: field.name, style: padding: '6px 0' },
-                div { style: @getInlineStyle 240 }, field.title
-                input {
-                  'data-name': field.name
-                  onChange: @onChangePrimeCostParam
-                  value: @props.order['primeCost' + field.name]
-                  style:
-                    textAlign: 'right'
-                    width: 60
-                }
-         td {},
-          table {},
-            thead {},
-              tr { style: borderBottom: '1px solid black', color: 'silver' },
-                ['Количество','Скидка','Цена','Заработок','Маржа'].map (column) =>
-                  th { key: column, style: padding: '8px 16px', fontWeight: 'normal' }, column
-            tbody {},
-              @calcData
-              .concat({
-                presentsCount: @props.presentsCount
-                discount: @props.order._discount
-                onDiscountUpdate: (newValue) =>
-                  @props.onChangePrimeCostParam '_discount', newValue
-              })
-              .concat({
-                presentsCount: @props.presentsCount
-                discount: @props.order._discount
-                isFixedPrice: true
-                fixedPrice: @props.order.primeCostFixedPrice
-              })
-              .map (data) =>
-                PrimeCostCalculation
-                  calcData: data
-                  order: @props.order
-                  pricePerPresent: @props.pricePerPresent
+    div {},
+      div {},
+        button { onClick: @onCopyOrder, style: padding: 4, marginBottom: 8 }, 'Создать копию заказа'
+      table { style: width: 1000, marginBottom: 8 },
+        tbody {},
+         tr {},
+           td { style: width: '50%' },
+            div { style: fontWeight: 'bold' }, 'РАСЧЕТ СЕБЕСТОИМОСТИ'
+            div {},
+              @primeCostFields.map (field) =>
+                div { key: field.name, style: padding: '6px 0' },
+                  div { style: @getInlineStyle 240 }, field.title
+                  input {
+                    'data-name': field.name
+                    onChange: @onChangePrimeCostParam
+                    value: @props.order['primeCost' + field.name]
+                    style:
+                      textAlign: 'right'
+                      width: 60
+                  }
+           td {},
+            table {},
+              thead {},
+                tr { style: borderBottom: '1px solid black', color: 'silver' },
+                  ['Количество','Скидка','Цена','Заработок','Маржа'].map (column) =>
+                    th { key: column, style: padding: '8px 16px', fontWeight: 'normal' }, column
+              tbody {},
+                @calcData
+                .concat({
+                  presentsCount: @props.presentsCount
+                  discount: @props.order._discount
+                  onDiscountUpdate: (newValue) =>
+                    @props.onChangePrimeCostParam '_discount', newValue
+                })
+                .concat({
+                  presentsCount: @props.presentsCount
+                  discount: @props.order._discount
+                  isFixedPrice: true
+                  fixedPrice: @props.order.primeCostFixedPrice
+                })
+                .map (data) =>
+                  PrimeCostCalculation
+                    calcData: data
+                    order: @props.order
+                    pricePerPresent: @props.pricePerPresent
 
 module.exports = OrderPrimeCost

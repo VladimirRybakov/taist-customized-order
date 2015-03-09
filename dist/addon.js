@@ -609,6 +609,7 @@ module.exports = function() {
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._discount = ko.observable(parseFloat(taistOrderData.discount) || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
+      order._baseTemplate = ko.observable(taistOrderData.baseTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
@@ -882,51 +883,64 @@ module.exports = function() {
 };
 
 },{"../globals/api":7,"../globals/client":9,"../utils":37}],20:[function(require,module,exports){
-var $vm     = require('../globals/vm'),
-    $api    = require('../globals/api'),
-    $client = require('../globals/client');
+var $api, $client, $vm;
 
-module.exports = function() {
-  $api.log('onNewCustomerOrder', $vm.selectedBasePlan());
+$vm = require('../globals/vm');
 
-  var i, l,
-      uuid,
-      goods,
-      positions;
+$api = require('../globals/api');
 
-  var ts = new Date().getTime()
+$client = require('../globals/client');
 
-  goods = require('../dataProvider').getProcessingPlanGoods( $vm.selectedBasePlan().uuid );
-  $api.log(goods);
-
-  positions = require('../processors').createPositionsByGoods( goods, $vm.selectedBasePlan().materials );
-  $api.log(positions);
-
-  var order = {
+module.exports = function(createOrderCopy) {
+  var goods, goodsSource, order, positions, quantitySource, _ref, _ref1, _ref2;
+  if (createOrderCopy == null) {
+    createOrderCopy = false;
+  }
+  $api.log('onNewCustomerOrder', createOrderCopy, $vm.selectedBasePlan());
+  if (createOrderCopy === true) {
+    goodsSource = $vm.selectedPlan().uuid;
+    quantitySource = $vm.selectedPlan().materials;
+  } else {
+    goodsSource = $vm.selectedBasePlan().uuid;
+    quantitySource = $vm.selectedBasePlan().materials;
+  }
+  goods = require('../dataProvider').getProcessingPlanGoods(goodsSource);
+  positions = require('../processors').createPositionsByGoods(goods, quantitySource);
+  order = {
     vatIncluded: true,
     applicable: true,
     sourceStoreUuid: $vm.selectedWarehouse().uuid,
     payerVat: true,
-    // sourceAgentUuid: "", // контрагент
-    targetAgentUuid: $vm.selectedCompany().uuid, // моя компания
+    targetAgentUuid: $vm.selectedCompany().uuid,
     moment: new Date(),
     customerOrderPosition: positions,
-    employeeUuid: $vm.employeeUuid,
+    employeeUuid: $vm.employeeUuid
+  };
+  if (createOrderCopy === true) {
+    order.sourceAccountUuid = (_ref = $vm.selectedOrder()) != null ? _ref.sourceAccountUuid : void 0;
+    order.sourceAgentUuid = (_ref1 = $vm.selectedOrder()) != null ? _ref1.sourceAgentUuid : void 0;
+    order.projectUuid = (_ref2 = $vm.selectedOrder()) != null ? typeof _ref2.projectUuid === "function" ? _ref2.projectUuid() : void 0 : void 0;
+    ['sourceAccountUuid', 'sourceAgentUuid', 'projectUuid'].forEach(function(param) {
+      if (!order[param]) {
+        return delete order[param];
+      }
+    });
   }
-
-  $client.save("moysklad.customerOrder", order, function(dummy, order){
-    $api.setOrder(order.uuid, {
+  return $client.save("moysklad.customerOrder", order, function(dummy, order) {
+    var taistOrder;
+    taistOrder = {
       uuid: order.uuid,
       name: '',
       customName: '',
-      baseTemplate: $vm.selectedBasePlan().data.uuid,
+      baseTemplate: createOrderCopy === true ? $vm.selectedOrder()._baseTemplate() : $vm.selectedBasePlan().data.uuid,
       orderTemplate: '',
-      presentsCount: 10,
-    }, function(error){
-      location.hash = '#customerorder/edit?id=' + order.uuid;
-    })
+      presentsCount: 10
+    };
+    return $api.setOrder(order.uuid, taistOrder, function(error) {
+      return location.hash = '#customerorder/edit?id=' + order.uuid;
+    });
   });
-}
+};
 
 },{"../dataProvider":4,"../globals/api":7,"../globals/client":9,"../globals/vm":11,"../processors":24}],21:[function(require,module,exports){
 var $vm = require('../globals/vm');
@@ -1662,11 +1676,11 @@ module.exports = {
 };
 
 },{"../globals/client":9,"../globals/vm":11,"./orderPrimeCost":31,"./ordersList":32,"react":194}],31:[function(require,module,exports){
-var OrderPrimeCost, PrimeCostCalculation, React, div, input, span, table, tbody, td, th, thead, tr, _ref;
+var OrderPrimeCost, PrimeCostCalculation, React, button, div, input, span, table, tbody, td, th, thead, tr, _ref;
 
 React = require('react');
 
-_ref = React.DOM, div = _ref.div, table = _ref.table, tbody = _ref.tbody, thead = _ref.thead, tr = _ref.tr, th = _ref.th, td = _ref.td, input = _ref.input, span = _ref.span;
+_ref = React.DOM, div = _ref.div, table = _ref.table, tbody = _ref.tbody, thead = _ref.thead, tr = _ref.tr, th = _ref.th, td = _ref.td, input = _ref.input, span = _ref.span, button = _ref.button;
 
 PrimeCostCalculation = React.createFactory(React.createClass({
   getInitialState: function() {
@@ -1804,8 +1818,17 @@ OrderPrimeCost = React.createFactory(React.createClass({
       width: width
     };
   },
+  onCopyOrder: function() {
+    return require('../handlers').onNewCustomerOrder(true);
+  },
   render: function() {
-    return table({
+    return div({}, div({}, button({
+      onClick: this.onCopyOrder,
+      style: {
+        padding: 4,
+        marginBottom: 8
+      }
+    }, 'Создать копию заказа')), table({
       style: {
         width: 1000,
         marginBottom: 8
@@ -1873,13 +1896,13 @@ OrderPrimeCost = React.createFactory(React.createClass({
           pricePerPresent: _this.props.pricePerPresent
         });
       };
-    })(this))))))));
+    })(this)))))))));
   }
 }));
 
 module.exports = OrderPrimeCost;
 
-},{"react":194}],32:[function(require,module,exports){
+},{"../handlers":12,"react":194}],32:[function(require,module,exports){
 var React, a, button, div, img, ordersList, span, _ref;
 
 React = require('react');

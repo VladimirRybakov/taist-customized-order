@@ -132,6 +132,7 @@ module.exports = function() {
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._discount = ko.observable(parseFloat(taistOrderData.discount) || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
+      order._baseTemplate = ko.observable(taistOrderData.baseTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
