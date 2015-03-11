@@ -183,7 +183,7 @@ module.exports = function() {
       }, order);
 
       order._sTotalWithPackageAndRisks = ko.computed(function(){
-        require('../react/main').renderOrderPrimeCost();
+        require('../react/main').renderOrderPage();
 
         return ( (this._total() + parseFloat(this.primeCostPackage()) ) *
           ( 1 + parseFloat(this.primeCostRisk()) / 100)
@@ -220,7 +220,7 @@ module.exports = function() {
 
         if(div.size() === 0) {
           button = $('.b-popup-button-green', parent);
-          button.css( { background: '#2295F0', borderColor: '#2295F0'} );
+          // button.css( { background: '#2295F0', borderColor: '#2295F0'} );
 
           btn = button.parent();
 
@@ -316,7 +316,7 @@ module.exports = function() {
 
           require('../processors/parseOrderAttributes')($vm.selectedOrder());
 
-          require('../react/main').renderOrderPrimeCost(document.getElementById('reactOrderPrimeCost'));
+          require('../react/main').renderOrderPage(document.getElementById('reactOrderPrimeCost'));
 
           $(goodsDOMNode)
             .insertAfter( originalGoodsTable )

@@ -86,10 +86,10 @@ renderOrdersList = () ->
   if ordersListContainer
     React.render ( OrdersList data ), ordersListContainer
 
-OrderPrimeCost = require './orderPrimeCost'
-orderPrimeListContainer = null
-renderOrderPrimeCost = () ->
-  if orderPrimeListContainer
+OrderPage = require './orderPage'
+orderPageContainer = null
+renderOrderPage = () ->
+  if orderPageContainer
 
     order = {}
 
@@ -105,22 +105,24 @@ renderOrderPrimeCost = () ->
       order[name] = $vm.selectedOrder()[name]?()
 
     React.render (
-      OrderPrimeCost {
-        order: order
-        pricePerPresent: $vm.selectedOrder()._pricePerPresent()
-        presentsCount: $vm.selectedOrder()._presentsCount()
-        onChangePrimeCostParam: (name, value) ->
-          $vm.selectedOrder()[name](value);
-          renderOrderPrimeCost()
+      OrderPage {
+        primeCostData:
+          orderUuid: $vm.selectedOrder().uuid
+          order: order
+          pricePerPresent: $vm.selectedOrder()._pricePerPresent()
+          presentsCount: $vm.selectedOrder()._presentsCount()
+          onChangePrimeCostParam: (name, value) ->
+            $vm.selectedOrder()[name](value);
+            renderOrderPage()
       }
-    ), orderPrimeListContainer
+    ), orderPageContainer
 
 module.exports =
   renderOrdersList: (containerId) ->
     ordersListContainer = document.getElementById containerId
     renderOrdersList()
 
-  renderOrderPrimeCost: (container) ->
+  renderOrderPage: (container) ->
     if container
-      orderPrimeListContainer = container
-    renderOrderPrimeCost()
+      orderPageContainer = container
+    renderOrderPage()

@@ -108,6 +108,11 @@
   display: none;
 }
 
+.newOrderInterface .b-editor-toolbar .b-popup-button-green.b-popup-button-enabled {
+  background: #2295F0;
+  border-color: #2295F0;
+}
+
 #taist_allGoods>div {
   margin-bottom: 4px;
 }
