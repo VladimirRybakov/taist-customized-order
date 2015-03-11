@@ -216,10 +216,14 @@ module.exports = function() {
       }, order);
 
       function redefineButtons(parent, id){
-        var btn, div = $('#' + id);
+        var btn, button, div = $('#' + id);
 
         if(div.size() === 0) {
-          btn = $('.b-popup-button-green', parent).parent(),
+          button = $('.b-popup-button-green', parent);
+          button.css( { background: '#2295F0', borderColor: '#2295F0'} );
+
+          btn = button.parent();
+
           div = $('<div>')
           .attr('id', id)
           .css({

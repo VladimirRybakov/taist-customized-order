@@ -165,6 +165,8 @@ module.exports = function() {
   plan.name = $vm.selectedOrder()._name();
   plan.parentUuid = $vm.orderPlanFolder().uuid;
 
+  console.log('before save template', templateUuid);
+
   if(templateUuid === '') {
     plan.material = [];
     products = plan.product;
@@ -173,6 +175,7 @@ module.exports = function() {
     delete(plan.updated);
 
     $client.save("moysklad.processingPlan", plan, function(error, plan){
+      console.log('$client.save', 'moysklad.processingPlan #1')
 
       plan.material = prepareMaterials(plan)
 
@@ -183,6 +186,7 @@ module.exports = function() {
       plan.product = products;
 
       $client.save("moysklad.processingPlan", plan, function(error, plan){
+        console.log('$client.save', 'moysklad.processingPlan #2')
         require('../utils').parseProcessingPlans([plan]);
         setTimeout(function(){ saveOrder(plan.uuid); }, 300);
       });
@@ -195,6 +199,7 @@ module.exports = function() {
       if(!isRelatedPlan) {
         plan.material = prepareMaterials(plan)
         $client.save("moysklad.processingPlan", plan, function(error, plan){
+          console.log('$client.save', 'moysklad.processingPlan #3')
           if(error) {
             return
           }

@@ -693,10 +693,14 @@ module.exports = function() {
       }, order);
 
       function redefineButtons(parent, id){
-        var btn, div = $('#' + id);
+        var btn, button, div = $('#' + id);
 
         if(div.size() === 0) {
-          btn = $('.b-popup-button-green', parent).parent(),
+          button = $('.b-popup-button-green', parent);
+          button.css( { background: '#2295F0', borderColor: '#2295F0'} );
+
+          btn = button.parent();
+
           div = $('<div>')
           .attr('id', id)
           .css({
@@ -1130,6 +1134,8 @@ module.exports = function() {
   plan.name = $vm.selectedOrder()._name();
   plan.parentUuid = $vm.orderPlanFolder().uuid;
 
+  console.log('before save template', templateUuid);
+
   if(templateUuid === '') {
     plan.material = [];
     products = plan.product;
@@ -1138,6 +1144,7 @@ module.exports = function() {
     delete(plan.updated);
 
     $client.save("moysklad.processingPlan", plan, function(error, plan){
+      console.log('$client.save', 'moysklad.processingPlan #1')
 
       plan.material = prepareMaterials(plan)
 
@@ -1148,6 +1155,7 @@ module.exports = function() {
       plan.product = products;
 
       $client.save("moysklad.processingPlan", plan, function(error, plan){
+        console.log('$client.save', 'moysklad.processingPlan #2')
         require('../utils').parseProcessingPlans([plan]);
         setTimeout(function(){ saveOrder(plan.uuid); }, 300);
       });
@@ -1160,6 +1168,7 @@ module.exports = function() {
       if(!isRelatedPlan) {
         plan.material = prepareMaterials(plan)
         $client.save("moysklad.processingPlan", plan, function(error, plan){
+          console.log('$client.save', 'moysklad.processingPlan #3')
           if(error) {
             return
           }
