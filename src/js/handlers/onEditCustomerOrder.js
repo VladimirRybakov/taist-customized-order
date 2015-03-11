@@ -223,8 +223,8 @@ module.exports = function() {
           div = $('<div>')
           .attr('id', id)
           .css({
-            width: btn.width() - 10,
-            height: btn.height() - 3,
+            width: (btn.width() || 94) - 10,
+            height: (btn.height() || 31) - 3,
           })
           .addClass('taist-onSaveOrder')
           .click(function(event){

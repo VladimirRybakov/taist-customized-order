@@ -3,8 +3,6 @@ var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
 module.exports = function() {
-  var $log = $api.log;
-  $log('onSaveOrder');
 
   var i, l,
       plan,
@@ -12,6 +10,7 @@ module.exports = function() {
       materials = [],
       products = [],
       templateUuid = $vm.selectedOrder()._template(),
+
       saveOrder = function(templateUuid){
         var order = ko.mapping.toJS($vm.selectedOrder),
             mapping = {
@@ -50,7 +49,9 @@ module.exports = function() {
         var attrs = $vm.orderAttributes,
             attrValue;
             order.attribute = [];
+
         for(i = 0, l = attrs.length; i < l; i += 1) {
+
           uuid = attrs[i].uuid;
           $api.log('CustomAttribute', uuid, attrValue);
           attrValue = $vm.selectedOrder()['$' + uuid]();
@@ -109,6 +110,7 @@ module.exports = function() {
 
         setTimeout(function() {
           $client.save("moysklad.customerOrder", order, function(dummy, order){
+
             var vmOrder = $vm.selectedOrder(),
             data = {
               uuid: order.uuid,
@@ -181,7 +183,6 @@ module.exports = function() {
       plan.product = products;
 
       $client.save("moysklad.processingPlan", plan, function(error, plan){
-        $log('New plan saved', plan);
         require('../utils').parseProcessingPlans([plan]);
         setTimeout(function(){ saveOrder(plan.uuid); }, 300);
       });
@@ -195,10 +196,8 @@ module.exports = function() {
         plan.material = prepareMaterials(plan)
         $client.save("moysklad.processingPlan", plan, function(error, plan){
           if(error) {
-            $log('Error while saving processingPlan', error)
             return
           }
-          $log('Plan updated', plan);
           require('../utils').parseProcessingPlans([plan]);
           setTimeout(function(){ saveOrder(plan.uuid); }, 300);
         });

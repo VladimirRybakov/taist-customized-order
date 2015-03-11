@@ -10,4 +10,5 @@ module.exports = {
   waitForElement: require('./utils/waitForElement'),
 
   extendApi: require('./utils/extendApi'),
+  extendClient: require('./utils/extendClient'),
 }
