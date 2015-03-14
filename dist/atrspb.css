@@ -60,23 +60,6 @@
   font-size: 1.25rem;
 }
 
-.newOrderInterface .taist-onSaveOrder {
-  display: block;
-}
-
-.taist-onSaveOrder {
-  background-color: rgba(0, 51, 0, 0.1);
-  cursor: pointer;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  display: none;
-}
-
-.taist-onSaveOrder:hover {
-  background-color: rgba(0, 0, 0, 0);
-}
-
 .removePosition span{
   color: white;
   background-color: rgba(255, 0, 0, 0.1);
@@ -109,9 +92,20 @@
 }
 
 .newOrderInterface .b-editor-toolbar .b-popup-button-green.b-popup-button-enabled {
+  display: none;
+}
+
+.b-editor-toolbar .b-popup-button-green.b-popup-button-enabled.taist-button
+{
   background: #2295F0;
   border-color: #2295F0;
+  display: none;
 }
+
+.newOrderInterface .b-editor-toolbar .b-popup-button-green.b-popup-button-enabled.taist-button {
+  display: block;
+}
+
 
 #taist_allGoods>div {
   margin-bottom: 4px;

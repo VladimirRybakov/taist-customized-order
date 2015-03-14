@@ -9,6 +9,6 @@ module.exports = () ->
     originalSaveFunction.call client, type, data, (error, savedData) ->
       unless error
         api.companyData.setPart "history.#{savedData.uuid}", Date.now(), savedData, ->
-          console.log 'history saved'
-          
+          console.log "history for #{type} #{savedData.uuid} saved"
+
       callback(error, savedData)

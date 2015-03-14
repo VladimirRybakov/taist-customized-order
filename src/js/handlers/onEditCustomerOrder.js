@@ -224,20 +224,16 @@ module.exports = function() {
 
           btn = button.parent();
 
-          div = $('<div>')
-          .attr('id', id)
-          .css({
-            width: (btn.width() || 94) - 10,
-            height: (btn.height() || 31) - 3,
-          })
-          .addClass('taist-onSaveOrder')
-          .click(function(event){
-            require('../handlers').onSaveOrder();
-          })
-          .appendTo(btn);
+          newButton = button.clone();
+          newButton
+            .attr('id', 'onSaveOrder')
+            .addClass('taist-button')
+            .click(function(event) {
+              require('../handlers').onSaveOrder();
+            })
+            .appendTo(btn);
 
-          btn.css({position: 'relative'});
-
+          // Prepare close button
           btn = $('.b-popup-button-gray:visible:first', parent);
           btn.click(function(){
             $log('ON CHANGE DIALOG');

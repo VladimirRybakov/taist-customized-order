@@ -105,7 +105,7 @@ OrderPrimeCost = React.createFactory React.createClass
     width: width
 
   onCopyOrder: () ->
-    require('../handlers').onNewCustomerOrder true
+    require('../handlers').onSaveOrder true
 
   render: ->
     div {},

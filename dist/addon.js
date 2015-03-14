@@ -701,20 +701,16 @@ module.exports = function() {
 
           btn = button.parent();
 
-          div = $('<div>')
-          .attr('id', id)
-          .css({
-            width: (btn.width() || 94) - 10,
-            height: (btn.height() || 31) - 3,
-          })
-          .addClass('taist-onSaveOrder')
-          .click(function(event){
-            require('../handlers').onSaveOrder();
-          })
-          .appendTo(btn);
+          newButton = button.clone();
+          newButton
+            .attr('id', 'onSaveOrder')
+            .addClass('taist-button')
+            .click(function(event) {
+              require('../handlers').onSaveOrder();
+            })
+            .appendTo(btn);
 
-          btn.css({position: 'relative'});
-
+          // Prepare close button
           btn = $('.b-popup-button-gray:visible:first', parent);
           btn.click(function(){
             $log('ON CHANGE DIALOG');
@@ -972,6 +968,8 @@ var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
 var prepareMaterials = function(plan){
+  var i, l, m, materials = []
+
   for(i = 0, l = $vm.selectedOrder().customerOrderPosition().length; i < l; i += 1) {
     m = $vm.selectedOrder().customerOrderPosition()[i];
     materials.push({
@@ -988,12 +986,10 @@ var prepareMaterials = function(plan){
   return materials;
 }
 
-module.exports = function() {
+module.exports = function(createOrderCopy) {
 
   var i, l,
       plan,
-      m,
-      materials = [],
       products = [],
       templateUuid = $vm.selectedOrder()._template(),
       saveOrder = require('../utils').saveOrder;
@@ -1007,23 +1003,24 @@ module.exports = function() {
 
   $('#site').hide();
   $('#loading').show();
+
   plan = $.extend(true, {}, $vm.selectedPlan().data);
   plan.name = $vm.selectedOrder()._name();
   plan.parentUuid = $vm.orderPlanFolder().uuid;
 
   console.log('before save template', templateUuid);
 
-  if(templateUuid === '') {
-    plan.material = [];
+  plan.material = [];
+  plan.material = prepareMaterials(plan)
+
+
+  if(templateUuid === '' || createOrderCopy === true) {
     products = plan.product;
     plan.product = [];
     delete(plan.uuid);
     delete(plan.updated);
 
     $client.save("moysklad.processingPlan", plan, function(error, plan){
-      console.log('$client.save', 'moysklad.processingPlan #1')
-
-      plan.material = prepareMaterials(plan)
 
       for(i = 0, l = products.length; i < l; i += 1) {
         products[i].planUuid = plan.uuid;
@@ -1032,7 +1029,14 @@ module.exports = function() {
       plan.product = products;
 
       $client.save("moysklad.processingPlan", plan, function(error, plan){
-        console.log('$client.save', 'moysklad.processingPlan #2')
+        if(error) {
+          return
+        }
+
+        console.log('Created new processingPlan based on current customerOrder', plan.uuid);
+        if(createOrderCopy === true) {
+          return
+        }
         require('../utils').parseProcessingPlans([plan]);
         setTimeout(function(){ saveOrder(plan.uuid); }, 300);
       });
@@ -1043,15 +1047,15 @@ module.exports = function() {
           isRelatedPlan = !!operations.length;
 
       if(!isRelatedPlan) {
-        plan.material = prepareMaterials(plan)
+
         $client.save("moysklad.processingPlan", plan, function(error, plan){
-          console.log('$client.save', 'moysklad.processingPlan #3')
           if(error) {
             return
           }
           require('../utils').parseProcessingPlans([plan]);
           setTimeout(function(){ saveOrder(plan.uuid); }, 300);
         });
+
       }
       else
       {
@@ -1858,7 +1862,7 @@ OrderPrimeCost = React.createFactory(React.createClass({
     };
   },
   onCopyOrder: function() {
-    return require('../handlers').onNewCustomerOrder(true);
+    return require('../handlers').onSaveOrder(true);
   },
   render: function() {
     return div({}, div({}, button({
@@ -2772,7 +2776,7 @@ module.exports = function() {
     return originalSaveFunction.call(client, type, data, function(error, savedData) {
       if (!error) {
         api.companyData.setPart("history." + savedData.uuid, Date.now(), savedData, function() {
-          return console.log('history saved');
+          return console.log("history for " + type + " " + savedData.uuid + " saved");
         });
       }
       return callback(error, savedData);

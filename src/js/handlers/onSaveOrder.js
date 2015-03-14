@@ -3,6 +3,8 @@ var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
 var prepareMaterials = function(plan){
+  var i, l, m, materials = []
+
   for(i = 0, l = $vm.selectedOrder().customerOrderPosition().length; i < l; i += 1) {
     m = $vm.selectedOrder().customerOrderPosition()[i];
     materials.push({
@@ -19,12 +21,10 @@ var prepareMaterials = function(plan){
   return materials;
 }
 
-module.exports = function() {
+module.exports = function(createOrderCopy) {
 
   var i, l,
       plan,
-      m,
-      materials = [],
       products = [],
       templateUuid = $vm.selectedOrder()._template(),
       saveOrder = require('../utils').saveOrder;
@@ -38,23 +38,24 @@ module.exports = function() {
 
   $('#site').hide();
   $('#loading').show();
+
   plan = $.extend(true, {}, $vm.selectedPlan().data);
   plan.name = $vm.selectedOrder()._name();
   plan.parentUuid = $vm.orderPlanFolder().uuid;
 
   console.log('before save template', templateUuid);
 
-  if(templateUuid === '') {
-    plan.material = [];
+  plan.material = [];
+  plan.material = prepareMaterials(plan)
+
+
+  if(templateUuid === '' || createOrderCopy === true) {
     products = plan.product;
     plan.product = [];
     delete(plan.uuid);
     delete(plan.updated);
 
     $client.save("moysklad.processingPlan", plan, function(error, plan){
-      console.log('$client.save', 'moysklad.processingPlan #1')
-
-      plan.material = prepareMaterials(plan)
 
       for(i = 0, l = products.length; i < l; i += 1) {
         products[i].planUuid = plan.uuid;
@@ -63,7 +64,14 @@ module.exports = function() {
       plan.product = products;
 
       $client.save("moysklad.processingPlan", plan, function(error, plan){
-        console.log('$client.save', 'moysklad.processingPlan #2')
+        if(error) {
+          return
+        }
+
+        console.log('Created new processingPlan based on current customerOrder', plan.uuid);
+        if(createOrderCopy === true) {
+          return
+        }
         require('../utils').parseProcessingPlans([plan]);
         setTimeout(function(){ saveOrder(plan.uuid); }, 300);
       });
@@ -74,15 +82,15 @@ module.exports = function() {
           isRelatedPlan = !!operations.length;
 
       if(!isRelatedPlan) {
-        plan.material = prepareMaterials(plan)
+
         $client.save("moysklad.processingPlan", plan, function(error, plan){
-          console.log('$client.save', 'moysklad.processingPlan #3')
           if(error) {
             return
           }
           require('../utils').parseProcessingPlans([plan]);
           setTimeout(function(){ saveOrder(plan.uuid); }, 300);
         });
+
       }
       else
       {
