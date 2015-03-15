@@ -1034,11 +1034,8 @@ module.exports = function(createOrderCopy) {
         }
 
         console.log('Created new processingPlan based on current customerOrder', plan.uuid);
-        if(createOrderCopy === true) {
-          return
-        }
         require('../utils').parseProcessingPlans([plan]);
-        setTimeout(function(){ saveOrder(plan.uuid); }, 300);
+        setTimeout(function(){ saveOrder(plan.uuid, createOrderCopy); }, 300);
       });
 
     });
@@ -2858,7 +2855,7 @@ var $api = require('../globals/api'),
     $client = require('../globals/client'),
     $vm = require('../globals/vm');
 
-module.exports = function(templateUuid){
+module.exports = function(templateUuid, createOrderCopy){
   var order = ko.mapping.toJS($vm.selectedOrder),
       mapping = {
         //'_company',
@@ -2955,6 +2952,19 @@ module.exports = function(templateUuid){
 
   delete order.targetAccountUuid;
 
+  if(createOrderCopy === true) {
+    console.log('Try to create order copy');
+    order.customerOrderPosition.forEach( function(pos){
+      delete pos.uuid
+    });
+    delete order.created
+    delete order.moment
+    delete order.document
+    delete order.name
+    delete order.uuid
+    console.log(order)
+  }
+
   setTimeout(function() {
     $client.save("moysklad.customerOrder", order, function(dummy, order){
 
@@ -2976,7 +2986,8 @@ module.exports = function(templateUuid){
       });
 
       $api.setOrder(order.uuid, data, function(error){
-        location.reload();
+        location.hash = '#customerorder/edit?id=' + order.uuid
+        location.reload()
       })
     });
   }, 1000);

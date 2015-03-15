@@ -69,11 +69,8 @@ module.exports = function(createOrderCopy) {
         }
 
         console.log('Created new processingPlan based on current customerOrder', plan.uuid);
-        if(createOrderCopy === true) {
-          return
-        }
         require('../utils').parseProcessingPlans([plan]);
-        setTimeout(function(){ saveOrder(plan.uuid); }, 300);
+        setTimeout(function(){ saveOrder(plan.uuid, createOrderCopy); }, 300);
       });
 
     });
