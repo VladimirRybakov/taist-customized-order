@@ -2415,8 +2415,10 @@ function onStart(_taistApi) {
   waitForKnockout(100, function(){
     $api.log('knockout loaded');
 
-    $.extend($client, window.require('moysklad-client').createClient());
-    $client.options.flowControl = 'SYNC';
+    var msClient = window.require('moysklad-client').createClient();
+    msClient.options.flowControl = 'SYNC';
+    $.extend($client, msClient);
+
     require('./utils').extendClient()
 
     var xmlhttphandlers = require("./xmlhttphandlers");
