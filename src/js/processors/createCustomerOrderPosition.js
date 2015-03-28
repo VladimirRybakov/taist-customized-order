@@ -45,34 +45,34 @@ module.exports = function (options) {
   koData._availableInfo = ko.observable('');
   koData._isSelected = ko.observable(false);
 
-  $queue.push({
-    req: function(callback){
-      $client.stock({
-        goodUuid: goodUuid
-      }, function(){
-        callback.apply(null, arguments);
-      });
-    },
-    res: function(dummy, data){
-      data[0] || (data[0] = {
-        quantity: 0,
-        stock: 0,
-        reserve: 0,
-        inTransit: 0,
-      });
-
-      koData._available(
-        data[0].quantity
-      );
-
-      koData._availableInfo(
-          'Доступно: ' + data[0].quantity + '<br>'
-        + 'Остаток: ' + data[0].stock + '<br>'
-        + 'Резерв: ' + data[0].reserve + '<br>'
-        + 'Ожидание: ' + data[0].inTransit
-      );
-    }
-  });
+  // $queue.push({
+  //   req: function(callback){
+  //     $client.stock({
+  //       goodUuid: goodUuid
+  //     }, function(){
+  //       callback.apply(null, arguments);
+  //     });
+  //   },
+  //   res: function(dummy, data){
+  //     data[0] || (data[0] = {
+  //       quantity: 0,
+  //       stock: 0,
+  //       reserve: 0,
+  //       inTransit: 0,
+  //     });
+  //
+  //     koData._available(
+  //       data[0].quantity
+  //     );
+  //
+  //     koData._availableInfo(
+  //         'Доступно: ' + data[0].quantity + '<br>'
+  //       + 'Остаток: ' + data[0].stock + '<br>'
+  //       + 'Резерв: ' + data[0].reserve + '<br>'
+  //       + 'Ожидание: ' + data[0].inTransit
+  //     );
+  //   }
+  // });
 
   koData._availabilityColor = ko.computed(function(){
     return this.quantity() > this._available() ? 'red' : 'green';
