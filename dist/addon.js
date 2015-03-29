@@ -2951,7 +2951,7 @@ module.exports = function(templateUuid, createOrderCopy){
   // }
 
   //HOTFIX
-  order.moment.setMonth(order.moment.getMonth()-1)
+  //order.moment.setMonth(order.moment.getMonth()-1)
 
   order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
   order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
