@@ -219,8 +219,7 @@ module.exports = function() {
         var btn, button, div = $('#' + id);
 
         if(div.size() === 0) {
-          button = $('.b-popup-button-green', parent);
-          // button.css( { background: '#2295F0', borderColor: '#2295F0'} );
+          button = $('.b-popup-button-green', parent).css({display:'inline-block'})
 
           btn = button.parent();
 
@@ -228,17 +227,20 @@ module.exports = function() {
           newButton
             .attr('id', 'onSaveOrder')
             .addClass('taist-button')
+            .css({display:'inline-block'})
             .click(function(event) {
               require('../handlers').onSaveOrder();
             })
-            .appendTo(btn);
+            .appendTo(btn)
+            .find('.text')
+            .text('Сохранить позиции в заказе')
 
           // Prepare close button
-          btn = $('.b-popup-button-gray:visible:first', parent);
-          btn.click(function(){
-            $log('ON CHANGE DIALOG');
-            require('../handlers').onChangesDialog();
-          });
+          // btn = $('.b-popup-button-gray:visible:first', parent);
+          // btn.click(function(){
+          //   $log('ON CHANGE DIALOG');
+          //   require('../handlers').onChangesDialog();
+          // });
         }
       }
 

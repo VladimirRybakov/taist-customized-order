@@ -91,9 +91,9 @@
   display: none;
 }
 
-.newOrderInterface .b-editor-toolbar .b-popup-button-green.b-popup-button-enabled {
+/*.newOrderInterface .b-editor-toolbar .b-popup-button-green.b-popup-button-enabled {
   display: none;
-}
+}*/
 
 .b-editor-toolbar .b-popup-button-green.b-popup-button-enabled.taist-button
 {

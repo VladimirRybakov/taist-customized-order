@@ -696,8 +696,7 @@ module.exports = function() {
         var btn, button, div = $('#' + id);
 
         if(div.size() === 0) {
-          button = $('.b-popup-button-green', parent);
-          // button.css( { background: '#2295F0', borderColor: '#2295F0'} );
+          button = $('.b-popup-button-green', parent).css({display:'inline-block'})
 
           btn = button.parent();
 
@@ -705,17 +704,20 @@ module.exports = function() {
           newButton
             .attr('id', 'onSaveOrder')
             .addClass('taist-button')
+            .css({display:'inline-block'})
             .click(function(event) {
               require('../handlers').onSaveOrder();
             })
-            .appendTo(btn);
+            .appendTo(btn)
+            .find('.text')
+            .text('Сохранить позиции в заказе')
 
           // Prepare close button
-          btn = $('.b-popup-button-gray:visible:first', parent);
-          btn.click(function(){
-            $log('ON CHANGE DIALOG');
-            require('../handlers').onChangesDialog();
-          });
+          // btn = $('.b-popup-button-gray:visible:first', parent);
+          // btn.click(function(){
+          //   $log('ON CHANGE DIALOG');
+          //   require('../handlers').onChangesDialog();
+          // });
         }
       }
 
@@ -1169,34 +1171,34 @@ module.exports = function (options) {
   koData._availableInfo = ko.observable('');
   koData._isSelected = ko.observable(false);
 
-  // $queue.push({
-  //   req: function(callback){
-  //     $client.stock({
-  //       goodUuid: goodUuid
-  //     }, function(){
-  //       callback.apply(null, arguments);
-  //     });
-  //   },
-  //   res: function(dummy, data){
-  //     data[0] || (data[0] = {
-  //       quantity: 0,
-  //       stock: 0,
-  //       reserve: 0,
-  //       inTransit: 0,
-  //     });
-  //
-  //     koData._available(
-  //       data[0].quantity
-  //     );
-  //
-  //     koData._availableInfo(
-  //         'Доступно: ' + data[0].quantity + '<br>'
-  //       + 'Остаток: ' + data[0].stock + '<br>'
-  //       + 'Резерв: ' + data[0].reserve + '<br>'
-  //       + 'Ожидание: ' + data[0].inTransit
-  //     );
-  //   }
-  // });
+  $queue.push({
+    req: function(callback){
+      $client.stock({
+        goodUuid: goodUuid
+      }, function(){
+        callback.apply(null, arguments);
+      });
+    },
+    res: function(dummy, data){
+      data[0] || (data[0] = {
+        quantity: 0,
+        stock: 0,
+        reserve: 0,
+        inTransit: 0,
+      });
+
+      koData._available(
+        data[0].quantity
+      );
+
+      koData._availableInfo(
+          'Доступно: ' + data[0].quantity + '<br>'
+        + 'Остаток: ' + data[0].stock + '<br>'
+        + 'Резерв: ' + data[0].reserve + '<br>'
+        + 'Ожидание: ' + data[0].inTransit
+      );
+    }
+  });
 
   koData._availabilityColor = ko.computed(function(){
     return this.quantity() > this._available() ? 'red' : 'green';
@@ -2114,7 +2116,7 @@ function process(){
     request = queue.shift();
     request.req(function(){
       request.res.apply(null, arguments);
-      setTimeout(process, 42 * 3);
+      setTimeout(process, 42 * 5);
     });
   } else {
     isInProgress = false;
@@ -2863,7 +2865,7 @@ module.exports = function(templateUuid, createOrderCopy){
       mapping = {
         //'_company',
         '_customer' : { collection: 'Company', saveAs: 'sourceAgentUuid' },
-        '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
+        // '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
         //'_store',
         '_contract' : { collection: 'Contract', saveAs: 'contractUuid' },
         //'_date',
@@ -2875,6 +2877,7 @@ module.exports = function(templateUuid, createOrderCopy){
       uuid;
 
   for(key in mapping) {
+    console.log(key)
     val = $vm.selectedOrder()[key]();
     if(key == '_project' || key == '_contract'){
       val = val.replace(/\s+\[.+?\]/, '');
@@ -2895,57 +2898,60 @@ module.exports = function(templateUuid, createOrderCopy){
 
   var attrs = $vm.orderAttributes,
       attrValue;
-      order.attribute = [];
 
-  for(i = 0, l = attrs.length; i < l; i += 1) {
+  // order.attribute = [];
+  // for(i = 0, l = attrs.length; i < l; i += 1) {
+  //
+  //   uuid = attrs[i].uuid;
+  //   $api.log('CustomAttribute', uuid, attrValue);
+  //   attrValue = $vm.selectedOrder()['$' + uuid]();
+  //
+  //   switch(attrs[i].attrType){
+  //     case 'TEXT':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         valueText: attrValue,
+  //       });
+  //       break;
+  //
+  //     case 'STRING':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         valueString: attrValue,
+  //       });
+  //       break;
+  //
+  //     case 'LONG':
+  //       if(attrValue) {
+  //         order.attribute.push({
+  //           TYPE_NAME: "moysklad.operationAttributeValue",
+  //           metadataUuid: uuid,
+  //           longValue: parseInt(attrValue || 0, 10),
+  //         });
+  //       }
+  //       break;
+  //
+  //     case 'BOOLEAN':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         booleanValue: attrValue,
+  //       });
+  //       break;
+  //
+  //     case 'ID_CUSTOM':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         entityValueUuid: $vm.attrDicts[attrs[i].dictionaryMetadataUuid][attrValue],
+  //       });
+  //   }
+  // }
 
-    uuid = attrs[i].uuid;
-    $api.log('CustomAttribute', uuid, attrValue);
-    attrValue = $vm.selectedOrder()['$' + uuid]();
-
-    switch(attrs[i].attrType){
-      case 'TEXT':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          valueText: attrValue,
-        });
-        break;
-
-      case 'STRING':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          valueString: attrValue,
-        });
-        break;
-
-      case 'LONG':
-        if(attrValue) {
-          order.attribute.push({
-            TYPE_NAME: "moysklad.operationAttributeValue",
-            metadataUuid: uuid,
-            longValue: parseInt(attrValue || 0, 10),
-          });
-        }
-        break;
-
-      case 'BOOLEAN':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          booleanValue: attrValue,
-        });
-        break;
-
-      case 'ID_CUSTOM':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          entityValueUuid: $vm.attrDicts[attrs[i].dictionaryMetadataUuid][attrValue],
-        });
-    }
-  }
+  //HOTFIX
+  order.moment.setMonth(order.moment.getMonth()-1)
 
   order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
   order.sourceStoreUuid = $vm.selectedWarehouse().uuid;

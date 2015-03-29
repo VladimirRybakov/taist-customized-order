@@ -7,7 +7,7 @@ module.exports = function(templateUuid, createOrderCopy){
       mapping = {
         //'_company',
         '_customer' : { collection: 'Company', saveAs: 'sourceAgentUuid' },
-        '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
+        // '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
         //'_store',
         '_contract' : { collection: 'Contract', saveAs: 'contractUuid' },
         //'_date',
@@ -19,6 +19,7 @@ module.exports = function(templateUuid, createOrderCopy){
       uuid;
 
   for(key in mapping) {
+    console.log(key)
     val = $vm.selectedOrder()[key]();
     if(key == '_project' || key == '_contract'){
       val = val.replace(/\s+\[.+?\]/, '');
@@ -39,57 +40,60 @@ module.exports = function(templateUuid, createOrderCopy){
 
   var attrs = $vm.orderAttributes,
       attrValue;
-      order.attribute = [];
 
-  for(i = 0, l = attrs.length; i < l; i += 1) {
+  // order.attribute = [];
+  // for(i = 0, l = attrs.length; i < l; i += 1) {
+  //
+  //   uuid = attrs[i].uuid;
+  //   $api.log('CustomAttribute', uuid, attrValue);
+  //   attrValue = $vm.selectedOrder()['$' + uuid]();
+  //
+  //   switch(attrs[i].attrType){
+  //     case 'TEXT':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         valueText: attrValue,
+  //       });
+  //       break;
+  //
+  //     case 'STRING':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         valueString: attrValue,
+  //       });
+  //       break;
+  //
+  //     case 'LONG':
+  //       if(attrValue) {
+  //         order.attribute.push({
+  //           TYPE_NAME: "moysklad.operationAttributeValue",
+  //           metadataUuid: uuid,
+  //           longValue: parseInt(attrValue || 0, 10),
+  //         });
+  //       }
+  //       break;
+  //
+  //     case 'BOOLEAN':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         booleanValue: attrValue,
+  //       });
+  //       break;
+  //
+  //     case 'ID_CUSTOM':
+  //       order.attribute.push({
+  //         TYPE_NAME: "moysklad.operationAttributeValue",
+  //         metadataUuid: uuid,
+  //         entityValueUuid: $vm.attrDicts[attrs[i].dictionaryMetadataUuid][attrValue],
+  //       });
+  //   }
+  // }
 
-    uuid = attrs[i].uuid;
-    $api.log('CustomAttribute', uuid, attrValue);
-    attrValue = $vm.selectedOrder()['$' + uuid]();
-
-    switch(attrs[i].attrType){
-      case 'TEXT':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          valueText: attrValue,
-        });
-        break;
-
-      case 'STRING':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          valueString: attrValue,
-        });
-        break;
-
-      case 'LONG':
-        if(attrValue) {
-          order.attribute.push({
-            TYPE_NAME: "moysklad.operationAttributeValue",
-            metadataUuid: uuid,
-            longValue: parseInt(attrValue || 0, 10),
-          });
-        }
-        break;
-
-      case 'BOOLEAN':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          booleanValue: attrValue,
-        });
-        break;
-
-      case 'ID_CUSTOM':
-        order.attribute.push({
-          TYPE_NAME: "moysklad.operationAttributeValue",
-          metadataUuid: uuid,
-          entityValueUuid: $vm.attrDicts[attrs[i].dictionaryMetadataUuid][attrValue],
-        });
-    }
-  }
+  //HOTFIX
+  order.moment.setMonth(order.moment.getMonth()-1)
 
   order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
   order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
