@@ -3082,24 +3082,30 @@ module.exports = {
       return false;
     }
 
-    var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/,
-        matches = responseText.match(pattern);
+    // var pattern = /"(Good)",.+,"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"\]/,
+    //     matches = responseText.match(pattern);
+    // if(!matches) {
+    //   pattern = /"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})","[^"]+","(Good)"/,
+    //   matches = responseText.match(pattern);
+    //   if(matches) {
+    //     tmp = matches[2];
+    //     matches[2] = matches[1];
+    //     matches[1] = tmp;
+    //   }
+    // }
 
-    if(!matches) {
-      pattern = /"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})","[^"]+","(Good)"/,
-      matches = responseText.match(pattern);
-      if(matches) {
-        tmp = matches[2];
-        matches[2] = matches[1];
-        matches[1] = tmp;
-      }
-    }
+    var requestUuids = responseText.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g)
+    var addedGood = $client.from('Good')
+        .select( { uuid: requestUuids.reduce (function(str, uuid){return str + ";uuid=" + uuid}, "0") } )
+        .load()[0]
 
-    if(matches) {
+    console.log(addedGood);
+
+    if(addedGood) {
       $app.changeState(STATE.ORDER.newGoodSelected, {
-        uuid: matches[2],
-        name: $client.from(matches[1]).select({uuid: matches[2]}).load()[0].name,
-        type: matches[1]
+        uuid: addedGood.uuid,
+        name: addedGood.name,
+        type: 'Good'
       });
     }
   },
