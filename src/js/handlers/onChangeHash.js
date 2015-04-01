@@ -14,7 +14,7 @@ module.exports = function() {
 
   $app.resetState();
 
-  if(/#customerorder(\?global_[a-zA-Z]+Filter.+)?$/.test(hash)) {
+  if(/#customerorder(\?global_[a-zA-Z]+Filter.+)?$/i.test(hash)) {
     $('#onCustomerOrder').show();
     return require('../handlers').onCustomerOrder();
   }
@@ -23,7 +23,7 @@ module.exports = function() {
     $('#reactOrdersList').hide();
   }
 
-  if(/#customerorder\/edit/.test(hash)){
+  if(/#customerorder\/edit/i.test(hash)){
     $app.changeState(STATE.APP.orderOpened);
     $('body').addClass('newOrderInterface');
     if(isCancelled) {
@@ -37,7 +37,7 @@ module.exports = function() {
     $('body').removeClass('newOrderInterface');
   }
 
-  if(/#processingplan\/edit/.test(hash)) {
+  if(/#processingplan\/edit/i.test(hash)) {
     return require('../handlers').onEditProcessingPlan();
   }
 }
