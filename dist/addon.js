@@ -2966,6 +2966,11 @@ module.exports = function(templateUuid, createOrderCopy){
     order.customerOrderPosition.forEach( function(pos){
       delete pos.uuid
     });
+
+    order.attribute.forEach( function(attr){
+      delete attr.uuid
+    });
+
     delete order.created
     delete order.moment
     delete order.document
