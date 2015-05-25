@@ -364,8 +364,6 @@ module.exports = function(){
     var target = event.target,
         action = $(target).text();
 
-    $console.log('USER ACTION', action)
-
     switch(action){
       case 'Да':
         // Should be handled before
