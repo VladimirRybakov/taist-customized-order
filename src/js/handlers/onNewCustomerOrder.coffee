@@ -3,8 +3,6 @@ $api = require '../globals/api'
 $client = require '../globals/client'
 
 module.exports = (createOrderCopy = false) ->
-  $api.log 'onNewCustomerOrder', createOrderCopy, $vm.selectedBasePlan()
-
   if createOrderCopy is true
     goodsSource = $vm.selectedPlan().uuid
     quantitySource = $vm.selectedPlan().materials

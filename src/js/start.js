@@ -159,7 +159,7 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedBasePlan = ko.observable(null);
 
   $vm.basePlan.subscribe(function(){
-    $api.log($vm.basePlan());
+    console.log($vm.basePlan());
   });
 
   $vm.basePlanForOrder = ko.observable(null);
@@ -277,11 +277,9 @@ function onStart(_taistApi) {
 
   require('./utils').extendApi($api);
 
-  $api.log('onStart');
+  $console.log('onStart');
 
   waitForKnockout(100, function(){
-    $api.log('knockout loaded');
-
     var msClient = window.require('moysklad-client').createClient();
     msClient.options.flowControl = 'SYNC';
     $.extend($client, msClient);
@@ -314,8 +312,6 @@ function onStart(_taistApi) {
         $api.localStorage.set('employeeUuid', $vm.employeeUuid || '');
       }
 
-      console.log('setCompanyKey', $vm.companyUuid);
-      $api.companyData.setCompanyKey($vm.companyUuid);
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 
       $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');

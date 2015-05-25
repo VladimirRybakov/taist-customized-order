@@ -221,13 +221,11 @@ module.exports = {
     if(!$vm[dict][name]){
       getDictionary(dict, name, true);
     }
-
-    console.log('getFromDict', dict, name, $vm[dict][name])
+    
     return $vm[dict][name]
   },
 
   register: function(dictName, updateFunc) {
-    console.log('register dictionary', dictName);
     updateFunctions[dictName] = updateFunc
   }
 }
@@ -366,7 +364,7 @@ module.exports = function(){
     var target = event.target,
         action = $(target).text();
 
-    $api.log('USER ACTION', action)
+    $console.log('USER ACTION', action)
 
     switch(action){
       case 'Да':
@@ -484,8 +482,7 @@ var $api = require('../globals/api'),
 module.exports = function() {
   var i, l, order, positions,
       matches = location.hash.match(/id=(.+)/),
-      uuid,
-      $log = $api.log;
+      uuid;
 
   var goodsDOMNode = $dom.getGoodsNode();
   ko.cleanNode(goodsDOMNode);
@@ -494,7 +491,6 @@ module.exports = function() {
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
   require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
-    $api.log('SHOW SELECTOR');
     $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
   });
 
@@ -504,8 +500,6 @@ module.exports = function() {
   }
 
   uuid = matches[1];
-  $log('onEditCustomerOrder', uuid);
-
   $api.getOrder(uuid, function(error, taistOrderData) {
 
     console.log('getOrder callback', error, taistOrderData)
@@ -516,7 +510,6 @@ module.exports = function() {
     }
 
     require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
-      $api.log('HIDE SELECTOR');
       $('#taist_basePlanForOrder').hide();
     });
 
@@ -530,8 +523,6 @@ module.exports = function() {
     base = ko.utils.arrayFirst($vm.baseProcessingPlans(), function(plan) {
       return plan.uuid == taistOrderData.baseTemplate;
     });
-
-    // $api.log(base);
 
     $vm.basePlan(base);
 
@@ -631,7 +622,6 @@ module.exports = function() {
         return getIndex(a) <= getIndex(b) ? -1 : 1;
       });
 
-      $api.log('POSITIONS', positions.length);
       for(i = 0, l = positions.length; i < l; i +=1){
         positions[i]._quantity = ko.computed(function(){
           var quantity = this._quantityPerPresent() * order._presentsCount();
@@ -712,25 +702,15 @@ module.exports = function() {
             .find('.text')
             .text('Сохранить позиции в заказе')
 
-          // Prepare close button
-          // btn = $('.b-popup-button-gray:visible:first', parent);
-          // btn.click(function(){
-          //   $log('ON CHANGE DIALOG');
-          //   require('../handlers').onChangesDialog();
-          // });
         }
       }
 
       /* Hotfix for order reloading */
-      // setTimeout(function() {
         var selector = '.tutorial-step-inline-editor'
         $api.wait.elementRender(selector, function(){
           if(!/#customerorder\/edit/.test(location.hash)){
-            $log('avoid to re:applyBindings');
             return;
           }
-
-          $log('applyBindings for customerOrder');
 
           var originalGoodsTable = $(selector);
 
@@ -766,7 +746,6 @@ module.exports = function() {
                     selector,
                     element;
 
-                $log(buttonName);
                 switch(buttonName){
                   case 'Добавить позицию':
                     $app.changeState(STATE.ORDER.newGoodWaited);
@@ -784,7 +763,7 @@ module.exports = function() {
             });
           }
 
-          $api.log('APPLY BINDINGS');
+          console.log('APPLY BINDINGS');
           $('.operationNamePanel td:last').hide();
 
           ko.applyBindings($vm, goodsDOMNode);
@@ -898,7 +877,6 @@ module.exports = function(createOrderCopy) {
   if (createOrderCopy == null) {
     createOrderCopy = false;
   }
-  $api.log('onNewCustomerOrder', createOrderCopy, $vm.selectedBasePlan());
   if (createOrderCopy === true) {
     goodsSource = $vm.selectedPlan().uuid;
     quantitySource = $vm.selectedPlan().materials;
@@ -1075,16 +1053,9 @@ module.exports = function(){
   var i, l, pos;
 
   var goods = require('../dataProvider').getProcessingPlanGoods($vm.basePlanForOrder().uuid);
-  $api.log(goods);
 
   var positions = require('../processors').createPositionsByGoods(goods, $vm.basePlanForOrder().materials);
-  $api.log(positions);
 
-  // $vm.selectedPlan($vm.basePlanForOrder());
-  // for(i = 0, l = positions.length; i < l; i += 1) {
-  //   pos = require('../processors').createCustomerOrderPosition({data: positions[i]});
-  //   $api.log(pos);
-  // }
   var uuid = location.hash.match(/id=(.+)/)[1];
 
   var order = $client.from('CustomerOrder').select({uuid: uuid}).load()[0];
@@ -1097,11 +1068,8 @@ module.exports = function(){
     order.customerOrderPosition.push(positions[i]);
   }
 
-  $api.log(order);
-
   //TODO Should be refactored
   $client.save("moysklad.customerOrder", order, function(dummy, order){
-    $api.log($vm.basePlanForOrder().data.uuid);
     $api.setOrder(order.uuid, {
       uuid: order.uuid,
       name: '',
@@ -1137,8 +1105,7 @@ module.exports = function (options) {
     options.data.vat = 18;
   }
 
-  var $log = $api.log,
-      koData = ko.mapping.fromJS(options.data, {
+  var koData = ko.mapping.fromJS(options.data, {
         basePrice: require('../processors').createSumObject,
         price: require('../processors').createSumObject,
         copy: [
@@ -1376,8 +1343,6 @@ module.exports = function (order){
     mapping[attrs[i].name] = '$' + attrs[i].uuid;
   }
 
-  $api.log(mapping);
-
   for(i = 0, l = labels.length; i < l; i += 1) {
     label = $(labels[i]).text();
     key = mapping[label]
@@ -1391,7 +1356,6 @@ module.exports = function (order){
       props[label] = val;
     }
   }
-  $api.log('OrderProperties', props);
 
   val = $('.state-panel').text();
   if(typeof order._state !== 'function') {
@@ -2107,9 +2071,8 @@ var $api = require('./globals/api'),
 
 function process(){
   var l = queue.length,
-      request,
-      $log = $api.log;
-
+      request;
+      
   isInProgress = true;
 
   if(l > 0) {
@@ -2294,7 +2257,7 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.selectedBasePlan = ko.observable(null);
 
   $vm.basePlan.subscribe(function(){
-    $api.log($vm.basePlan());
+    console.log($vm.basePlan());
   });
 
   $vm.basePlanForOrder = ko.observable(null);
@@ -2412,11 +2375,9 @@ function onStart(_taistApi) {
 
   require('./utils').extendApi($api);
 
-  $api.log('onStart');
+  $console.log('onStart');
 
   waitForKnockout(100, function(){
-    $api.log('knockout loaded');
-
     var msClient = window.require('moysklad-client').createClient();
     msClient.options.flowControl = 'SYNC';
     $.extend($client, msClient);
@@ -2449,8 +2410,6 @@ function onStart(_taistApi) {
         $api.localStorage.set('employeeUuid', $vm.employeeUuid || '');
       }
 
-      console.log('setCompanyKey', $vm.companyUuid);
-      $api.companyData.setCompanyKey($vm.companyUuid);
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
 
       $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
@@ -2888,7 +2847,6 @@ module.exports = function(templateUuid, createOrderCopy){
       uuid = require('../dictsProvider').get(mapObject.collection, val);
       if(uuid) {
         order[mapObject.saveAs] = uuid;
-        $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
         continue;
       }
     }
@@ -2898,57 +2856,6 @@ module.exports = function(templateUuid, createOrderCopy){
 
   var attrs = $vm.orderAttributes,
       attrValue;
-
-  // order.attribute = [];
-  // for(i = 0, l = attrs.length; i < l; i += 1) {
-  //
-  //   uuid = attrs[i].uuid;
-  //   $api.log('CustomAttribute', uuid, attrValue);
-  //   attrValue = $vm.selectedOrder()['$' + uuid]();
-  //
-  //   switch(attrs[i].attrType){
-  //     case 'TEXT':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         valueText: attrValue,
-  //       });
-  //       break;
-  //
-  //     case 'STRING':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         valueString: attrValue,
-  //       });
-  //       break;
-  //
-  //     case 'LONG':
-  //       if(attrValue) {
-  //         order.attribute.push({
-  //           TYPE_NAME: "moysklad.operationAttributeValue",
-  //           metadataUuid: uuid,
-  //           longValue: parseInt(attrValue || 0, 10),
-  //         });
-  //       }
-  //       break;
-  //
-  //     case 'BOOLEAN':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         booleanValue: attrValue,
-  //       });
-  //       break;
-  //
-  //     case 'ID_CUSTOM':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         entityValueUuid: $vm.attrDicts[attrs[i].dictionaryMetadataUuid][attrValue],
-  //       });
-  //   }
-  // }
 
   //HOTFIX
   //order.moment.setMonth(order.moment.getMonth()-1)
@@ -3226,9 +3133,6 @@ var registerXMLHttpHandlers = function (handlers) {
               handlerName = service + '.' + method;
               if(handlers && typeof handlers[handlerName] === 'function') {
                 handlers[handlerName](args, self.responseText);
-              }
-              else {
-                // $api.log('REQUEST', service, method, self.responseText);
               }
             }
           }

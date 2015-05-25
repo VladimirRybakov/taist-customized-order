@@ -11,8 +11,7 @@ module.exports = function (options) {
     options.data.vat = 18;
   }
 
-  var $log = $api.log,
-      koData = ko.mapping.fromJS(options.data, {
+  var koData = ko.mapping.fromJS(options.data, {
         basePrice: require('../processors').createSumObject,
         price: require('../processors').createSumObject,
         copy: [

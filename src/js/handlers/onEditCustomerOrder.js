@@ -7,8 +7,7 @@ var $api = require('../globals/api'),
 module.exports = function() {
   var i, l, order, positions,
       matches = location.hash.match(/id=(.+)/),
-      uuid,
-      $log = $api.log;
+      uuid;
 
   var goodsDOMNode = $dom.getGoodsNode();
   ko.cleanNode(goodsDOMNode);
@@ -17,7 +16,6 @@ module.exports = function() {
   $('.primeCost tbody tr', goodsDOMNode).not(':first').remove();
 
   require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
-    $api.log('SHOW SELECTOR');
     $('#taist_basePlanForOrder').insertBefore('.tutorial-step-inline-editor').show();
   });
 
@@ -27,8 +25,6 @@ module.exports = function() {
   }
 
   uuid = matches[1];
-  $log('onEditCustomerOrder', uuid);
-
   $api.getOrder(uuid, function(error, taistOrderData) {
 
     console.log('getOrder callback', error, taistOrderData)
@@ -39,7 +35,6 @@ module.exports = function() {
     }
 
     require('../utils').waitForElement('.tutorial-step-inline-editor', function() {
-      $api.log('HIDE SELECTOR');
       $('#taist_basePlanForOrder').hide();
     });
 
@@ -53,8 +48,6 @@ module.exports = function() {
     base = ko.utils.arrayFirst($vm.baseProcessingPlans(), function(plan) {
       return plan.uuid == taistOrderData.baseTemplate;
     });
-
-    // $api.log(base);
 
     $vm.basePlan(base);
 
@@ -154,7 +147,6 @@ module.exports = function() {
         return getIndex(a) <= getIndex(b) ? -1 : 1;
       });
 
-      $api.log('POSITIONS', positions.length);
       for(i = 0, l = positions.length; i < l; i +=1){
         positions[i]._quantity = ko.computed(function(){
           var quantity = this._quantityPerPresent() * order._presentsCount();
@@ -235,25 +227,15 @@ module.exports = function() {
             .find('.text')
             .text('Сохранить позиции в заказе')
 
-          // Prepare close button
-          // btn = $('.b-popup-button-gray:visible:first', parent);
-          // btn.click(function(){
-          //   $log('ON CHANGE DIALOG');
-          //   require('../handlers').onChangesDialog();
-          // });
         }
       }
 
       /* Hotfix for order reloading */
-      // setTimeout(function() {
         var selector = '.tutorial-step-inline-editor'
         $api.wait.elementRender(selector, function(){
           if(!/#customerorder\/edit/.test(location.hash)){
-            $log('avoid to re:applyBindings');
             return;
           }
-
-          $log('applyBindings for customerOrder');
 
           var originalGoodsTable = $(selector);
 
@@ -289,7 +271,6 @@ module.exports = function() {
                     selector,
                     element;
 
-                $log(buttonName);
                 switch(buttonName){
                   case 'Добавить позицию':
                     $app.changeState(STATE.ORDER.newGoodWaited);
@@ -307,7 +288,7 @@ module.exports = function() {
             });
           }
 
-          $api.log('APPLY BINDINGS');
+          console.log('APPLY BINDINGS');
           $('.operationNamePanel td:last').hide();
 
           ko.applyBindings($vm, goodsDOMNode);

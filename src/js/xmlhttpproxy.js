@@ -59,9 +59,6 @@ var registerXMLHttpHandlers = function (handlers) {
               if(handlers && typeof handlers[handlerName] === 'function') {
                 handlers[handlerName](args, self.responseText);
               }
-              else {
-                // $api.log('REQUEST', service, method, self.responseText);
-              }
             }
           }
         }

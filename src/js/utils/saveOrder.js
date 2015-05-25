@@ -30,7 +30,6 @@ module.exports = function(templateUuid, createOrderCopy){
       uuid = require('../dictsProvider').get(mapObject.collection, val);
       if(uuid) {
         order[mapObject.saveAs] = uuid;
-        $api.log('getAttrUuid', key, val, mapObject.saveAs, uuid);
         continue;
       }
     }
@@ -40,57 +39,6 @@ module.exports = function(templateUuid, createOrderCopy){
 
   var attrs = $vm.orderAttributes,
       attrValue;
-
-  // order.attribute = [];
-  // for(i = 0, l = attrs.length; i < l; i += 1) {
-  //
-  //   uuid = attrs[i].uuid;
-  //   $api.log('CustomAttribute', uuid, attrValue);
-  //   attrValue = $vm.selectedOrder()['$' + uuid]();
-  //
-  //   switch(attrs[i].attrType){
-  //     case 'TEXT':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         valueText: attrValue,
-  //       });
-  //       break;
-  //
-  //     case 'STRING':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         valueString: attrValue,
-  //       });
-  //       break;
-  //
-  //     case 'LONG':
-  //       if(attrValue) {
-  //         order.attribute.push({
-  //           TYPE_NAME: "moysklad.operationAttributeValue",
-  //           metadataUuid: uuid,
-  //           longValue: parseInt(attrValue || 0, 10),
-  //         });
-  //       }
-  //       break;
-  //
-  //     case 'BOOLEAN':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         booleanValue: attrValue,
-  //       });
-  //       break;
-  //
-  //     case 'ID_CUSTOM':
-  //       order.attribute.push({
-  //         TYPE_NAME: "moysklad.operationAttributeValue",
-  //         metadataUuid: uuid,
-  //         entityValueUuid: $vm.attrDicts[attrs[i].dictionaryMetadataUuid][attrValue],
-  //       });
-  //   }
-  // }
 
   //HOTFIX
   //order.moment.setMonth(order.moment.getMonth()-1)

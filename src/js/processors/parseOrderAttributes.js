@@ -25,8 +25,6 @@ module.exports = function (order){
     mapping[attrs[i].name] = '$' + attrs[i].uuid;
   }
 
-  $api.log(mapping);
-
   for(i = 0, l = labels.length; i < l; i += 1) {
     label = $(labels[i]).text();
     key = mapping[label]
@@ -40,7 +38,6 @@ module.exports = function (order){
       props[label] = val;
     }
   }
-  $api.log('OrderProperties', props);
 
   val = $('.state-panel').text();
   if(typeof order._state !== 'function') {

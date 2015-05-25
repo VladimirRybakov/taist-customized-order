@@ -28,7 +28,7 @@ module.exports = function(){
     var target = event.target,
         action = $(target).text();
 
-    $api.log('USER ACTION', action)
+    $console.log('USER ACTION', action)
 
     switch(action){
       case 'Да':

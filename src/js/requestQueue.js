@@ -4,9 +4,8 @@ var $api = require('./globals/api'),
 
 function process(){
   var l = queue.length,
-      request,
-      $log = $api.log;
-
+      request;
+      
   isInProgress = true;
 
   if(l > 0) {

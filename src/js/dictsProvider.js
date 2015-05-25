@@ -21,13 +21,11 @@ module.exports = {
     if(!$vm[dict][name]){
       getDictionary(dict, name, true);
     }
-
-    console.log('getFromDict', dict, name, $vm[dict][name])
+    
     return $vm[dict][name]
   },
 
   register: function(dictName, updateFunc) {
-    console.log('register dictionary', dictName);
     updateFunctions[dictName] = updateFunc
   }
 }
