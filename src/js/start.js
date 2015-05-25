@@ -277,7 +277,7 @@ function onStart(_taistApi) {
 
   require('./utils').extendApi($api);
 
-  $console.log('onStart');
+  console.log('onStart');
 
   waitForKnockout(100, function(){
     var msClient = window.require('moysklad-client').createClient();
