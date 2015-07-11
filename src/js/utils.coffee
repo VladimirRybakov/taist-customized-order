@@ -13,3 +13,4 @@ module.exports =
   extendClient: require './utils/extendClient'
 
   saveOrder: require './utils/saveOrder'
+  wrapGood: require './utils/wrapGood'

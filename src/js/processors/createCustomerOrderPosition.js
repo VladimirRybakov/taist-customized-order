@@ -36,7 +36,8 @@ module.exports = function (options) {
   if(!$vm.goods[goodUuid]) {
     $vm.goods[goodUuid] = {
       name: ko.observable(goodUuid),
-      unit: ko.observable(goodUuid)
+      unit: ko.observable(goodUuid),
+      minPrice: ko.observable(0)
     };
   }
 
@@ -79,6 +80,7 @@ module.exports = function (options) {
 
   koData._name = $vm.goods[goodUuid].name;
   koData._unit = $vm.goods[goodUuid].unit;
+  koData._minPrice = $vm.goods[goodUuid].minPrice;
 
   koData._price = ko.computed({
     read: function () {

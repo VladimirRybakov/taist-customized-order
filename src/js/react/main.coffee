@@ -110,6 +110,7 @@ renderOrderPage = () ->
           orderUuid: $vm.selectedOrder().uuid
           order: order
           pricePerPresent: $vm.selectedOrder()._pricePerPresent()
+          minPricePerPresent:  $vm.selectedOrder()._minPricePerPresent()
           presentsCount: $vm.selectedOrder()._presentsCount()
           onChangePrimeCostParam: (name, value) ->
             $vm.selectedOrder()[name](value);

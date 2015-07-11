@@ -31,6 +31,10 @@ module.exports = {
       { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
 
       { name: '', cls: '', bind: '' },
+
+      { name: 'Цена подарка:', cls: 'ml20', bind: 'text: selectedOrder()._pricePerPresent' },
+      { name: 'Минимальная цена:', cls: 'ml20', bind: 'text: selectedOrder()._minPricePerPresent' },
+      { name: '', cls: '', bind: '' },
     ]
 
     orderFields.map(function(field){
@@ -113,6 +117,7 @@ module.exports = {
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
       { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
+      { title: 'Мин. цена', bind: 'text', var: '_minPrice', cls: 'tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },

@@ -56,10 +56,7 @@ module.exports = {
     $client.load(state.data.type, state.data.uuid, function(dummy, good){
 
       if(!$vm.goods[good.uuid]) {
-        $vm.goods[good.uuid] = {
-          name: ko.observable(good.name),
-          unit: ko.observable( require('./dictsProvider').get('units', good.uomUuid) ),
-        };
+        $vm.goods[good.uuid] = wrapGood(good);
       }
 
       var price = good.buyPrice || 0;

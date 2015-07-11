@@ -4,6 +4,8 @@ var $api = require('../globals/api'),
     $app = require('../globals/app'),
     STATE = require('../state');
 
+    wrapGood = require('../utils').wrapGood
+
 module.exports = function() {
   var i, l, order, positions,
       matches = location.hash.match(/id=(.+)/),
@@ -75,10 +77,8 @@ module.exports = function() {
       for(i = 0, l = order.customerOrderPosition.length; i < l; i += 1) {
         good = order.customerOrderPosition[i].good;
         if(!$vm.goods[good.uuid]) {
-          $vm.goods[good.uuid] = {
-            name: ko.observable( good.name ),
-            unit: ko.observable( require('../dictsProvider').get('units', good.uomUuid) )
-          };
+          console.log(good)
+          $vm.goods[good.uuid] = wrapGood(good);
         }
       }
 
@@ -163,6 +163,14 @@ module.exports = function() {
         })
         order.sum.sum(Math.round(sum * 100));
         order.sum.sumInCurrency(Math.round(sum * 100));
+        return sum;
+      }, order);
+
+      order._minPricePerPresent = ko.computed(function(){
+        var sum = 0;
+        this.customerOrderPosition().map(function(item){
+          sum += parseFloat(item._minPrice());
+        })
         return sum;
       }, order);
 

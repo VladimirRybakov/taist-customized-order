@@ -15,7 +15,12 @@ PrimeCostCalculation = React.createFactory React.createClass
     if @props.calcData.fixedPrice
       orderSum = parseFloat @props.calcData.fixedPrice
     else
-      orderSum = ( @props.pricePerPresent + @props.order.primeCostPackage ) *
+      pricePerPresent = if @state.presentsCount < 100
+        @props.pricePerPresent
+      else
+        @props.minPricePerPresent
+
+      orderSum = ( pricePerPresent + @props.order.primeCostPackage ) *
       ( 1 + @props.order.primeCostRisk / 100 ) *
       ( 1 + 1 * @props.order.primeCostInterest ) *
       ( 1 + 1 * @props.order.primeCostTax ) *
@@ -24,8 +29,13 @@ PrimeCostCalculation = React.createFactory React.createClass
     orderSum.toFixed(2)
 
   calculateIncome: () ->
+    pricePerPresent = if @state.presentsCount < 100
+      @props.pricePerPresent
+    else
+      @props.minPricePerPresent
+
     orderIncome = @calculatePrice() * @props.order.primeCostOutput -
-    ( @props.pricePerPresent + @props.order.primeCostPackage ) *
+    ( pricePerPresent + @props.order.primeCostPackage ) *
     ( 1 + @props.order.primeCostRisk / 100 )
 
     orderIncome.toFixed(2)
@@ -153,5 +163,6 @@ OrderPrimeCost = React.createFactory React.createClass
                     calcData: data
                     order: @props.order
                     pricePerPresent: @props.pricePerPresent
+                    minPricePerPresent: @props.minPricePerPresent
 
 module.exports = OrderPrimeCost
