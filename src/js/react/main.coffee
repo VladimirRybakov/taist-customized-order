@@ -95,6 +95,7 @@ renderOrderPage = () ->
 
     [
       'primeCostInterest'
+      'primeCostInterest100'
       'primeCostTax'
       'primeCostOutput'
       'primeCostPackage'

@@ -184,6 +184,7 @@ function onCompanyDataLoaded(error, taistOptions) {
   }).extend({ rateLimit: 1 });
 
   $vm.primeCostInterest = ko.observable(taistOptions.primeCostInterest || 1.2);
+  $vm.primeCostInterest100 = ko.observable(taistOptions.primeCostInterest || 1.2);
   $vm.primeCostTax = ko.observable(taistOptions.primeCostTax || 0.0262);
   $vm.primeCostOutput = ko.observable(taistOptions.primeCostOutput || 0.945);
   $vm.primeCostPackage = ko.observable(taistOptions.primeCostPackage || 10);
@@ -225,21 +226,6 @@ function onCompanyDataLoaded(error, taistOptions) {
   $vm.customerOrders = {};
   $vm.selectedOrder  = ko.observable(null);
   $vm.presentsCount  = ko.observable(1);
-
-  $vm.primeCost = ko.observableArray([]);
-
-  var createPrimeCost = require('./processors').createPrimeCost;
-
-  var primeCostForPresentsCount = createPrimeCost({
-    quantity: 1,
-    discount: 0
-  });
-
-  $vm.primeCost.push(primeCostForPresentsCount);
-
-  $vm.presentsCount.subscribe(function(){
-    primeCostForPresentsCount.quantity( $vm.presentsCount() );
-  })
 
   $vm.selectedPositions = ko.computed(function(){
     var order = $vm.selectedOrder();

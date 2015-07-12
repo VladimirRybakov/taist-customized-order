@@ -93,6 +93,7 @@ OrderPrimeCost = React.createFactory React.createClass
 
   primeCostFields: [
     { name: 'Interest', title: 'Процент' }
+    { name: 'Interest100', title: 'Процент (на 100 подарков)' }
     { name: 'Tax', title: 'Налог' }
     { name: 'Output', title: 'Выдача' }
     { name: 'Package', title: 'Транспортная упаковка' }

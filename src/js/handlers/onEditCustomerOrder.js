@@ -129,7 +129,7 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
       order._project = ko.observable('');
 
-      [ 'Interest', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
+      [ 'Interest', 'Interest100', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
           param = 'primeCost' + param;
           order[param] = ko.observable( taistOrderData[param] || $vm[param]() )
       });
