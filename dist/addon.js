@@ -131,7 +131,7 @@ module.exports = {
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
       { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
-      { title: 'Мин. цена', bind: 'text', var: '_minPrice', cls: 'tar' },
+      { title: 'Мин. цена', bind: 'value', var: '_basePrice', cls: 'tar w80' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
@@ -644,16 +644,16 @@ module.exports = function() {
         return sum;
       }, order);
 
+      order._pricePerPresent = ko.computed(function(){
+        return this._total() / this._presentsCount();
+      }, order);
+
       order._minPricePerPresent = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._minPrice());
+          sum += parseFloat(item._basePrice());
         })
-        return sum;
-      }, order);
-
-      order._pricePerPresent = ko.computed(function(){
-        return this._total() / this._presentsCount();
+        return sum / this._presentsCount();
       }, order);
 
       order._sTotal = ko.computed(function(){
@@ -1184,6 +1184,7 @@ module.exports = function (options) {
 
   koData._name = $vm.goods[goodUuid].name;
   koData._unit = $vm.goods[goodUuid].unit;
+
   koData._minPrice = $vm.goods[goodUuid].minPrice;
 
   koData._price = ko.computed({
@@ -1193,6 +1194,15 @@ module.exports = function (options) {
     write: function (value) {
       this.price.sum(Math.round(value * 100));
       this.price.sumInCurrency(Math.round(value * 100));
+    },
+    owner: koData
+  });
+
+  koData._basePrice = ko.computed({
+    read: function () {
+      return (this.basePrice.sum()/100).toFixed(2); //.replace('.', ',');
+    },
+    write: function (value) {
       this.basePrice.sum(Math.round(value * 100));
       this.basePrice.sumInCurrency(Math.round(value * 100));
     },
@@ -1210,6 +1220,10 @@ module.exports = function (options) {
 
   koData._total = ko.computed(function(){
     return (this.quantity() * this.price.sum() / 100);
+  }, koData);
+
+  koData._baseTotal = ko.computed(function(){
+    return (this.quantity() * this.basePrice.sum() / 100);
   }, koData);
 
   koData._sTotal = ko.computed(function(){

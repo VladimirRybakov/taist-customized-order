@@ -80,6 +80,7 @@ module.exports = function (options) {
 
   koData._name = $vm.goods[goodUuid].name;
   koData._unit = $vm.goods[goodUuid].unit;
+
   koData._minPrice = $vm.goods[goodUuid].minPrice;
 
   koData._price = ko.computed({
@@ -89,6 +90,15 @@ module.exports = function (options) {
     write: function (value) {
       this.price.sum(Math.round(value * 100));
       this.price.sumInCurrency(Math.round(value * 100));
+    },
+    owner: koData
+  });
+
+  koData._basePrice = ko.computed({
+    read: function () {
+      return (this.basePrice.sum()/100).toFixed(2); //.replace('.', ',');
+    },
+    write: function (value) {
       this.basePrice.sum(Math.round(value * 100));
       this.basePrice.sumInCurrency(Math.round(value * 100));
     },
@@ -106,6 +116,10 @@ module.exports = function (options) {
 
   koData._total = ko.computed(function(){
     return (this.quantity() * this.price.sum() / 100);
+  }, koData);
+
+  koData._baseTotal = ko.computed(function(){
+    return (this.quantity() * this.basePrice.sum() / 100);
   }, koData);
 
   koData._sTotal = ko.computed(function(){

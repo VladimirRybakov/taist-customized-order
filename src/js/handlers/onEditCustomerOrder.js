@@ -166,16 +166,16 @@ module.exports = function() {
         return sum;
       }, order);
 
+      order._pricePerPresent = ko.computed(function(){
+        return this._total() / this._presentsCount();
+      }, order);
+
       order._minPricePerPresent = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._minPrice());
+          sum += parseFloat(item._basePrice());
         })
-        return sum;
-      }, order);
-
-      order._pricePerPresent = ko.computed(function(){
-        return this._total() / this._presentsCount();
+        return sum / this._presentsCount();
       }, order);
 
       order._sTotal = ko.computed(function(){
