@@ -2853,30 +2853,28 @@ module.exports = function(templateUuid, createOrderCopy){
       val,
       uuid;
 
-  for(key in mapping) {
-    console.log(key)
-    val = $vm.selectedOrder()[key]();
-    if(key == '_project' || key == '_contract'){
-      val = val.replace(/\s+\[.+?\]/, '');
-    }
-    mapObject = mapping[key];
-
-    if(val !== '') {
-      uuid = require('../dictsProvider').get(mapObject.collection, val);
-      if(uuid) {
-        order[mapObject.saveAs] = uuid;
-        continue;
-      }
-    }
-
-    delete(order[mapObject.saveAs])
-  }
+  // Для сохранения атрибутов теперь используется оригинальная кнопка МойСклад
+  // for(key in mapping) {
+  //   console.log(key)
+  //   val = $vm.selectedOrder()[key]();
+  //   if(key == '_project' || key == '_contract'){
+  //     val = val.replace(/\s+\[.+?\]/, '');
+  //   }
+  //   mapObject = mapping[key];
+  //
+  //   if(val !== '') {
+  //     uuid = require('../dictsProvider').get(mapObject.collection, val);
+  //     if(uuid) {
+  //       order[mapObject.saveAs] = uuid;
+  //       continue;
+  //     }
+  //   }
+  //
+  //   delete(order[mapObject.saveAs])
+  // }
 
   var attrs = $vm.orderAttributes,
       attrValue;
-
-  //HOTFIX
-  //order.moment.setMonth(order.moment.getMonth()-1)
 
   order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
   order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
