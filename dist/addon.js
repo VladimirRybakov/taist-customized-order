@@ -1664,18 +1664,28 @@ PrimeCostCalculation = React.createFactory(React.createClass({
     textAlign: 'right'
   },
   calculatePrice: function() {
-    var orderSum, pricePerPresent;
+    var orderSum, pricePerPresent, primeCostInterest;
     if (this.props.calcData.fixedPrice) {
       orderSum = parseFloat(this.props.calcData.fixedPrice);
     } else {
-      pricePerPresent = this.state.presentsCount < 100 ? this.props.pricePerPresent : this.props.minPricePerPresent;
-      orderSum = (pricePerPresent + this.props.order.primeCostPackage) * (1 + this.props.order.primeCostRisk / 100) * (1 + 1 * this.props.order.primeCostInterest) * (1 + 1 * this.props.order.primeCostTax) * (1 - this.state.discount / 100);
+      if (this.state.presentsCount < 100) {
+        pricePerPresent = this.props.pricePerPresent;
+        primeCostInterest = this.props.order.primeCostInterest;
+      } else {
+        pricePerPresent = this.props.minPricePerPresent;
+        primeCostInterest = this.props.order.primeCostInterest100;
+      }
+      orderSum = (pricePerPresent + this.props.order.primeCostPackage) * (1 + this.props.order.primeCostRisk / 100) * (1 + 1 * primeCostInterest) * (1 + 1 * this.props.order.primeCostTax) * (1 - this.state.discount / 100);
     }
     return orderSum.toFixed(2);
   },
   calculateIncome: function() {
     var orderIncome, pricePerPresent;
-    pricePerPresent = this.state.presentsCount < 100 ? this.props.pricePerPresent : this.props.minPricePerPresent;
+    if (this.state.presentsCount < 100) {
+      pricePerPresent = this.props.pricePerPresent;
+    } else {
+      pricePerPresent = this.props.minPricePerPresent;
+    }
     orderIncome = this.calculatePrice() * this.props.order.primeCostOutput - (pricePerPresent + this.props.order.primeCostPackage) * (1 + this.props.order.primeCostRisk / 100);
     return orderIncome.toFixed(2);
   },
@@ -1769,6 +1779,9 @@ OrderPrimeCost = React.createFactory(React.createClass({
   calcData: [
     {
       presentsCount: 30,
+      discount: 0
+    }, {
+      presentsCount: 100,
       discount: 0
     }, {
       presentsCount: 100,

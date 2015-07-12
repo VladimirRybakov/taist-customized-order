@@ -15,24 +15,26 @@ PrimeCostCalculation = React.createFactory React.createClass
     if @props.calcData.fixedPrice
       orderSum = parseFloat @props.calcData.fixedPrice
     else
-      pricePerPresent = if @state.presentsCount < 100
-        @props.pricePerPresent
+      if @state.presentsCount < 100
+        pricePerPresent = @props.pricePerPresent
+        primeCostInterest = @props.order.primeCostInterest
       else
-        @props.minPricePerPresent
+        pricePerPresent = @props.minPricePerPresent
+        primeCostInterest = @props.order.primeCostInterest100
 
       orderSum = ( pricePerPresent + @props.order.primeCostPackage ) *
       ( 1 + @props.order.primeCostRisk / 100 ) *
-      ( 1 + 1 * @props.order.primeCostInterest ) *
+      ( 1 + 1 * primeCostInterest ) *
       ( 1 + 1 * @props.order.primeCostTax ) *
       ( 1 - @state.discount / 100 )
 
     orderSum.toFixed(2)
 
   calculateIncome: () ->
-    pricePerPresent = if @state.presentsCount < 100
-      @props.pricePerPresent
+    if @state.presentsCount < 100
+      pricePerPresent = @props.pricePerPresent
     else
-      @props.minPricePerPresent
+      pricePerPresent = @props.minPricePerPresent
 
     orderIncome = @calculatePrice() * @props.order.primeCostOutput -
     ( pricePerPresent + @props.order.primeCostPackage ) *
@@ -103,6 +105,7 @@ OrderPrimeCost = React.createFactory React.createClass
 
   calcData: [
     { presentsCount: 30, discount: 0 }
+    { presentsCount: 100, discount: 0 }
     { presentsCount: 100, discount: 7 }
     { presentsCount: 200, discount: 10 }
     { presentsCount: 500, discount: 13 }
