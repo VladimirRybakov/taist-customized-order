@@ -173,7 +173,7 @@ module.exports = function() {
       order._minPricePerPresent = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._basePrice());
+          sum += parseFloat(item._basePrice() * item.quantity());
         })
         return sum / this._presentsCount();
       }, order);

@@ -106,9 +106,8 @@ OrderPrimeCost = React.createFactory React.createClass
   calcData: [
     { presentsCount: 30, discount: 0 }
     { presentsCount: 100, discount: 0 }
-    { presentsCount: 100, discount: 7 }
-    { presentsCount: 200, discount: 10 }
-    { presentsCount: 500, discount: 13 }
+    { presentsCount: 200, discount: 7 }
+    { presentsCount: 500, discount: 10 }
   ]
 
   onChangePrimeCostParam: (event) ->

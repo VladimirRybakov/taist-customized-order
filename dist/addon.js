@@ -651,7 +651,7 @@ module.exports = function() {
       order._minPricePerPresent = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._basePrice());
+          sum += parseFloat(item._basePrice() * item.quantity());
         })
         return sum / this._presentsCount();
       }, order);
@@ -1222,10 +1222,6 @@ module.exports = function (options) {
     return (this.quantity() * this.price.sum() / 100);
   }, koData);
 
-  koData._baseTotal = ko.computed(function(){
-    return (this.quantity() * this.basePrice.sum() / 100);
-  }, koData);
-
   koData._sTotal = ko.computed(function(){
     return this._total().toFixed(2).replace('.', ',');
   }, koData);
@@ -1248,11 +1244,17 @@ module.exports = function(goods, quantitiesMap) {
   for( i = 0, l = goods.length; i < l; i+= 1 ) {
     good = goods[i];
 
-    price = good.buyPrice || 0
-    priceObject = {
-      sum: price,
-      sumInCurrency: price
+    var buyPrice = good.buyPrice || 0
+    var priceObject = {
+      sum: buyPrice,
+      sumInCurrency: buyPrice
     }
+
+    var minPrice = good.minPrice || 0
+    var minPriceObject = {
+      sum: minPrice,
+      sumInCurrency: minPrice
+    };
 
     positions.push({
       vat: good.vat,
@@ -1260,7 +1262,7 @@ module.exports = function(goods, quantitiesMap) {
       quantity: quantitiesMap[good.uuid],
       discount: 0,
       reserve: 0,
-      basePrice: priceObject,
+      basePrice: minPriceObject,
       price: priceObject,
     });
   }
@@ -1784,14 +1786,11 @@ OrderPrimeCost = React.createFactory(React.createClass({
       presentsCount: 100,
       discount: 0
     }, {
-      presentsCount: 100,
+      presentsCount: 200,
       discount: 7
     }, {
-      presentsCount: 200,
-      discount: 10
-    }, {
       presentsCount: 500,
-      discount: 13
+      discount: 10
     }
   ],
   onChangePrimeCostParam: function(event) {
@@ -3014,11 +3013,18 @@ module.exports = {
         $vm.goods[good.uuid] = wrapGood(good);
       }
 
-      var price = good.buyPrice || 0;
+      var buyPrice = good.buyPrice || 0
       var priceObject = {
-        sum: price,
-        sumInCurrency: price
+        sum: buyPrice,
+        sumInCurrency: buyPrice
+      }
+
+      var minPrice = good.minPrice || 0
+      var minPriceObject = {
+        sum: minPrice,
+        sumInCurrency: minPrice
       };
+
       var position = require('./processors').createCustomerOrderPosition({
         data: {
           vat: good.vat,
@@ -3027,7 +3033,7 @@ module.exports = {
           discount: 0,
           reserve: 0,
           basePrice: priceObject,
-          price: priceObject,
+          price: minPriceObject,
         }
       });
 

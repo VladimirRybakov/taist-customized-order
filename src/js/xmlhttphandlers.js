@@ -59,11 +59,18 @@ module.exports = {
         $vm.goods[good.uuid] = wrapGood(good);
       }
 
-      var price = good.buyPrice || 0;
+      var buyPrice = good.buyPrice || 0
       var priceObject = {
-        sum: price,
-        sumInCurrency: price
+        sum: buyPrice,
+        sumInCurrency: buyPrice
+      }
+
+      var minPrice = good.minPrice || 0
+      var minPriceObject = {
+        sum: minPrice,
+        sumInCurrency: minPrice
       };
+
       var position = require('./processors').createCustomerOrderPosition({
         data: {
           vat: good.vat,
@@ -72,7 +79,7 @@ module.exports = {
           discount: 0,
           reserve: 0,
           basePrice: priceObject,
-          price: priceObject,
+          price: minPriceObject,
         }
       });
 

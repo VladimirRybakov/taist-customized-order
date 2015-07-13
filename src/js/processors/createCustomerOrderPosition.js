@@ -118,10 +118,6 @@ module.exports = function (options) {
     return (this.quantity() * this.price.sum() / 100);
   }, koData);
 
-  koData._baseTotal = ko.computed(function(){
-    return (this.quantity() * this.basePrice.sum() / 100);
-  }, koData);
-
   koData._sTotal = ko.computed(function(){
     return this._total().toFixed(2).replace('.', ',');
   }, koData);
