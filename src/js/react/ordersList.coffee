@@ -22,6 +22,8 @@ ordersList = React.createFactory React.createClass
     style.display = 'inline-block'
     style.width = width
     style.overflow = 'hidden'
+    style.whiteSpace = 'nowrap'
+    style.padding = 4
     style
 
   makeOrderLink: (order) ->
@@ -54,8 +56,11 @@ ordersList = React.createFactory React.createClass
 
           div { style: marginBottom: '8px', borderBottom: '1px solid black' },
             div { style: @getInlineStyle 300 }, 'Название подарка'
-            div { style: @getInlineStyle 100 }, ''
+
+            div { style: @getInlineStyle 100, textAlign: 'right' }, 'на 30'
             div { style: @getInlineStyle 100, textAlign: 'right' }, '30'
+
+            div { style: @getInlineStyle 100, textAlign: 'right' }, 'на 100'
             div { style: @getInlineStyle 100, textAlign: 'right' }, '100'
             div { style: @getInlineStyle 100, textAlign: 'right' }, '200'
             div { style: @getInlineStyle 100, textAlign: 'right' }, '500'
@@ -66,24 +71,32 @@ ordersList = React.createFactory React.createClass
               backgroundColor = '#318ce7' if order.diff < 0
               backgroundColor = '#fdbcb4' if order.diff > 0
 
+              minBackgroundColor = 'white'
+              minBackgroundColor = '#318ce7' if order.minDiff < 0
+              minBackgroundColor = '#fdbcb4' if order.minDiff > 0
+
               style =
-                padding: 8
+                # padding: 8
                 borderTop: '1px solid silver'
-                backgroundColor: backgroundColor
+                # backgroundColor: backgroundColor
 
               div { key: order.msOrder.uuid, style: style },
                 @makeOrderLink order
-                div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.sum
+                div { style: @getInlineStyle 100, { textAlign: 'right', backgroundColor } }, order.sum
                 div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.newSum
-                if order.newSum
+
+                div {
+                  style: @getInlineStyle 100, { textAlign: 'right', backgroundColor: minBackgroundColor }
+                }, order.minSum
+                if order.newMinSum
                   div { style: @getInlineStyle 100, { textAlign: 'right' } },
-                    ( order.newSum * ( 100 - 7 ) / 100 ).toFixed(2)
-                if order.newSum
+                    ( order.newMinSum * ( 100 - 0 ) / 100 ).toFixed(2)
+                if order.newMinSum
                   div { style: @getInlineStyle 100, { textAlign: 'right' } },
-                    ( order.newSum * ( 100 - 10 ) / 100 ).toFixed(2)
-                if order.newSum
+                    ( order.newMinSum * ( 100 - 7 ) / 100 ).toFixed(2)
+                if order.newMinSum
                   div { style: @getInlineStyle 100, { textAlign: 'right' } },
-                    ( order.newSum * ( 100 - 13 ) / 100 ).toFixed(2)
-                div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.diff
+                    ( order.newMinSum * ( 100 - 10 ) / 100 ).toFixed(2)
+                # div { style: @getInlineStyle 100, { textAlign: 'right' } }, order.diff
 
 module.exports = ordersList

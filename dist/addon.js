@@ -1367,29 +1367,40 @@ client = require('../globals/client');
 
 timeout = 200;
 
-calculatePrice = function(goodsSum, taistOrder) {
-  var orderSum;
-  orderSum = (goodsSum + taistOrder.primeCostPackage) * (1 + taistOrder.primeCostRisk / 100) * (1 + 1 * taistOrder.primeCostInterest) * (1 + 1 * taistOrder.primeCostTax) / taistOrder.presentsCount;
+calculatePrice = function(goodsSum, taistOrder, calculateFor100) {
+  var orderSum, primeCostInterest;
+  if (calculateFor100 == null) {
+    calculateFor100 = false;
+  }
+  primeCostInterest = taistOrder.primeCostInterest;
+  if (calculateFor100) {
+    primeCostInterest = taistOrder.primeCostInterest100 || 1.2;
+  }
+  orderSum = (goodsSum + taistOrder.primeCostPackage) * (1 + taistOrder.primeCostRisk / 100) * (1 + 1 * primeCostInterest) * (1 + 1 * taistOrder.primeCostTax) / taistOrder.presentsCount;
   return orderSum.toFixed(2);
 };
 
 calculateOrderSum = function(msOrder, taistOrder) {
   var goodsSum;
   goodsSum = msOrder.customerOrderPosition.reduce(function(sum, pos) {
-    var oldGoodPrice;
-    oldGoodPrice = pos.price.sum / 100;
     if (!data.goodsIndex[pos.goodUuid]) {
       data.goodsIndex[pos.goodUuid] = {
-        uuid: pos.goodUuid,
-        oldPrices: [oldGoodPrice]
+        uuid: pos.goodUuid
       };
       data.goods.push(data.goodsIndex[pos.goodUuid]);
-    } else {
-      data.goodsIndex[pos.goodUuid].oldPrices.push(oldGoodPrice);
     }
-    return sum + oldGoodPrice * pos.quantity;
-  }, 0);
-  return calculatePrice(goodsSum, taistOrder);
+    return {
+      price: sum.price + pos.price.sum / 100 * pos.quantity,
+      minPrice: sum.minPrice + pos.basePrice.sum / 100 * pos.quantity
+    };
+  }, {
+    price: 0,
+    minPrice: 0
+  });
+  return {
+    sum: calculatePrice(goodsSum.price, taistOrder, false),
+    minSum: calculatePrice(goodsSum.minPrice, taistOrder, true)
+  };
 };
 
 calculateOrdersSumWithNewPrices = function() {
@@ -1398,15 +1409,22 @@ calculateOrdersSumWithNewPrices = function() {
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     order = _ref[_i];
     goodsSum = order.msOrder.customerOrderPosition.reduce(function(sum, pos) {
-      var newGoodPrice;
+      var minGoodPrice, newGoodPrice;
       newGoodPrice = data.goodsIndex[pos.goodUuid].newPrice;
-      if (typeof newGoodPrice === 'undefined') {
-        console.log(data.goodsIndex[pos.goodUuid]);
-      }
-      return sum + (newGoodPrice || 0) * pos.quantity;
-    }, 0);
-    order.newSum = calculatePrice(goodsSum, order.taistOrder);
+      minGoodPrice = data.goodsIndex[pos.goodUuid].minPrice;
+      return {
+        price: sum.price + (newGoodPrice || 0) * pos.quantity,
+        minPrice: sum.minPrice + (minGoodPrice || 0) * pos.quantity
+      };
+    }, {
+      price: 0,
+      minPrice: 0
+    });
+    console.log(order, goodsSum);
+    order.newSum = calculatePrice(goodsSum.price, order.taistOrder, false);
     order.diff = (order.newSum - order.sum).toFixed(2);
+    order.newMinSum = calculatePrice(goodsSum.minPrice, order.taistOrder, true);
+    order.minDiff = (order.newMinSum - order.minSum).toFixed(2);
   }
   return renderOrdersList();
 };
@@ -1424,6 +1442,7 @@ getNewPrices = function() {
     }).load(function(err, goods) {
       return goods.forEach(function(good) {
         data.goodsIndex[good.uuid].newPrice = (good.buyPrice || 0) / 100;
+        data.goodsIndex[good.uuid].minPrice = (good.minPrice || 0) / 100;
         return data.goodsIndex[good.uuid].name = good.name;
       });
     });
@@ -1444,12 +1463,13 @@ loadOrders = function() {
         msOrder = orders[_i];
         _results.push((function(msOrder) {
           return vm.getOrder(msOrder.uuid, function(err, taistOrder) {
-            var sum;
-            sum = calculateOrderSum(msOrder, taistOrder);
+            var minSum, sum, _ref;
+            _ref = calculateOrderSum(msOrder, taistOrder), sum = _ref.sum, minSum = _ref.minSum;
             data.orders.push({
               msOrder: msOrder,
               taistOrder: taistOrder,
-              sum: sum
+              sum: sum,
+              minSum: minSum
             });
             return renderOrdersList();
           });
@@ -1951,6 +1971,8 @@ ordersList = React.createFactory(React.createClass({
     style.display = 'inline-block';
     style.width = width;
     style.overflow = 'hidden';
+    style.whiteSpace = 'nowrap';
+    style.padding = 4;
     return style;
   },
   makeOrderLink: function(order) {
@@ -2003,12 +2025,18 @@ ordersList = React.createFactory(React.createClass({
     }, div({
       style: this.getInlineStyle(300)
     }, 'Название подарка'), div({
-      style: this.getInlineStyle(100)
-    }, ''), div({
+      style: this.getInlineStyle(100, {
+        textAlign: 'right'
+      })
+    }, 'на 30'), div({
       style: this.getInlineStyle(100, {
         textAlign: 'right'
       })
     }, '30'), div({
+      style: this.getInlineStyle(100, {
+        textAlign: 'right'
+      })
+    }, 'на 100'), div({
       style: this.getInlineStyle(100, {
         textAlign: 'right'
       })
@@ -2027,7 +2055,7 @@ ordersList = React.createFactory(React.createClass({
       }
     }, this.props.orders.map((function(_this) {
       return function(order) {
-        var backgroundColor, style;
+        var backgroundColor, minBackgroundColor, style;
         backgroundColor = 'white';
         if (order.diff < 0) {
           backgroundColor = '#318ce7';
@@ -2035,39 +2063,46 @@ ordersList = React.createFactory(React.createClass({
         if (order.diff > 0) {
           backgroundColor = '#fdbcb4';
         }
+        minBackgroundColor = 'white';
+        if (order.minDiff < 0) {
+          minBackgroundColor = '#318ce7';
+        }
+        if (order.minDiff > 0) {
+          minBackgroundColor = '#fdbcb4';
+        }
         style = {
-          padding: 8,
-          borderTop: '1px solid silver',
-          backgroundColor: backgroundColor
+          borderTop: '1px solid silver'
         };
         return div({
           key: order.msOrder.uuid,
           style: style
         }, _this.makeOrderLink(order), div({
           style: _this.getInlineStyle(100, {
-            textAlign: 'right'
+            textAlign: 'right',
+            backgroundColor: backgroundColor
           })
         }, order.sum), div({
           style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
-        }, order.newSum), order.newSum ? div({
+        }, order.newSum), div({
+          style: _this.getInlineStyle(100, {
+            textAlign: 'right',
+            backgroundColor: minBackgroundColor
+          })
+        }, order.minSum), order.newMinSum ? div({
           style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
-        }, (order.newSum * (100 - 7) / 100).toFixed(2)) : void 0, order.newSum ? div({
+        }, (order.newMinSum * (100 - 0) / 100).toFixed(2)) : void 0, order.newMinSum ? div({
           style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
-        }, (order.newSum * (100 - 10) / 100).toFixed(2)) : void 0, order.newSum ? div({
+        }, (order.newMinSum * (100 - 7) / 100).toFixed(2)) : void 0, order.newMinSum ? div({
           style: _this.getInlineStyle(100, {
             textAlign: 'right'
           })
-        }, (order.newSum * (100 - 13) / 100).toFixed(2)) : void 0, div({
-          style: _this.getInlineStyle(100, {
-            textAlign: 'right'
-          })
-        }, order.diff));
+        }, (order.newMinSum * (100 - 10) / 100).toFixed(2)) : void 0);
       };
     })(this)))) : void 0);
   }

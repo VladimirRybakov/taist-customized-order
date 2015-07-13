@@ -3,39 +3,54 @@ client = require '../globals/client'
 
 timeout = 200
 
-calculatePrice = (goodsSum, taistOrder) ->
+calculatePrice = (goodsSum, taistOrder, calculateFor100 = false) ->
+  primeCostInterest = taistOrder.primeCostInterest
+  if calculateFor100
+    primeCostInterest = taistOrder.primeCostInterest100 or 1.2
+
   orderSum = ( goodsSum + taistOrder.primeCostPackage ) *
   ( 1 + taistOrder.primeCostRisk / 100 ) *
-  ( 1 + 1 * taistOrder.primeCostInterest ) *
+  ( 1 + 1 * primeCostInterest ) *
   ( 1 + 1 * taistOrder.primeCostTax ) / taistOrder.presentsCount
 
   orderSum.toFixed 2
 
 calculateOrderSum = (msOrder, taistOrder) ->
-  goodsSum = msOrder.customerOrderPosition.reduce (sum, pos) ->
-    oldGoodPrice = pos.price.sum / 100
-    unless data.goodsIndex[pos.goodUuid]
-      data.goodsIndex[pos.goodUuid] =
-        uuid: pos.goodUuid
-        oldPrices: [ oldGoodPrice ]
-      data.goods.push data.goodsIndex[pos.goodUuid]
-    else
-      data.goodsIndex[pos.goodUuid].oldPrices.push oldGoodPrice
-    sum + oldGoodPrice * pos.quantity
-  , 0
 
-  calculatePrice goodsSum, taistOrder
+  goodsSum = msOrder.customerOrderPosition.reduce (sum, pos) ->
+    unless data.goodsIndex[pos.goodUuid]
+      data.goodsIndex[pos.goodUuid] = uuid: pos.goodUuid
+      data.goods.push data.goodsIndex[pos.goodUuid]
+
+    price: sum.price + pos.price.sum / 100 * pos.quantity,
+    minPrice: sum.minPrice + pos.basePrice.sum / 100 * pos.quantity
+
+  , { price: 0, minPrice: 0 }
+
+  sum: calculatePrice goodsSum.price, taistOrder, false
+  minSum: calculatePrice goodsSum.minPrice, taistOrder, true
 
 calculateOrdersSumWithNewPrices = () ->
   for order in data.orders
     goodsSum = order.msOrder.customerOrderPosition.reduce (sum, pos) ->
       newGoodPrice = data.goodsIndex[pos.goodUuid].newPrice
-      if typeof newGoodPrice is 'undefined'
-        console.log data.goodsIndex[pos.goodUuid]
-      sum + (newGoodPrice or 0) * pos.quantity
-    , 0
-    order.newSum = calculatePrice goodsSum, order.taistOrder
+      minGoodPrice = data.goodsIndex[pos.goodUuid].minPrice
+      # if typeof newGoodPrice is 'undefined'
+      #   console.log data.goodsIndex[pos.goodUuid]
+
+      price: sum.price + (newGoodPrice or 0) * pos.quantity
+      minPrice: sum.minPrice + (minGoodPrice or 0) * pos.quantity
+
+    , { price: 0, minPrice: 0 }
+
+    console.log order, goodsSum
+
+    order.newSum = calculatePrice goodsSum.price, order.taistOrder, false
     order.diff = (order.newSum - order.sum).toFixed 2
+
+    order.newMinSum = calculatePrice goodsSum.minPrice, order.taistOrder, true
+    order.minDiff = (order.newMinSum - order.minSum).toFixed 2
+
   renderOrdersList()
 
 getNewPrices = () ->
@@ -49,6 +64,7 @@ getNewPrices = () ->
       .load (err, goods) ->
         goods.forEach (good) ->
           data.goodsIndex[good.uuid].newPrice = ( good.buyPrice or 0 ) / 100
+          data.goodsIndex[good.uuid].minPrice = ( good.minPrice or 0 ) / 100
           data.goodsIndex[good.uuid].name = good.name
     idx += 1
 
@@ -64,8 +80,8 @@ loadOrders = () ->
         for msOrder in orders
           do (msOrder) ->
             vm.getOrder msOrder.uuid, (err, taistOrder) ->
-              sum = calculateOrderSum msOrder, taistOrder
-              data.orders.push { msOrder, taistOrder, sum }
+              { sum, minSum } = calculateOrderSum msOrder, taistOrder
+              data.orders.push { msOrder, taistOrder, sum, minSum }
               renderOrdersList()
   , timeout
 
