@@ -25,16 +25,21 @@ module.exports = {
         css: { width: 60, marginLeft: 20}
       },
 
-      { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
+      { name: '', cls: '', bind: '' },
+
+      { name: 'Себестоимость 30 (1 шт):', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sPricePerPresent' },
+      { name: 'Себестоимость 30 (итого):', cls: 'ml20', bind: 'text: selectedOrder()._sTotal' },
+      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
       { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
 
-      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
+      { name: '', cls: '', bind: '' },
+
+      { name: 'Себестоимость 100 (1 шт):', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sMinPricePerPresent' },
+      { name: 'Себестоимость 100 (итого):', cls: 'ml20', bind: 'text: selectedOrder()._sMinTotal' },
+      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sMinTotalWithPackageAndRisks' },
 
       { name: '', cls: '', bind: '' },
 
-      { name: 'Цена подарка:', cls: 'ml20', bind: 'text: selectedOrder()._pricePerPresent' },
-      { name: 'Минимальная цена:', cls: 'ml20', bind: 'text: selectedOrder()._minPricePerPresent' },
-      { name: '', cls: '', bind: '' },
     ]
 
     orderFields.map(function(field){

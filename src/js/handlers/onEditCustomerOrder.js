@@ -170,12 +170,8 @@ module.exports = function() {
         return this._total() / this._presentsCount();
       }, order);
 
-      order._minPricePerPresent = ko.computed(function(){
-        var sum = 0;
-        this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._basePrice() * item.quantity());
-        })
-        return sum / this._presentsCount();
+      order._sPricePerPresent = ko.computed(function(){
+        return this._pricePerPresent().toFixed(2).replace('.', ',');
       }, order);
 
       order._sTotal = ko.computed(function(){
@@ -200,6 +196,34 @@ module.exports = function() {
 
       order._sVat = ko.computed(function(){
         return this._vat().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._minPricePerPresent = ko.computed(function(){
+        var sum = 0;
+        this.customerOrderPosition().map(function(item){
+          sum += parseFloat(item._basePrice() * item.quantity());
+        })
+        return sum / this._presentsCount();
+      }, order);
+
+      order._sMinPricePerPresent = ko.computed(function(){
+        return this._minPricePerPresent().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._minTotal = ko.computed(function(){
+        return this._minPricePerPresent() * this._presentsCount();
+      }, order);
+
+      order._sMinTotal = ko.computed(function(){
+        return this._minTotal().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._sMinTotalWithPackageAndRisks = ko.computed(function(){
+        require('../react/main').renderOrderPage();
+
+        return ( (this._minTotal() + parseFloat(this.primeCostPackage()) ) *
+          ( 1 + parseFloat(this.primeCostRisk()) / 100)
+        ).toFixed(2).replace('.', ',');
       }, order);
 
       order._customer = ko.observable('');

@@ -39,16 +39,21 @@ module.exports = {
         css: { width: 60, marginLeft: 20}
       },
 
-      { name: 'Итого:', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sTotal' },
+      { name: '', cls: '', bind: '' },
+
+      { name: 'Себестоимость 30 (1 шт):', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sPricePerPresent' },
+      { name: 'Себестоимость 30 (итого):', cls: 'ml20', bind: 'text: selectedOrder()._sTotal' },
+      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
       { name: 'НДС:', cls: 'ml20', bind: 'text: selectedOrder()._sVat' },
 
-      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sTotalWithPackageAndRisks' },
+      { name: '', cls: '', bind: '' },
+
+      { name: 'Себестоимость 100 (1 шт):', cls: 'ml20 bold fs125', bind: 'text: selectedOrder()._sMinPricePerPresent' },
+      { name: 'Себестоимость 100 (итого):', cls: 'ml20', bind: 'text: selectedOrder()._sMinTotal' },
+      { name: 'Итого (+ упаковка и риски):', cls: 'ml20', bind: 'text: selectedOrder()._sMinTotalWithPackageAndRisks' },
 
       { name: '', cls: '', bind: '' },
 
-      { name: 'Цена подарка:', cls: 'ml20', bind: 'text: selectedOrder()._pricePerPresent' },
-      { name: 'Минимальная цена:', cls: 'ml20', bind: 'text: selectedOrder()._minPricePerPresent' },
-      { name: '', cls: '', bind: '' },
     ]
 
     orderFields.map(function(field){
@@ -648,12 +653,8 @@ module.exports = function() {
         return this._total() / this._presentsCount();
       }, order);
 
-      order._minPricePerPresent = ko.computed(function(){
-        var sum = 0;
-        this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._basePrice() * item.quantity());
-        })
-        return sum / this._presentsCount();
+      order._sPricePerPresent = ko.computed(function(){
+        return this._pricePerPresent().toFixed(2).replace('.', ',');
       }, order);
 
       order._sTotal = ko.computed(function(){
@@ -678,6 +679,34 @@ module.exports = function() {
 
       order._sVat = ko.computed(function(){
         return this._vat().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._minPricePerPresent = ko.computed(function(){
+        var sum = 0;
+        this.customerOrderPosition().map(function(item){
+          sum += parseFloat(item._basePrice() * item.quantity());
+        })
+        return sum / this._presentsCount();
+      }, order);
+
+      order._sMinPricePerPresent = ko.computed(function(){
+        return this._minPricePerPresent().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._minTotal = ko.computed(function(){
+        return this._minPricePerPresent() * this._presentsCount();
+      }, order);
+
+      order._sMinTotal = ko.computed(function(){
+        return this._minTotal().toFixed(2).replace('.', ',');
+      }, order);
+
+      order._sMinTotalWithPackageAndRisks = ko.computed(function(){
+        require('../react/main').renderOrderPage();
+
+        return ( (this._minTotal() + parseFloat(this.primeCostPackage()) ) *
+          ( 1 + parseFloat(this.primeCostRisk()) / 100)
+        ).toFixed(2).replace('.', ',');
       }, order);
 
       order._customer = ko.observable('');
