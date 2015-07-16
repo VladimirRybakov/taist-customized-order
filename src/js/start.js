@@ -257,6 +257,10 @@ function onCompanyDataLoaded(error, taistOptions) {
 }
 
 function onStart(_taistApi) {
+  if(!$) {
+    //sometimes jquery doesn't loaded without any reason 
+    return;
+  }
 
   $.extend($api, _taistApi);
   window.$api = $api;
