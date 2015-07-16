@@ -127,7 +127,7 @@ OrderPrimeCost = React.createFactory React.createClass
       table { style: width: 1000, marginBottom: 8 },
         tbody {},
          tr {},
-           td { style: width: '50%' },
+           td { style: width: 360 },
             div { style: fontWeight: 'bold' }, 'РАСЧЕТ СЕБЕСТОИМОСТИ'
             div {},
               @primeCostFields.map (field) =>

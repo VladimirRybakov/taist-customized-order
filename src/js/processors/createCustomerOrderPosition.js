@@ -37,7 +37,8 @@ module.exports = function (options) {
     $vm.goods[goodUuid] = {
       name: ko.observable(goodUuid),
       unit: ko.observable(goodUuid),
-      minPrice: ko.observable(0)
+      minPrice: ko.observable(0),
+      buyPrice: ko.observable(0)
     };
   }
 

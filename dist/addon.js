@@ -1172,7 +1172,8 @@ module.exports = function (options) {
     $vm.goods[goodUuid] = {
       name: ko.observable(goodUuid),
       unit: ko.observable(goodUuid),
-      minPrice: ko.observable(0)
+      minPrice: ko.observable(0),
+      buyPrice: ko.observable(0)
     };
   }
 
@@ -1874,7 +1875,7 @@ OrderPrimeCost = React.createFactory(React.createClass({
       }
     }, tbody({}, tr({}, td({
       style: {
-        width: '50%'
+        width: 360
       }
     }, div({
       style: {
@@ -3076,6 +3077,7 @@ module.exports = {
     }
 
     $client.load(state.data.type, state.data.uuid, function(dummy, good){
+      console.log('!!!', good);
 
       if(!$vm.goods[good.uuid]) {
         $vm.goods[good.uuid] = wrapGood(good);
@@ -3100,8 +3102,8 @@ module.exports = {
           quantity: 1,
           discount: 0,
           reserve: 0,
-          basePrice: priceObject,
-          price: minPriceObject,
+          basePrice: minPriceObject,
+          price: priceObject,
         }
       });
 

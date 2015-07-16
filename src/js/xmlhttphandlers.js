@@ -54,6 +54,7 @@ module.exports = {
     }
 
     $client.load(state.data.type, state.data.uuid, function(dummy, good){
+      console.log('!!!', good);
 
       if(!$vm.goods[good.uuid]) {
         $vm.goods[good.uuid] = wrapGood(good);
@@ -78,8 +79,8 @@ module.exports = {
           quantity: 1,
           discount: 0,
           reserve: 0,
-          basePrice: priceObject,
-          price: minPriceObject,
+          basePrice: minPriceObject,
+          price: priceObject,
         }
       });
 
