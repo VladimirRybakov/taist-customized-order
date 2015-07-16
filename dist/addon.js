@@ -129,14 +129,16 @@ module.exports = {
     var orderPositionsField = [
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
-      { title: 'Товар', bind: 'text', var: '_name', href: "'https://online.moysklad.ru/app/#good/edit?id='+goodUuid()" },
+      { title: 'Товар', bind: 'text', var: '_name', href: "'https://online.moysklad.ru/app/#good/edit?id='+goodUuid()", cls: 'w300' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
       { title: '', bind: 'text', var: '_unit' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
       { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
+      { title: '', bind: 'text', var: '_buyPrice', cls: 'grey tar' },
       { title: 'Мин. цена', bind: 'value', var: '_basePrice', cls: 'tar w80' },
+      { title: '', bind: 'text', var: '_minPrice', cls: 'grey tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
       { title: 'Итого', bind: 'text', var: '_sTotal', cls: 'tar' },
@@ -1215,6 +1217,7 @@ module.exports = function (options) {
   koData._unit = $vm.goods[goodUuid].unit;
 
   koData._minPrice = $vm.goods[goodUuid].minPrice;
+  koData._buyPrice = $vm.goods[goodUuid].buyPrice;
 
   koData._price = ko.computed({
     read: function () {
@@ -3011,7 +3014,8 @@ module.exports = function(good) {
   return {
     name: ko.observable(good.name),
     unit: ko.observable(require('../dictsProvider').get('units', good.uomUuid)),
-    minPrice: ko.observable(((good.minPrice || good.buyPrice) / 100).toFixed(2))
+    buyPrice: ko.observable(((good.buyPrice || 0) / 100).toFixed(2)),
+    minPrice: ko.observable(((good.minPrice || 0) / 100).toFixed(2))
   };
 };
 

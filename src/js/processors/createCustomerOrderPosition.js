@@ -82,6 +82,7 @@ module.exports = function (options) {
   koData._unit = $vm.goods[goodUuid].unit;
 
   koData._minPrice = $vm.goods[goodUuid].minPrice;
+  koData._buyPrice = $vm.goods[goodUuid].buyPrice;
 
   koData._price = ko.computed({
     read: function () {
