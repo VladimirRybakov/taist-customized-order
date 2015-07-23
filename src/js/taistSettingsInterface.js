@@ -85,23 +85,23 @@ module.exports = {
       .css({ width: 400 })
       .appendTo(div);
 
-    var warehouses = $client.from('Warehouse').load()
-    $vm.warehouses = ko.observableArray(
-      parseCollection(warehouses)
-    )
-    $vm.selectedWarehouse = ko.observable(
-      ko.utils.arrayFirst($vm.warehouses(), function(warehouse) {
-          return warehouse.uuid == taistOptions.selectedWarehouse;
-      })
-    );
-
-    $("<div>")
-      .text("Склад по умолчанию")
-      .appendTo(div);
-    $("<select>")
-      .attr('data-bind', "options: warehouses, optionsText: 'name', value: selectedWarehouse")
-      .css({ width: 400 })
-      .appendTo(div);
+    // var warehouses = $client.from('Warehouse').load()
+    // $vm.warehouses = ko.observableArray(
+    //   parseCollection(warehouses)
+    // )
+    // $vm.selectedWarehouse = ko.observable(
+    //   ko.utils.arrayFirst($vm.warehouses(), function(warehouse) {
+    //       return warehouse.uuid == taistOptions.selectedWarehouse;
+    //   })
+    // );
+    //
+    // $("<div>")
+    //   .text("Склад по умолчанию")
+    //   .appendTo(div);
+    // $("<select>")
+    //   .attr('data-bind', "options: warehouses, optionsText: 'name', value: selectedWarehouse")
+    //   .css({ width: 400 })
+    //   .appendTo(div);
 
     var companies = $client.from('MyCompany').load()
     $vm.companies = ko.observableArray(

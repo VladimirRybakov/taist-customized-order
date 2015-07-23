@@ -4,49 +4,13 @@ var $api = require('../globals/api'),
 
 module.exports = function(templateUuid, createOrderCopy){
   var order = ko.mapping.toJS($vm.selectedOrder),
-      mapping = {
-        //'_company',
-        '_customer' : { collection: 'Company', saveAs: 'sourceAgentUuid' },
-        // '_employee' : { collection: 'Employee', saveAs: 'employeeUuid' },
-        //'_store',
-        '_contract' : { collection: 'Contract', saveAs: 'contractUuid' },
-        //'_date',
-        '_project'  : { collection: 'Project', saveAs: 'projectUuid' },
-      },
       key,
       mapObject,
       val,
       uuid;
 
-  // Для сохранения атрибутов теперь используется оригинальная кнопка МойСклад
-  // for(key in mapping) {
-  //   console.log(key)
-  //   val = $vm.selectedOrder()[key]();
-  //   if(key == '_project' || key == '_contract'){
-  //     val = val.replace(/\s+\[.+?\]/, '');
-  //   }
-  //   mapObject = mapping[key];
-  //
-  //   if(val !== '') {
-  //     uuid = require('../dictsProvider').get(mapObject.collection, val);
-  //     if(uuid) {
-  //       order[mapObject.saveAs] = uuid;
-  //       continue;
-  //     }
-  //   }
-  //
-  //   delete(order[mapObject.saveAs])
-  // }
-
-  var attrs = $vm.orderAttributes,
-      attrValue;
-
-  order.stateUuid = require('../dictsProvider').get('states', $vm.selectedOrder()._state())
-  order.sourceStoreUuid = $vm.selectedWarehouse().uuid;
-  order.targetAgentUuid = $vm.selectedCompany().uuid;
-
-  order.sourceAccountUuid = order.sourceAgentUuid
-
+  // order.targetAgentUuid = $vm.selectedCompany().uuid;
+  // order.sourceAccountUuid = order.sourceAgentUuid
   delete order.targetAccountUuid;
 
   if(createOrderCopy === true) {

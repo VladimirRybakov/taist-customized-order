@@ -14,7 +14,7 @@ module.exports = function() {
   $api.companyData.set('taistOptions', {
     basePlanFolder: ($vm.basePlanFolder()     || {}).uuid,
     orderPlanFolder: ($vm.orderPlanFolder()    || {}).uuid,
-    selectedWarehouse: ($vm.selectedWarehouse()  || {}).uuid,
+    // selectedWarehouse: ($vm.selectedWarehouse()  || {}).uuid,
     selectedCompany: ($vm.selectedCompany()    || {}).uuid,
 
     processingPlans: processingPlans,
