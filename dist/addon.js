@@ -2803,6 +2803,11 @@ module.exports = function(templateUuid, createOrderCopy){
   // замена позиции в заказе
   order.customerOrderPosition = modifiedOrder.customerOrderPosition.slice()
 
+  order.customerOrderPosition.forEach( function(pos){
+    //fix basePrice issue
+    pos.basePrice = pos.price
+  });
+
   // order.targetAgentUuid = $vm.selectedCompany().uuid;
   // order.sourceAccountUuid = order.sourceAgentUuid
   delete order.targetAccountUuid;
