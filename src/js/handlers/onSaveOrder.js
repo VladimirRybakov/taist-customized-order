@@ -29,11 +29,6 @@ module.exports = function(createOrderCopy) {
       templateUuid = $vm.selectedOrder()._template(),
       saveOrder = require('../utils').saveOrder;
 
-  if($vm.selectedOrder()._customer() == '') {
-    alert('Выберите контрагента перед сохранением заказа');
-    return false;
-  }
-
   $('#site').hide();
   $('#loading').show();
 

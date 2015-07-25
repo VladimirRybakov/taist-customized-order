@@ -226,8 +226,6 @@ module.exports = function() {
         ).toFixed(2).replace('.', ',');
       }, order);
 
-      order._customer = ko.observable('');
-
       $vm.selectedOrder(order);
 
       order._name = ko.computed(function(){

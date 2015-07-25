@@ -711,8 +711,6 @@ module.exports = function() {
         ).toFixed(2).replace('.', ',');
       }, order);
 
-      order._customer = ko.observable('');
-
       $vm.selectedOrder(order);
 
       order._name = ko.computed(function(){
@@ -1012,11 +1010,6 @@ module.exports = function(createOrderCopy) {
       products = [],
       templateUuid = $vm.selectedOrder()._template(),
       saveOrder = require('../utils').saveOrder;
-
-  if($vm.selectedOrder()._customer() == '') {
-    alert('Выберите контрагента перед сохранением заказа');
-    return false;
-  }
 
   $('#site').hide();
   $('#loading').show();
@@ -2786,11 +2779,16 @@ var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
 module.exports = function(templateUuid, createOrderCopy){
-  var order = ko.mapping.toJS($vm.selectedOrder),
+  var modifiedOrder = ko.mapping.toJS($vm.selectedOrder),
       key,
       mapObject,
       val,
       uuid;
+
+  // текущий заказ может быть изменен и сохранен с помощью стандартных средств МоегоСклада
+  var order = $client.from('CustomerOrder').select({uuid: modifiedOrder.uuid}).load()[0];
+  // замена позиции в заказе
+  order.customerOrderPosition = modifiedOrder.customerOrderPosition.slice()
 
   // order.targetAgentUuid = $vm.selectedCompany().uuid;
   // order.sourceAccountUuid = order.sourceAgentUuid
@@ -2839,7 +2837,7 @@ module.exports = function(templateUuid, createOrderCopy){
         location.reload()
       })
     });
-  }, 1000);
+  }, 500);
 }
 
 },{"../globals/api":7,"../globals/client":9,"../globals/vm":11,"../utils":37}],46:[function(require,module,exports){

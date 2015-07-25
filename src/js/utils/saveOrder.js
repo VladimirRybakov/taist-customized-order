@@ -3,11 +3,16 @@ var $api = require('../globals/api'),
     $vm = require('../globals/vm');
 
 module.exports = function(templateUuid, createOrderCopy){
-  var order = ko.mapping.toJS($vm.selectedOrder),
+  var modifiedOrder = ko.mapping.toJS($vm.selectedOrder),
       key,
       mapObject,
       val,
       uuid;
+
+  // текущий заказ может быть изменен и сохранен с помощью стандартных средств МоегоСклада
+  var order = $client.from('CustomerOrder').select({uuid: modifiedOrder.uuid}).load()[0];
+  // замена позиции в заказе
+  order.customerOrderPosition = modifiedOrder.customerOrderPosition.slice()
 
   // order.targetAgentUuid = $vm.selectedCompany().uuid;
   // order.sourceAccountUuid = order.sourceAgentUuid
@@ -56,5 +61,5 @@ module.exports = function(templateUuid, createOrderCopy){
         location.reload()
       })
     });
-  }, 1000);
+  }, 500);
 }
