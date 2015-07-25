@@ -122,6 +122,8 @@ module.exports = function() {
 
       order = $vm.customerOrders[uuid];
 
+      order.minimalPrices = taistOrderData.minimalPrices || {}
+
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._discount = ko.observable(parseFloat(taistOrderData.discount) || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
@@ -201,7 +203,7 @@ module.exports = function() {
       order._minPricePerPresent = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._basePrice() * item.quantity());
+          sum += parseFloat(item._minimalPrice() * item.quantity());
         })
         return sum / this._presentsCount();
       }, order);

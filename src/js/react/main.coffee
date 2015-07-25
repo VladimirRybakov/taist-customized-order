@@ -23,7 +23,7 @@ calculateOrderSum = (msOrder, taistOrder) ->
       data.goods.push data.goodsIndex[pos.goodUuid]
 
     price: sum.price + pos.price.sum / 100 * pos.quantity,
-    minPrice: sum.minPrice + pos.basePrice.sum / 100 * pos.quantity
+    minPrice: sum.minPrice + (taistOrder.minimalPrices?[pos.uuid] or (pos.basePrice.sum / 100)) * pos.quantity
 
   , { price: 0, minPrice: 0 }
 

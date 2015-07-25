@@ -130,14 +130,15 @@ module.exports = {
       { title: '', bind: 'text', var: '"::::"', cls: 'handle'},
       { title: '', bind: 'checked', var: '_isSelected'},
       { title: 'Товар', bind: 'text', var: '_name', href: "'https://online.moysklad.ru/app/#good/edit?id='+goodUuid()", cls: 'w300' },
+      { title: 'Поставка', bind: 'text', var: '_deliveryTime', cls: 'w1' },
       { title: 'Тех. карта', bind: 'value', var: '_quantityPerPresent', cls: 'tar' },
       { title: '', bind: 'text', var: '_unit' },
       { title: 'Кол-во', bind: 'text', var: '_quantity', cls: 'tar' },
       { title: 'Доступно', bind: 'text', var: '_available', cls: 'tar', custom: modifyFieldAvailability },
       { title: 'Резерв', bind: 'text', var: 'reserve', cls: 'tar' },
-      { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w80' },
+      { title: 'Цена', bind: 'value', var: '_price', cls: 'tar w70' },
       { title: '', bind: 'text', var: '_buyPrice', cls: 'grey tar' },
-      { title: 'Мин. цена', bind: 'value', var: '_basePrice', cls: 'tar w80' },
+      { title: 'Мин. цена', bind: 'value', var: '_minimalPrice', cls: 'tar w70' },
       { title: '', bind: 'text', var: '_minPrice', cls: 'grey tar' },
       { title: 'НДС, %', bind: 'text', var: 'vat', cls: 'tar' },
       { title: 'Сумма НДС', bind: 'text', var: '_sVat', cls: 'tar' },
@@ -607,6 +608,8 @@ module.exports = function() {
 
       order = $vm.customerOrders[uuid];
 
+      order.minimalPrices = taistOrderData.minimalPrices || {}
+
       order._presentsCount = ko.observable(taistOrderData.presentsCount || 1);
       order._discount = ko.observable(parseFloat(taistOrderData.discount) || 0);
       order._template = ko.observable(taistOrderData.orderTemplate || '');
@@ -686,7 +689,7 @@ module.exports = function() {
       order._minPricePerPresent = ko.computed(function(){
         var sum = 0;
         this.customerOrderPosition().map(function(item){
-          sum += parseFloat(item._basePrice() * item.quantity());
+          sum += parseFloat(item._minimalPrice() * item.quantity());
         })
         return sum / this._presentsCount();
       }, order);
@@ -1160,7 +1163,8 @@ module.exports = function (options) {
       name: ko.observable(goodUuid),
       unit: ko.observable(goodUuid),
       minPrice: ko.observable(0),
-      buyPrice: ko.observable(0)
+      buyPrice: ko.observable(0),
+      deliveryTime: ko.observable(''),
     };
   }
 
@@ -1207,6 +1211,8 @@ module.exports = function (options) {
   koData._minPrice = $vm.goods[goodUuid].minPrice;
   koData._buyPrice = $vm.goods[goodUuid].buyPrice;
 
+  koData._deliveryTime = $vm.goods[goodUuid].deliveryTime;
+
   koData._price = ko.computed({
     read: function () {
       return (this.price.sum()/100).toFixed(2); //.replace('.', ',');
@@ -1214,17 +1220,6 @@ module.exports = function (options) {
     write: function (value) {
       this.price.sum(Math.round(value * 100));
       this.price.sumInCurrency(Math.round(value * 100));
-    },
-    owner: koData
-  });
-
-  koData._basePrice = ko.computed({
-    read: function () {
-      return (this.basePrice.sum()/100).toFixed(2); //.replace('.', ',');
-    },
-    write: function (value) {
-      this.basePrice.sum(Math.round(value * 100));
-      this.basePrice.sumInCurrency(Math.round(value * 100));
     },
     owner: koData
   });
@@ -1249,6 +1244,23 @@ module.exports = function (options) {
   koData._quantityPerPresent = ko.observable(
     $vm.selectedPlan().materials[koData.goodUuid()] || 1
   );
+
+  koData._minimalPrice = ko.computed({
+    read: function () {
+      if($vm.selectedOrder() && $vm.selectedOrder().minimalPrices[this.uuid])
+        return ($vm.selectedOrder().minimalPrices[this.uuid]).toFixed(2);
+      else
+        if($vm.selectedOrder() && $vm.selectedOrder().minimalPrices) {
+          // temporary code to save current values for min prices
+          $vm.selectedOrder().minimalPrices[this.uuid] = this.basePrice.sum()/100;
+        }
+        return (this.basePrice.sum()/100).toFixed(2);
+    },
+    write: function (value) {
+      $vm.selectedOrder().minimalPrices[this.uuid] = parseFloat(value);
+    },
+    owner: koData
+  });
 
   koData._onRemove = function(){
     $vm.selectedOrder().customerOrderPosition.remove(this);
@@ -1325,6 +1337,7 @@ calculatePrice = function(goodsSum, taistOrder, calculateFor100) {
 calculateOrderSum = function(msOrder, taistOrder) {
   var goodsSum;
   goodsSum = msOrder.customerOrderPosition.reduce(function(sum, pos) {
+    var _ref;
     if (!data.goodsIndex[pos.goodUuid]) {
       data.goodsIndex[pos.goodUuid] = {
         uuid: pos.goodUuid
@@ -1333,7 +1346,7 @@ calculateOrderSum = function(msOrder, taistOrder) {
     }
     return {
       price: sum.price + pos.price.sum / 100 * pos.quantity,
-      minPrice: sum.minPrice + pos.basePrice.sum / 100 * pos.quantity
+      minPrice: sum.minPrice + (((_ref = taistOrder.minimalPrices) != null ? _ref[pos.uuid] : void 0) || (pos.basePrice.sum / 100)) * pos.quantity
     };
   }, {
     price: 0,
@@ -2825,6 +2838,7 @@ module.exports = function(templateUuid, createOrderCopy){
         presentsCount: vmOrder._presentsCount(),
         discount: vmOrder._discount(),
         sortOrder: require('../utils').getPositionsOrder(),
+        minimalPrices: vmOrder.minimalPrices,
       };
 
       [ 'Interest', 'Interest100', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
@@ -2902,11 +2916,17 @@ module.exports = function(selector, callback) {
 
 },{}],48:[function(require,module,exports){
 module.exports = function(good) {
+  var deliveryTimeAttributeId, diliveryTimeAttr, _ref, _ref1;
+  deliveryTimeAttributeId = "fda2bb16-2f16-11e5-7a40-e8970033ea1d";
+  diliveryTimeAttr = (_ref = good.attribute) != null ? _ref.filter(function(attr) {
+    return attr.metadataUuid === deliveryTimeAttributeId;
+  }) : void 0;
   return {
     name: ko.observable(good.name),
     unit: ko.observable(require('../dictsProvider').get('units', good.uomUuid)),
     buyPrice: ko.observable(((good.buyPrice || 0) / 100).toFixed(2)),
-    minPrice: ko.observable(((good.minPrice || 0) / 100).toFixed(2))
+    minPrice: ko.observable(((good.minPrice || 0) / 100).toFixed(2)),
+    deliveryTime: ko.observable((diliveryTimeAttr != null ? (_ref1 = diliveryTimeAttr[0]) != null ? _ref1.valueString : void 0 : void 0) || [])
   };
 };
 

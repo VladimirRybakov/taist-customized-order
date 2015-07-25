@@ -23,7 +23,7 @@
 }
 
 .taist-table td, .taistTable td {
-  padding: 6px;
+  padding: 5px;
   font-size: 1rem;
 }
 
@@ -125,8 +125,16 @@
   color: #aaa;
 }
 
+.w1 {
+  width: 1px;
+}
+
 .tar.w80 input {
   width: 80px;
+}
+
+.tar.w70 input {
+  width: 70px;
 }
 
 .dragged {

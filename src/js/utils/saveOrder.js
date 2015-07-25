@@ -49,6 +49,7 @@ module.exports = function(templateUuid, createOrderCopy){
         presentsCount: vmOrder._presentsCount(),
         discount: vmOrder._discount(),
         sortOrder: require('../utils').getPositionsOrder(),
+        minimalPrices: vmOrder.minimalPrices,
       };
 
       [ 'Interest', 'Interest100', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){

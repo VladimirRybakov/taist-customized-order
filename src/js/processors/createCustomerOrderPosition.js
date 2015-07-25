@@ -38,7 +38,8 @@ module.exports = function (options) {
       name: ko.observable(goodUuid),
       unit: ko.observable(goodUuid),
       minPrice: ko.observable(0),
-      buyPrice: ko.observable(0)
+      buyPrice: ko.observable(0),
+      deliveryTime: ko.observable(''),
     };
   }
 
@@ -85,6 +86,8 @@ module.exports = function (options) {
   koData._minPrice = $vm.goods[goodUuid].minPrice;
   koData._buyPrice = $vm.goods[goodUuid].buyPrice;
 
+  koData._deliveryTime = $vm.goods[goodUuid].deliveryTime;
+
   koData._price = ko.computed({
     read: function () {
       return (this.price.sum()/100).toFixed(2); //.replace('.', ',');
@@ -92,17 +95,6 @@ module.exports = function (options) {
     write: function (value) {
       this.price.sum(Math.round(value * 100));
       this.price.sumInCurrency(Math.round(value * 100));
-    },
-    owner: koData
-  });
-
-  koData._basePrice = ko.computed({
-    read: function () {
-      return (this.basePrice.sum()/100).toFixed(2); //.replace('.', ',');
-    },
-    write: function (value) {
-      this.basePrice.sum(Math.round(value * 100));
-      this.basePrice.sumInCurrency(Math.round(value * 100));
     },
     owner: koData
   });
@@ -127,6 +119,23 @@ module.exports = function (options) {
   koData._quantityPerPresent = ko.observable(
     $vm.selectedPlan().materials[koData.goodUuid()] || 1
   );
+
+  koData._minimalPrice = ko.computed({
+    read: function () {
+      if($vm.selectedOrder() && $vm.selectedOrder().minimalPrices[this.uuid])
+        return ($vm.selectedOrder().minimalPrices[this.uuid]).toFixed(2);
+      else
+        if($vm.selectedOrder() && $vm.selectedOrder().minimalPrices) {
+          // temporary code to save current values for min prices
+          $vm.selectedOrder().minimalPrices[this.uuid] = this.basePrice.sum()/100;
+        }
+        return (this.basePrice.sum()/100).toFixed(2);
+    },
+    write: function (value) {
+      $vm.selectedOrder().minimalPrices[this.uuid] = parseFloat(value);
+    },
+    owner: koData
+  });
 
   koData._onRemove = function(){
     $vm.selectedOrder().customerOrderPosition.remove(this);
