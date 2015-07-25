@@ -258,7 +258,7 @@ function onCompanyDataLoaded(error, taistOptions) {
 
 function onStart(_taistApi) {
   if(!$) {
-    //sometimes jquery doesn't loaded without any reason 
+    //sometimes jquery doesn't loaded without any reason
     return;
   }
 
@@ -303,8 +303,6 @@ function onStart(_taistApi) {
       }
 
       $api.companyData.get('taistOptions', onCompanyDataLoaded);
-
-      $vm.parseOrderAttributes = require('./processors/parseOrderAttributes');
     });
   });
 }

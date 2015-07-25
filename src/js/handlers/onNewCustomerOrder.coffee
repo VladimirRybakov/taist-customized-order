@@ -18,7 +18,6 @@ module.exports = (createOrderCopy = false) ->
   order =
     vatIncluded: true
     applicable: true
-    # sourceStoreUuid: $vm.selectedWarehouse().uuid
     payerVat: true
     targetAgentUuid: $vm.selectedCompany().uuid # моя компания
     moment: new Date()

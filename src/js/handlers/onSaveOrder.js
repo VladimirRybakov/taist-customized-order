@@ -29,8 +29,6 @@ module.exports = function(createOrderCopy) {
       templateUuid = $vm.selectedOrder()._template(),
       saveOrder = require('../utils').saveOrder;
 
-  require('../processors/parseOrderAttributes')($vm.selectedOrder());
-
   if($vm.selectedOrder()._customer() == '') {
     alert('Выберите контрагента перед сохранением заказа');
     return false;
@@ -47,7 +45,6 @@ module.exports = function(createOrderCopy) {
 
   plan.material = [];
   plan.material = prepareMaterials(plan)
-
 
   if(templateUuid === '' || createOrderCopy === true) {
     products = plan.product;

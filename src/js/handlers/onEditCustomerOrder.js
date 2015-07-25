@@ -325,8 +325,6 @@ module.exports = function() {
 
           ko.applyBindings($vm, goodsDOMNode);
 
-          require('../processors/parseOrderAttributes')($vm.selectedOrder());
-
           require('../react/main').renderOrderPage(document.getElementById('reactOrderPrimeCost'));
 
           $(goodsDOMNode)
