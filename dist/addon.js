@@ -202,11 +202,13 @@ module.exports = function(uuid) {
     uuid: uuid
   }).load()[0];
   if (plan != null) {
-    result = client.from('Good').select({
+    client.from('Good').select({
       uuid: plan.material.reduce((function(str, good) {
         return "" + str + ";uuid=" + good.uuid;
       }), "0")
-    }).load(function(err, goods) {});
+    }).load(function(err, goods) {
+      return result = goods;
+    });
   }
   return result;
 };

@@ -5,8 +5,9 @@ module.exports = (uuid) ->
 
   plan = client.from('ProcessingPlan').select({ uuid: uuid }).load()[0];
   if plan?
-    result = client
+    client
       .from('Good')
       .select( uuid: plan.material.reduce ((str, good) -> "#{str};uuid=#{good.uuid}"), "0" )
       .load (err, goods) ->
+        result = goods
   result
