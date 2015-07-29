@@ -617,7 +617,7 @@ module.exports = function() {
       order._customName = ko.observable(taistOrderData.customName || '');
 
       order._project = ko.observable('');
-      if(order.projectUuid()) {
+      if(typeof(order.projectUuid) === 'function' ) {
         projectInfo = $client.from('Project').select({uuid:order.projectUuid()}).load()
         if(projectInfo[0]) {
           order._project(projectInfo[0].name)
