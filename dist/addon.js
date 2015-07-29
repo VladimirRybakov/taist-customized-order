@@ -204,7 +204,7 @@ module.exports = function(uuid) {
   if (plan != null) {
     client.from('Good').select({
       uuid: plan.material.reduce((function(str, good) {
-        return "" + str + ";uuid=" + good.uuid;
+        return "" + str + ";uuid=" + good.goodUuid;
       }), "0")
     }).load(function(err, goods) {
       return result = goods;
