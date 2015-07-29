@@ -615,7 +615,14 @@ module.exports = function() {
       order._template = ko.observable(taistOrderData.orderTemplate || '');
       order._baseTemplate = ko.observable(taistOrderData.baseTemplate || '');
       order._customName = ko.observable(taistOrderData.customName || '');
+
       order._project = ko.observable('');
+      if(order.projectUuid()) {
+        projectInfo = $client.from('Project').select({uuid:order.projectUuid()}).load()
+        if(projectInfo[0]) {
+          order._project(projectInfo[0].name)
+        }
+      }
 
       [ 'Interest', 'Interest100', 'Tax', 'Output', 'Package', 'Risk', 'FixedPrice'].forEach(function(param){
           param = 'primeCost' + param;
