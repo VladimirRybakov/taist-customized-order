@@ -191,24 +191,25 @@ module.exports = {
 }
 
 },{"./dataProvider/getProcessingPlanGoods":5}],5:[function(require,module,exports){
-var $client = require('../globals/client');
+var client;
 
-module.exports = function(uuid){
-  var plan,
-      lazyLoader,
-      i, l,
-      goods = [];
+client = require('../globals/client');
 
-  plan = $client.from('ProcessingPlan').select({ uuid: uuid }).load()[0];
-  if(plan) {
-    lazyLoader = $client.createLazyLoader();
-    lazyLoader.attach(plan, ['material.good']);
-    for(i = 0, l = plan.material.length; i < l; i += 1) {
-      goods.push(plan.material[i].good);
-    }
+module.exports = function(uuid) {
+  var plan, result;
+  result = [];
+  plan = client.from('ProcessingPlan').select({
+    uuid: uuid
+  }).load()[0];
+  if (plan != null) {
+    result = client.from('Good').select({
+      uuid: plan.material.reduce((function(str, good) {
+        return "" + str + ";uuid=" + good.uuid;
+      }), "0")
+    }).load(function(err, goods) {});
   }
-  return goods;
-}
+  return result;
+};
 
 },{"../globals/client":9}],6:[function(require,module,exports){
 var $vm = require('./globals/vm'),
