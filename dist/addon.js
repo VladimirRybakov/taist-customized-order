@@ -2811,7 +2811,8 @@ module.exports = function(templateUuid, createOrderCopy){
   // текущий заказ может быть изменен и сохранен с помощью стандартных средств МоегоСклада
   var order = $client.from('CustomerOrder').select({uuid: modifiedOrder.uuid}).load()[0];
   // замена позиции в заказе
-  order.customerOrderPosition = modifiedOrder.customerOrderPosition.slice()
+  order.description = modifiedOrder.description;
+  order.customerOrderPosition = modifiedOrder.customerOrderPosition.slice();
 
   order.customerOrderPosition.forEach( function(pos){
     //fix basePrice issue
