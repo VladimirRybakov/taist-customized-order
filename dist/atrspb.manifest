@@ -2,7 +2,7 @@
   "id": "moysklad-custom-order",
   "shortDescription": "Модификация заказа покупателя",
   "siteName": "МойСклад",
-  "siteRegexp": "online\.moysklad\.ru\/app",
+  "siteRegexp": "online\\.moysklad\\.ru\\/app",
   "title": "Модификация заказа покупателя",
   "js": "addon.js",
   "css": "atrspb.css",
