@@ -55,8 +55,11 @@ module.exports = function (templateUuid, createOrderCopy) {
             var minimalPrices = {};
             vmOrder.customerOrderPosition().map(function (position) {
                 var goodUuid = position.goodUuid();
-                minimalPrices[goodPositions[goodUuid]] = parseFloat(position._minPrice());
+                var positionId = goodPositions[goodUuid];
+                minimalPrices[positionId] = vmOrder.minimalPrices[position.uuid];
             });
+
+            console.log(minimalPrices, vmOrder.minimalPrices);
 
             var data = {
                 uuid: order.uuid,
