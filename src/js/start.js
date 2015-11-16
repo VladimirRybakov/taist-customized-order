@@ -167,7 +167,10 @@ function onCompanyDataLoaded(error, taistOptions) {
   var processingPlans, shouldSaveOptions = false;
 
   if(typeof taistOptions.processingPlans === 'undefined') {
-    processingPlans = $client.from('ProcessingPlan').load();
+    processingPlans = $client.from('ProcessingPlan').load().concat(
+      $client.from('ProcessingPlan').start(1000).load()
+    );
+
     shouldSaveOptions = true;
   } else {
     processingPlans = taistOptions.processingPlans;
