@@ -57,7 +57,6 @@ module.exports = {
       .attr('data-bind', 'click: onToggleInterface')
       .appendTo(div);
 
-
     orderFields.map(function(field){
       var div = $('<div>');
 
@@ -125,6 +124,21 @@ module.exports = {
           bind = span.attr('data-bind');
       span.attr('data-bind', bind + ', click: ' + show.toString());
     }
+
+    div = $('<div>')
+      .css({
+        position: 'relative',
+      })
+      .appendTo(container);
+
+    $('<button>')
+      .text('СОХРАНИТЬ ПОЗИЦИИ В ЗАКАЗЕ!')
+      .css({
+        padding: 4,
+        margin: 4,
+      })
+      .attr('data-bind', 'click: onSaveOrder')
+      .appendTo(div);
 
     div = $('<div id="reactOrderPrimeCost">').appendTo(container);
 
