@@ -124,7 +124,7 @@ OrderPrimeCost = React.createFactory React.createClass
     div {},
       div {},
         button { onClick: @onCopyOrder, style: padding: 4, marginBottom: 8 }, 'Создать копию заказа'
-      table { style: width: 1000, marginBottom: 8 },
+      table { style: width: 780, marginTop: 48 },
         tbody {},
          tr {},
            td { style: width: 360 },

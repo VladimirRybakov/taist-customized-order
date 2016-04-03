@@ -82,11 +82,11 @@
   margin-bottom: 4px;
 }
 
-.newOrderInterface .all-goods-table,
-.newOrderInterface .tutorial-step-inline-editor,
-.newOrderInterface .b-delivery-footer,
-.newOrderInterface .b-delivery-actionbar,
-.newOrderInterface .totals-delivery,
+/*.newOrderInterface .all-goods-table,*/
+/*.newOrderInterface .tutorial-step-inline-editor,*/
+/*.newOrderInterface .b-delivery-footer,*/
+/*.newOrderInterface .b-delivery-actionbar,*/
+/*.newOrderInterface .totals-delivery,*/
 .newOrderInterface #taist_basePlanForOrder {
   display: none;
 }
@@ -106,9 +106,24 @@
   display: block;
 }
 
+#taist_allGoods {
+  position: relative;
+}
+
+#reactOrderPrimeCost {
+  position: absolute;
+  top: 0;
+  left: 440px;
+  box-sizing: border-box;
+}
 
 #taist_allGoods>div {
   margin-bottom: 4px;
+}
+
+.w160 {
+  display: inline-block;
+  width: 160px;
 }
 
 .w200 {

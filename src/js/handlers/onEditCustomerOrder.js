@@ -278,55 +278,6 @@ module.exports = function () {
 
                 var originalGoodsTable = $(selector);
 
-                var btn,
-                    div = $('#onSaveOrder');
-
-                if (div.size() === 0) {
-
-                    redefineButtons('.b-editor-toolbar', 'onSaveOrder');
-
-                    $('.all-goods-table-buttons').show();
-                    var buttons = $('[role=button]', '.all-goods-table-buttons'),
-                        hiddenButtons = [
-                          'по штрихкоду',
-                          'из остатков',
-                        ];
-
-                    for (i = 0, l = buttons.size(); i < l; i += 1) {
-                        btn = $(buttons[i]);
-                        if (hiddenButtons.indexOf(btn.text()) > -1) {
-                            btn.css({
-                                width: btn.width(),
-                                border: 'none'
-                            });
-                            btn.children().hide();
-                        }
-                    }
-
-                    buttons
-                      .removeClass('b-popup-button-disabled')
-              .click(function (event) {
-                var buttonName = $(event.target).text(),
-                    selector,
-                    element;
-
-                switch (buttonName){
-                    case 'Добавить позицию':
-                        $app.changeState(STATE.ORDER.newGoodWaited);
-                        break;
-                    case 'Зарезервировать':
-                        require('../handlers').onReserve(true);
-                        break;
-                    case 'Очистить резерв':
-                        require('../handlers').onReserve(false);
-                        break;
-                    case 'Удалить':
-                        require('../handlers').onDelete();
-                        break;
-                }
-            });
-                }
-
                 console.log('APPLY BINDINGS');
                 $('.operationNamePanel td:last').hide();
 
@@ -335,8 +286,10 @@ module.exports = function () {
                 require('../react/main').renderOrderPage(document.getElementById('reactOrderPrimeCost'));
 
                 $(goodsDOMNode)
-                  .insertAfter(originalGoodsTable)
+                  .insertBefore(originalGoodsTable.parent().parent())
                   .show();
+
+                $vm.onToggleInterface();
             });
 
             $('.taist-table', goodsDOMNode).sortable({

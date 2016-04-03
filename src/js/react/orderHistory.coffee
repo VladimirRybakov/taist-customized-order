@@ -32,7 +32,7 @@ OrderHistory = React.createFactory React.createClass
     @setState history: []
 
   render: ->
-    div {},
+    div { style: { display: 'none' } },
       button { onClick: @onLoadHistory, style: padding: 4 }, 'Загрузить историю изменения заказа'
       div { style: padding: 4 },
         if @state.history.length > 1

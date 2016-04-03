@@ -3,7 +3,7 @@ module.exports = {
     var div,
         table  = $('<table>').addClass('taist-table');
 
-    orderFields = [
+    var orderFields = [
       {
         divBind: 'if: basePlan() !== null',
         name: 'Базовая технологическая карта',
@@ -16,7 +16,7 @@ module.exports = {
       {
         name: '&nbsp;', cls: '', elem: 'input',
         bind: 'value: selectedOrder()._customName',
-        css: { width: 300, marginLeft: 20}
+        css: { width: 200, marginLeft: 20}
       },
 
       {
@@ -41,6 +41,22 @@ module.exports = {
       { name: '', cls: '', bind: '' },
 
     ]
+
+    div = $('<div class="persistent">')
+      .css({
+        position: 'relative',
+      })
+      .appendTo(container);
+
+    $('<button>')
+      .text('Показать/скрыть дополнительный интерфейс')
+      .css({
+        padding: 4,
+        margin: 4,
+      })
+      .attr('data-bind', 'click: onToggleInterface')
+      .appendTo(div);
+
 
     orderFields.map(function(field){
       var div = $('<div>');

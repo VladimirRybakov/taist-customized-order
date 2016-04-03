@@ -199,6 +199,11 @@ function onCompanyDataLoaded(error, taistOptions) {
     require('./handlers').onCreateGoodsForOrder();
   }
 
+  $vm.onToggleInterface = function(){
+    $('#taist_allGoods>div').not('.persistent').toggle();
+    $('#taist_allGoods>table').not('.persistent').toggle();
+  }
+
   var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
   settingsDiv.appendTo($div);
   ko.applyBindings($vm, $div[0]);

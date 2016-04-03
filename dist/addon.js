@@ -17,7 +17,7 @@ module.exports = {
     var div,
         table  = $('<table>').addClass('taist-table');
 
-    orderFields = [
+    var orderFields = [
       {
         divBind: 'if: basePlan() !== null',
         name: 'Базовая технологическая карта',
@@ -30,7 +30,7 @@ module.exports = {
       {
         name: '&nbsp;', cls: '', elem: 'input',
         bind: 'value: selectedOrder()._customName',
-        css: { width: 300, marginLeft: 20}
+        css: { width: 200, marginLeft: 20}
       },
 
       {
@@ -55,6 +55,22 @@ module.exports = {
       { name: '', cls: '', bind: '' },
 
     ]
+
+    div = $('<div class="persistent">')
+      .css({
+        position: 'relative',
+      })
+      .appendTo(container);
+
+    $('<button>')
+      .text('Показать/скрыть дополнительный интерфейс')
+      .css({
+        padding: 4,
+        margin: 4,
+      })
+      .attr('data-bind', 'click: onToggleInterface')
+      .appendTo(div);
+
 
     orderFields.map(function(field){
       var div = $('<div>');
@@ -767,55 +783,6 @@ module.exports = function () {
 
                 var originalGoodsTable = $(selector);
 
-                var btn,
-                    div = $('#onSaveOrder');
-
-                if (div.size() === 0) {
-
-                    redefineButtons('.b-editor-toolbar', 'onSaveOrder');
-
-                    $('.all-goods-table-buttons').show();
-                    var buttons = $('[role=button]', '.all-goods-table-buttons'),
-                        hiddenButtons = [
-                          'по штрихкоду',
-                          'из остатков',
-                        ];
-
-                    for (i = 0, l = buttons.size(); i < l; i += 1) {
-                        btn = $(buttons[i]);
-                        if (hiddenButtons.indexOf(btn.text()) > -1) {
-                            btn.css({
-                                width: btn.width(),
-                                border: 'none'
-                            });
-                            btn.children().hide();
-                        }
-                    }
-
-                    buttons
-                      .removeClass('b-popup-button-disabled')
-              .click(function (event) {
-                var buttonName = $(event.target).text(),
-                    selector,
-                    element;
-
-                switch (buttonName){
-                    case 'Добавить позицию':
-                        $app.changeState(STATE.ORDER.newGoodWaited);
-                        break;
-                    case 'Зарезервировать':
-                        require('../handlers').onReserve(true);
-                        break;
-                    case 'Очистить резерв':
-                        require('../handlers').onReserve(false);
-                        break;
-                    case 'Удалить':
-                        require('../handlers').onDelete();
-                        break;
-                }
-            });
-                }
-
                 console.log('APPLY BINDINGS');
                 $('.operationNamePanel td:last').hide();
 
@@ -824,8 +791,10 @@ module.exports = function () {
                 require('../react/main').renderOrderPage(document.getElementById('reactOrderPrimeCost'));
 
                 $(goodsDOMNode)
-                  .insertAfter(originalGoodsTable)
+                  .insertBefore(originalGoodsTable.parent().parent())
                   .show();
+
+                $vm.onToggleInterface();
             });
 
             $('.taist-table', goodsDOMNode).sortable({
@@ -1574,7 +1543,11 @@ OrderHistory = React.createFactory(React.createClass({
     });
   },
   render: function() {
-    return div({}, button({
+    return div({
+      style: {
+        display: 'none'
+      }
+    }, button({
       onClick: this.onLoadHistory,
       style: {
         padding: 4
@@ -1831,8 +1804,8 @@ OrderPrimeCost = React.createFactory(React.createClass({
       }
     }, 'Создать копию заказа')), table({
       style: {
-        width: 1000,
-        marginBottom: 8
+        width: 780,
+        marginTop: 48
       }
     }, tbody({}, tr({}, td({
       style: {
@@ -2306,6 +2279,11 @@ function onCompanyDataLoaded(error, taistOptions) {
 
   $vm.onCreateGoodsForOrder = function(){
     require('./handlers').onCreateGoodsForOrder();
+  }
+
+  $vm.onToggleInterface = function(){
+    $('#taist_allGoods>div').not('.persistent').toggle();
+    $('#taist_allGoods>table').not('.persistent').toggle();
   }
 
   var settingsDiv = require('./taistSettingsInterface').create(taistOptions);
